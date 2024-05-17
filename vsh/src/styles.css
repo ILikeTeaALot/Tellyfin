@@ -1,0 +1,29 @@
+:root {
+	cursor: none;
+	font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+	font-size: 32px;
+	line-height: 40px;
+	font-weight: 400;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-text-size-adjust: 100%;
+
+	--transition-long: 450ms;
+}
+
+* {
+	transition-timing-function: var(--timing-function-ease);
+}
+
+body {
+	margin: 0;
+	cursor: none;
+}
+
+:root, body, html {
+	overflow: hidden;
+	background: transparent;
+	cursor: none;
+}

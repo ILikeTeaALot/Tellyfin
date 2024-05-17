@@ -1,0 +1,6 @@
+[workspace]
+members = [
+	"bootstrap",
+	"vsh/src-tauri",
+]
+resolver = "2"
