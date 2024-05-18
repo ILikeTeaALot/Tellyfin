@@ -1,0 +1,31 @@
+.timeline {
+	display: flex;
+	gap: 20px;
+	font-variant-numeric: tabular-nums;
+}
+
+.timeline .bar {
+	box-sizing: border-box;
+	width: 640px;
+	height: 20px;
+	border-radius: 50px;
+	display: flex;
+	margin: auto 0;
+	overflow: hidden;
+	border: 3px solid rgba(255, 255, 255, 0.40);
+}
+
+.timeline.small .bar {
+	width: 480px;
+}
+
+.timeline .bar .fill {
+	display: flex;
+	background: linear-gradient(to bottom, #bfd255 0%, #8eb92a 50%, #72aa00 51%, #9ecb2d 100%);
+	border-radius: 0px 50px 50px 0px;
+}
+
+.timeline span {
+	font-size: 28px;
+	font-weight: 500;
+}

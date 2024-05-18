@@ -1,0 +1,72 @@
+:root {
+	--panel-blank-colour: #43464b;
+}
+
+.panel {
+	display: flex;
+	place-content: stretch;
+	transition-duration: var(--transition-short);
+	transition-duration: var(--standard-duration);
+}
+
+.panel.inactive {
+	opacity: 0.9;
+}
+
+.panel.scale-down.inactive {
+	transform: scale(0.9);
+}
+
+.panel.active {
+	transform: scale(1.2);
+}
+
+.panel:active {
+	transform: scale(1.1);
+}
+
+.panel div {
+	box-sizing: border-box;
+}
+
+.panel .panel-content {
+	width: 100%;
+	height: 100%;
+	position: relative;
+	margin: 0;
+	border-radius: inherit;
+}
+
+.panel-image {
+	position: absolute;
+	width: inherit;
+	height: inherit;
+	border-radius: inherit;
+	display: flex;
+	flex-grow: 1;
+	place-content: center;
+	margin: auto;
+	overflow: hidden;
+}
+
+.panel.debug .panel-image {
+	overflow: visible;
+}
+
+.panel .border-highlight {
+	position: absolute;
+	border: 2px solid rgba(255, 255, 255, 0.20);
+	border-radius: inherit;
+	width: 100%;
+	height: 100%;
+}
+
+.panel .shadow {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--panel-blank-colour);
+	box-shadow: 0 0 1px 1px #000000, 0 36px 100px 0 rgba(0, 0, 0, 0.70);
+	mix-blend-mode: multiply;
+}

@@ -1,16 +1,55 @@
+@keyframes text-glow {
+	from {
+		filter: drop-shadow(0px 0px 0px #FFF) drop-shadow(0px 0px 3px black);
+	}
+
+	to {
+		filter: drop-shadow(0px 0px 8px #FFF) drop-shadow(0px 0px 3px black);
+	}
+}
+
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+
+	to {
+	}
+}
+
+@keyframes scale-in {
+	from {
+		scale: 0.8;
+	}
+
+	to {}
+}
+
 :root {
 	cursor: none;
 	font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
 	font-size: 32px;
 	line-height: 40px;
 	font-weight: 400;
+	color: #FFF;
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	-webkit-text-size-adjust: 100%;
 
+	--text-colour: #FFF;
+	
+	--timing-function-decelerate: ease-out;
+	--timing-function-accelerate: ease-in;
+	--timing-function-ease: ease-in-out;
+	--transition-short: 150ms;
+	--standard-duration: 300ms;
+	--transition-standard: var(--standard-duration);
 	--transition-long: 450ms;
+	--fade-in: var(--standard-duration) fade-in var(--timing-function-ease) /* calc(var(--transition-short) * 2) */;
+	--scale-fade-in: var(--transition-long) fade-in backwards var(--timing-function-decelerate) var(--transition-standard), var(--transition-long) scale-in var(--timing-function-decelerate) var(--transition-standard);
+	--text-glow: 2s text-glow var(--timing-function-ease) both infinite alternate /* calc(var(--transition-short) * 2) */;
 }
 
 * {
@@ -26,4 +65,304 @@ body {
 	overflow: hidden;
 	background: transparent;
 	cursor: none;
+}
+
+#home-root, #video-root {
+	width: 100vw;
+	height: 100vh;
+	position: fixed;
+	inset: 0;
+	transition-duration: 600ms;
+}
+
+/* Mask(s) */
+
+.fullscreen-mask {
+	position: fixed;
+	inset: 0;
+}
+
+.fullscreen-mask.bottom {
+	mask-image: linear-gradient(to bottom, #000F 0%, #000F calc(100% - 120px), #0000 100%);
+}
+
+.fullscreen-mask.top {
+	mask-image: linear-gradient(to bottom, #0000 0%, #000F 120px, #000F 100%);
+}
+
+.fullscreen-mask.top.bottom {
+	mask-image: linear-gradient(to bottom, #0000 0%, #000F 120px, #000F calc(100% - 120px), #0000 100%);
+}
+
+/* List */
+
+.content-list {
+	position: absolute;
+	left: 300px;
+	display: flex;
+	transition-duration: var(--standard-duration);
+	flex-direction: column;
+}
+
+.content-list.text {
+
+}
+
+.content-list.text .list-item {
+	height: 56px;
+	font-size: 56px;
+	line-height: 1;
+	display: flex;
+	transition-duration: 150ms;
+}
+
+.content-list.text .list-item.selected {
+	animation: var(--text-glow);
+}
+
+/* Control Panels */
+
+.control-panel {
+	position: relative;
+	font-size: 24px;
+	display: flex;
+	flex-direction: column;
+	--text-colour: #f6f6f6;
+	position: fixed;
+	top: 240px;
+	left: 360px;
+	transition-duration: var(--standard-duration);
+	opacity: 0;
+	text-align: center;
+	align-content: center;
+	justify-content: center;
+	align-items: center;
+}
+
+.control-panel.active {
+	opacity: 1;
+}
+
+#video-control-panel {
+
+}
+
+.control-panel .button-row {
+	display: flex;
+	flex-direction: row;
+	gap: 16px;
+	justify-content: center;
+	align-items: center;
+}
+
+.control-panel-button {
+	transition-duration: var(--standard-duration);
+	justify-content: center;
+	align-items: center;
+	display: flex;
+	font-weight: 800;
+	text-transform: uppercase;
+	filter: drop-shadow(0px 0px 3px black);
+}
+
+.control-panel-button:hover, .control-panel-button.active {
+	scale: 1.25;
+	animation: var(--text-glow);
+}
+
+.control-panel-button *[fill*="#"] {
+	fill: #f6f6f6;
+}
+
+.control-panel-button *[stroke*="#"] {
+	stroke: #f6f6f6;
+}
+
+.control-panel span {
+	position: absolute;
+	font-size: 36px;
+	font-weight: 600;
+	text-shadow: 1px 1px 3px black, /* 0px 0px 6px black, */ 0px 0px 10px black;
+	-webkit-text-stroke: 0.5px black;
+	top: calc(100% + 20px);
+}
+
+/* Grid */
+
+.content-grid {
+	position: fixed;
+	inset: 0;
+	transition-duration: var(--transition-long);
+	animation: var(--scale-fade-in);
+	will-change: opacity scale;
+}
+
+.content-grid .grid-item {
+	position: absolute;
+	display: flex;
+	width: 240px;
+	height: 360px;
+	transition-duration: var(--standard-duration);
+}
+
+/* Film and TV Series detail views */
+
+.film-info,
+.series-info {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	animation: var(--scale-fade-in);
+	transition-duration: var(--transition-long);
+	will-change: opacity scale;
+}
+
+.film-h-split {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	gap: 80px;
+}
+
+.series-info .episode-list {
+	position: fixed;
+	inset: 0;
+	transition-duration: var(--transition-standard);
+	will-change: opacity;
+}
+
+.series-info .episode-container {
+	animation: var(--fade-in);
+	animation-delay: var(--standard-duration);
+	width: 400px;
+	position: absolute;
+	top: 420px;
+	left: 120px;
+	transition-duration: var(--standard-duration);
+	display: flex;
+	flex-direction: column;
+	gap: 36px;
+	will-change: translate;
+}
+
+.pseudo-episode-panel {
+	animation: var(--fade-in);
+	animation-delay: var(--standard-duration);
+	position: absolute;
+	background: var(--panel-blank-colour);
+	top: 420px;
+	left: 120px;
+	width: 400px;
+	height: 225px;
+	border-radius: 16px;
+	transition-duration: var(--standard-duration);
+	will-change: translate;
+}
+
+.film-info .film-cover {
+	padding-top: 80px;
+}
+
+.film-info .film-cover,
+.series-info .episode-info {
+	padding-left: 80px;
+	box-sizing: border-box;
+}
+
+.series-info .episode-info {
+	width: 100%;
+}
+
+.film-info .film-cover h1, .film-info .film-cover h5,
+.series-info /* .episode-info */ h1, .series-info h5 {
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.film-info .film-details {
+	padding-top: 80px;
+	padding-right: 80px;
+	transition-duration: var(--transition-standard);
+}
+
+.series-info .episode-overview {
+	--top: 685px;
+	position: fixed;
+	top: var(--top);
+	left: 80px;
+	transition-duration: var(--transition-standard);
+}
+
+.film-info .film-details span,
+.series-info .episode-overview span {
+	display: flex;
+	font-size: 28px;
+	font-weight: 600;
+	margin-bottom: 1em;
+	opacity: 0.6;
+}
+
+.film-info .film-details span.technical,
+.series-info .episode-overview span.technical {
+	margin-bottom: 0px;
+}
+
+.film-info .film-details p,
+.series-info .episode-overview p {
+	max-height: 4lh;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	line-clamp: 4;
+	-webkit-line-clamp: 4;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	transition-duration: var(--standard-duration);
+}
+
+.series-info .episode-overview.focused {
+	translate: 0px -270px;
+}
+
+.series-info .episode-overview.focused p {
+	-webkit-line-clamp: 100000;
+	max-height: unset;
+}
+
+/* Video scren-specific stuff */
+#video-root .video-info {
+	position: fixed;
+	inset: 0px 0px auto;
+	padding: 80px 100px 10px;
+	transition-duration: var(--standard-duration);
+	background-color: rgba(0, 0, 0, 0.8);
+	display: flex;
+}
+
+#video-root .video-timeline {
+	position: fixed;
+	inset: auto 0px 0px;
+	transition-duration: var(--standard-duration);
+	background-color: rgba(0, 0, 0, 0.8);
+	display: flex;
+	padding: 10px 100px 80px;
+	justify-content: flex-end;
+}
+
+#playback-status-indicator {
+	position: fixed;
+	width: 64px;
+	height: 32px;
+	bottom: 80px;
+	left: 100px;
+	transition-duration: var(--standard-duration);
+	filter: drop-shadow(0px 0px 1px black) drop-shadow(0px 0px 3px black);
+}
+
+#playback-status-indicator *[fill*="#"] {
+	fill: #f6f6f6;
+}
+
+#playback-status-indicator *[stroke*="#"] {
+	stroke: #f6f6f6;
 }

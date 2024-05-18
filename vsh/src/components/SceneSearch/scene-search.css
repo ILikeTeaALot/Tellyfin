@@ -1,0 +1,59 @@
+.scene-search {
+	position: fixed;
+	inset: auto 0px 0px;
+	background: rgba(0, 0, 0, 0.8);
+
+	padding-top: 20px;
+	padding-bottom: 80px;
+	
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 40px;
+
+	transition-duration: var(--standard-duration);
+}
+
+.scene-search .interval {
+	display: flex;
+	position: absolute;
+	justify-content: center;
+	height: calc(1lh + 20px);
+	/* height: 60px; */
+	width: 100%;
+	margin: 0 auto;
+	position: relative;
+	mask-image: linear-gradient(to bottom, #0000 0%, #000F 10px, #000F calc(100% - 10px), #0000 100%);
+}
+
+.scene-search .interval span {
+	top: 10px;
+	position: absolute;
+	transition-duration: var(--standard-duration);
+}
+
+.scene-search .scenes {
+	display: flex;
+	flex-direction: row;
+	height: calc(180px);
+	position: relative;
+	transition-duration: var(--standard-duration);
+}
+
+.scene-search .scenes .scene {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	align-items: center;
+	justify-content: center;
+	position: absolute;
+	transition-duration: var(--standard-duration);
+}
+
+.scene-search .scenes .scene span {
+	position: absolute;
+}
+
+.scene-search .scene-title {
+	transition-duration: var(--standard-duration);
+}

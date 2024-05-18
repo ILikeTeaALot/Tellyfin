@@ -1,0 +1,11 @@
+{
+	"deviceInfo": {
+		"name": "The name of your device",
+		"id": "an ID for your device"
+	},
+	"server_address": "The address of your jellyfin server",
+	"user": {
+		"username": "your username",
+		"password": "your hopefully reasonably secure password"
+	}
+}
