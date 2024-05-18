@@ -17,7 +17,7 @@ pub(crate) fn use_mpv_lock<T, E: Display>(
     let ok = match mpv.lock() {
         Ok(mut lock) => {
             if let Some(mpv) = lock.as_mut() {
-                println!("Lock successful!");
+                // println!("Lock successful!");
                 function(mpv).map_err(|e| e.to_string())
             } else {
                 Err("MPV is None???".into())
@@ -67,6 +67,7 @@ fn go_to_chapter(mpv: &mut Mpv, chapter: RelativeChapter) -> Result<(), libmpv2:
 				},
 				None => jump_prev(),
 			}
+        }
         RelativeChapter::Next => match chapters.get(current as usize + 1) {
             Some(Chapter { time, .. }) => mpv.command("seek", &[&time.to_string(), "absolute"]),
             None => Ok(()),
@@ -83,8 +84,10 @@ pub async fn transport_command(function: String, mpv: State<'_, MpvState>) -> Re
             "TogglePlay" => mpv.cycle_property("pause", false),
             "Stop" => {
                 mpv.command("stop", &[])
+            }
             "PrevChapter" => go_to_chapter(mpv, RelativeChapter::Previous),
             "NextChapter" => go_to_chapter(mpv, RelativeChapter::Next),
+            "SubtitleOptions" => mpv.command("cycle", &["sub"]),
             _ => Ok(()),
         }
         .map_err(|e| e.to_string())
