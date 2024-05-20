@@ -24,7 +24,7 @@ const MARGIN = (1920 - GRID_WIDTH) / 2;
 
 export function ContentGrid(props: ContentGridProps) {
 	const columns = COLUMNS;
-	const { nav_position: nav_position } = props;
+	const { data, nav_position } = props;
 	const state = useContext(AppMode);
 	// Handle keeping onNavigate callback... correct.
 	const onNavigate = useRef(props.onNavigate);
@@ -32,7 +32,7 @@ export function ContentGrid(props: ContentGridProps) {
 	// Normal stuff
 	const [selected, setSelected] = useState(0);
 	// Makes useEffect easier.
-	const h_length = props.data.length;
+	const data_length = data.length;
 	useEffect(() => {
 		if (nav_position == 0 && state == AppState.Home) {
 			function handler(e: KeyboardEvent) {
@@ -50,7 +50,7 @@ export function ContentGrid(props: ContentGridProps) {
 						break;
 					case "PadDown":
 					case "ArrowDown":
-						setSelected(current => Math.min(current + columns, h_length - 1));
+						setSelected(current => Math.min(current + columns, data_length - 1));
 						break;
 					case "PadLeft":
 					case "ArrowLeft":
@@ -59,14 +59,14 @@ export function ContentGrid(props: ContentGridProps) {
 					case "PadRight":
 					case "ArrowRight":
 						setSelected(current => {
-							if (current == h_length - 1 && (current + 1) % 6 != 0) {
-								if (h_length > columns) {
+							if (current == data_length - 1 && (current + 1) % 6 != 0) {
+								if (data_length > columns) {
 									return current - 5;
 								} else {
 									return current;
 								}
 							} else {
-								return Math.min(current + 1, h_length - 1);
+								return Math.min(current + 1, data_length - 1);
 							}
 						});
 						break;
@@ -84,9 +84,11 @@ export function ContentGrid(props: ContentGridProps) {
 			window.addEventListener("keydown", handler);
 			return () => { window.removeEventListener("keydown", handler); };
 		}
-	}, [h_length, nav_position, selected, onNavigate, state]);
+	}, [data_length, nav_position, selected, onNavigate, state]);
 	const startIndex = Math.max((selected - (columns * 2)) - (selected % columns), 0);
-	const endIndex = Math.min(selected + (columns * 2) + (columns - (selected % columns)), props.data.length);
+	const endIndex = Math.min(selected + (columns * 2) + (columns - (selected % columns)), data.length);
+	const selected_row = Math.floor(selected / columns);
+	const last_row = Math.floor((data.length - 1) / columns);
 	return (
 		<div className="content-grid" style={{
 			opacity: nav_position == 0 ? 1 : 0,
@@ -94,13 +96,19 @@ export function ContentGrid(props: ContentGridProps) {
 			transitionTimingFunction: nav_position == 0 ? "var(--timing-function-decelerate)" : "var(--timing-function-accelerate)",
 			transitionDelay: nav_position == 0 ? "var(--transition-standard)" : "0ms"
 		}}>
-			{props.data.slice(startIndex, endIndex).map((item, _index) => {
+			{data.slice(startIndex, endIndex).map((item, _index) => {
 				const index = startIndex + _index;
 				const row = Math.floor(index / columns);
-				const selected_row = Math.floor(selected / columns);
+				let yPosition = ((window.innerHeight / 2) - (HEIGHT / 2)) + (((HEIGHT + GAP) * (row))) - ((HEIGHT + GAP) * selected_row);
+				if (selected_row == 0) {
+					yPosition -= (HEIGHT + GAP) / 2;
+				}
+				if (selected_row == last_row) {
+					yPosition += (HEIGHT + GAP) / 2;
+				}
 				return (
 					<div key={item.id} class="grid-item" style={{
-						translate: `${MARGIN + ((index % columns) * (WIDTH + GAP))}px ${ ( ( window.innerHeight / 2 ) - ( HEIGHT / 2 ) ) + ( (( HEIGHT + GAP ) * ( row )) ) - ( (HEIGHT + GAP) * selected_row ) }px`,
+						translate: `${MARGIN + ((index % columns) * (WIDTH + GAP))}px ${yPosition}px`,
 					}}>
 						<div className={selected == index ? "panel active" : props.nav_position <= 0 ? "panel inactive" : "panel"} style={{
 							width: WIDTH,
