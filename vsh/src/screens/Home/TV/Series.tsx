@@ -30,7 +30,7 @@ enum Row {
 }
 
 export function TvSeries(props: JellyfinScreenProps) {
-	console.log(props.data);
+	// console.log(props.data);
 	// Mutator
 	const { mutate: _mutate } = useSWRConfig();
 	const mutate = useRef(_mutate);
@@ -315,7 +315,7 @@ async function getSeasons(seriesId: Id) {
 		userId: auth.User!.Id!,
 		fields: ["ItemCounts", "PrimaryImageAspectRatio", "BasicSyncInfo", "MediaSourceCount", /* */ "ChildCount", "EnableMediaSourceDisplay"],
 	});
-	console.log(data);
+	// console.log(data);
 	return data.Items!/* .filter(season => season.ChildCount! > 0) */;
 }
 
@@ -331,6 +331,6 @@ async function getEpisodes(seriesId: Id) {
 		// TODO: Fetch some of these when the file is played
 		fields: ["ItemCounts", "PrimaryImageAspectRatio", "BasicSyncInfo", "MediaSourceCount", "Overview", "Path", "SpecialEpisodeNumbers", "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
 	});
-	console.log(data);
+	// console.log(data);
 	return data.Items!;
 }

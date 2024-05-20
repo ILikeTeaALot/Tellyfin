@@ -22,7 +22,7 @@ enum Row {
 }
 
 export function FilmDetail(props: JellyfinScreenProps) {
-	console.log(props.data);
+	// console.log(props.data);
 	// Mutator
 	const { mutate: _mutate } = useSWRConfig();
 	const mutate = useRef(_mutate);
@@ -139,6 +139,6 @@ async function getFilmInfo(id: Id) {
 		userId: auth.User!.Id!,
 		fields: ["PrimaryImageAspectRatio", "BasicSyncInfo", "MediaSourceCount", /* */ "EnableMediaSourceDisplay", "MediaStreams", "Path", "Overview", "Chapters"],
 	});
-	console.log(data);
+	// console.log(data);
 	return data.Items![0];
 }

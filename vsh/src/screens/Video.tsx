@@ -44,7 +44,7 @@ export function Video(props: ScreenProps) {
 		setSceneSearchActive(false);
 	};
 	useInput(active, (button) => {
-		console.log(button);
+		// console.log(button);
 		if (anyToolVisible.current) {
 			switch (button) {
 				case "Back":

@@ -122,9 +122,10 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 								releaseEventsToCall.push(button);
 							}
 						} else if (countdown.current[button] > 0) {
-							console.log(delta);
+							// console.log("countdown:", countdown.current);
+							// console.log(delta);
 							countdown.current[button] = countdown.current[button] - delta;
-							console.log(countdown.current[button]);
+							// console.log(countdown.current[button]);
 						} else {
 							if (gamepad.buttons[button].pressed) {
 								const time = gamepadAcceleration(buttonPresses.current[button]);
