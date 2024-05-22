@@ -22,10 +22,10 @@ export enum GamepadButton {
 }
 
 export enum GamepadStick {
-	HorizontalLeft,
-	VerticalLeft,
-	HorizontalRight,
-	VerticalRight,
+	LeftHorizontal,
+	LeftVertical,
+	RightHorizontal,
+	RightVertical,
 }
 
 type ControllerButtonType = "A";
@@ -64,6 +64,32 @@ function gamepadAcceleration(repeats: number) {
 	}
 };
 
+function axisToButton(axis: GamepadStick, value: number) {
+	if (value >= 0) {
+		switch (axis) {
+			case GamepadStick.LeftHorizontal:
+				return GamepadButton.PadRight;
+			case GamepadStick.LeftVertical:
+				return GamepadButton.PadDown;
+			case GamepadStick.RightHorizontal:
+			case GamepadStick.RightVertical:
+				return null;
+		}
+	} else {
+		switch (axis) {
+			case GamepadStick.LeftHorizontal:
+				return GamepadButton.PadLeft;
+			case GamepadStick.LeftVertical:
+				return GamepadButton.PadUp;
+			case GamepadStick.RightHorizontal:
+			case GamepadStick.RightVertical:
+				return null;
+		}
+	}
+}
+
+const JOYSTICK_THRESHOLD = Math.PI / 4 - 0.2;
+
 /**
  * # Controller Input System v0 spec
  * 
@@ -78,12 +104,16 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 	const listeners = useRef(new Set<GamepadEventListener>());
 	const releaseListeners = useRef(new Set<GamepadEventListener>());
 	const buttonsPressedRightNow = useRef(new Set<string>());
+	const axesActiveRightNow = useRef(new Set<GamepadButton>());
 	const frame = useRef<number | undefined>();
 	/** Last "update tick" in milliseconds */
 	const last = useRef(performance.now());
 	const gamepads = useRef<ReturnType<typeof navigator.getGamepads>>(navigator.getGamepads());
 	const countdown = useRef<number[]>([GAMEPAD_BUTTON_REPEAT_INITIAL].fill(-1, 0, 50));
 	const buttonPresses = useRef<number[]>([0].fill(0, 0, 50));
+	const axisActivations = useRef<number[]>([0].fill(0, 0, 50));
+
+	const [transitionDuration, setTransitionDuration] = useState(300);
 
 	const contextValue = React.useRef({
 	});
@@ -130,9 +160,40 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 							if (gamepad.buttons[button].pressed) {
 								const time = gamepadAcceleration(buttonPresses.current[button]);
 								countdown.current[button] = time;
+								setTransitionDuration(time);
 								buttonsPressedRightNow.current.add(button);
 								buttonPresses.current[button]++;
 								eventsToCall.push(button);
+							}
+						}
+					}
+					for (let i = 0; i < gamepad.axes.length; i++) {
+						const axis = i;
+						const value = gamepad.axes[i];
+						const active = value > JOYSTICK_THRESHOLD || value < -JOYSTICK_THRESHOLD;
+						const countdown_index = axis + 30;
+						if (!active) {
+							axisActivations.current[axis] = 0;
+							countdown.current[countdown_index] = -1;
+							if (axesActiveRightNow.current.has(axis)) {
+								axesActiveRightNow.current.delete(axis);
+								const button = axisToButton(axis, value);
+								if (button) releaseEventsToCall.push(button);
+							}
+						} else if (countdown.current[countdown_index] > 0) {
+							countdown.current[countdown_index] = countdown.current[countdown_index] - delta;
+						} else {
+							if (active) {
+								const time = gamepadAcceleration(axisActivations.current[axis]);
+								countdown.current[countdown_index] = time;
+								// setMovementInterval(time);
+								setTransitionDuration(time);
+								const button = axisToButton(axis, value);
+								if (button) {
+									axesActiveRightNow.current.add(button);
+									buttonPresses.current[axis]++;
+									eventsToCall.push(button);
+								}
 							}
 						}
 					}
@@ -161,9 +222,11 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 
 	return (
 		<GamepadContext.Provider value={contextValue.current}>
-			<MovementSpeed.Provider value={"300ms"}>
+			<div style={{ "--standard-duration": `${transitionDuration - 15}ms` }}>
+				{/* <MovementSpeed.Provider value={"300ms"}> */}
 				{children}
-			</MovementSpeed.Provider>
+				{/* </MovementSpeed.Provider> */}
+			</div>
 		</GamepadContext.Provider>
 	);
 };
