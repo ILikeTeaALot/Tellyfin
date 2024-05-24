@@ -29,3 +29,11 @@ Still having leak issues... I no longer have much of a clue why...
 ## Update 18:00
 
 Turns out I had mixed up a value in milliseconds and a value in seconds in an update function... That was annoying.
+
+# React
+
+I don't want to end up locked into React, because frankly it's not all that. The likely replacement is Svelte but I'm not decided yet.
+
+# ESLint
+
+Yes ESLint ~~can be~~ is f***ing annoying ~~sometimes~~, but when dealing with React hooks a second pair of automated eyes is very helpful.
