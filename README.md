@@ -1,3 +1,15 @@
+## Current Status
+
+At present, playback and playback-control of media on the local filesystem works, selected by browsing through a local Jellyfin server.
+
+The User Interface design is a hybrid of vertical lists, grids, optionless landing pages (i.e. 1 option: *Play*), and a contiuous row of episodes for TV shows. When support for a few of the following is added the top-level interface will be altered to resemble the XMB:
+
+ - Multiple Jellyfin servers
+ - Alto integration (the XMB works quite well for Music)
+ - Emulators/RetroArch
+ - Steam
+ - Navigable Settings (settings are currently hard-coded in a handful of places.)
+
 ## Requirements
 
 1. A working Rust toolchain for compilation.

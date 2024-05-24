@@ -22,6 +22,8 @@ target/
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
-# 
+# Library files
 *.dll
 *.lib
+# Technically unused
+*.exe
