@@ -1,6 +1,6 @@
-import { useContext, useEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useState } from "preact/hooks";
 import { AppState } from "../AppStates";
-import { VideoControlPanel } from "../components/ControlPanels";
+import { VideoControlPanel, type VideoFunction } from "../components/ControlPanels";
 import { ScreenProps } from "./common";
 import { invoke } from "@tauri-apps/api/core";
 import { refresh_mpv } from "../util/functions";
