@@ -7,7 +7,7 @@ export * as jellyfin from "@jellyfin/sdk/lib/utils/api";
 
 const jellyfin = new Jellyfin({
 	clientInfo: {
-		name: 'XMB-X',
+		name: 'Tellyfin',
 		version: '0.0.0'
 	},
 	deviceInfo,
