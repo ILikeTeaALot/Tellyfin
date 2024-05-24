@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useState } from "preact/hooks";
 import * as jf from "@jellyfin/sdk/lib/utils/api";
 import { ScreenContent, ScreenProps } from "./common";
 import { ContentList, NavigateAction } from "../components/ContentList";
@@ -14,7 +14,7 @@ const content: ScreenContent = {
 	id: "Home",
 	type: ContentType.List,
 	content: [
-		{ id: "music.alto", name: "Alto" },
+		// { id: "music.alto", name: "Alto" },
 		{ id: "system.settings", name: "Settings" },
 		{ id: "system.power", name: "Power (Exit)" },
 	]
@@ -34,7 +34,7 @@ export function Home(props: ScreenProps) {
 						id: "Home",
 						type: ContentType.List,
 						content: [
-							{ id: "music.alto", name: "Alto" },
+							// { id: "music.alto", name: "Alto" },
 							...libraries.data.Items.map(item => ({
 								id: item.Id ?? Math.round(Math.random() * 5000).toFixed(0),
 								name: item.Name ?? "Unknown",
@@ -49,7 +49,7 @@ export function Home(props: ScreenProps) {
 			}
 		})();
 	}, []);
-	const handleNavigate = async (action: NavigateAction, index?: number) => {
+	const handleNavigate = useCallback(async (action: NavigateAction, index?: number) => {
 		if (!active || state != AppState.Home) return;
 		console.log("action:", action, "id:", index);
 		if (action == NavigateAction.Back) {
@@ -60,7 +60,7 @@ export function Home(props: ScreenProps) {
 			await selectScreen(updateScreens, setCurrentScreen, action, currScreen, screens[currScreen].id, screens[currScreen].content[index]);
 			return;
 		}
-	};
+	}, [updateScreens, setCurrentScreen, currScreen, screens]);
 	return (
 		<div id="home-root" style={{ opacity: active ? 1 : 0 }}>
 			{screens.map((screen, index) => {
