@@ -44,19 +44,24 @@ type GamepadEventListener = (e: { key: string; }) => void;
 
 type GamepadListenerType = "press" | "release" | "change";
 
-export const GamepadContext = React.createContext<{
-}>({ });
+// export const GamepadContext = React.createContext<{
+// 	addListener: (listener: GamepadEventListener, type?: GamepadListenerType) => void;
+// 	removeListener: (listener: GamepadEventListener, type?: GamepadListenerType) => void;
+// 	removeAllListeners: () => void;
+// 	cancelRepeat: (button: GamepadButton) => void;
+// }>({ addListener() { }, removeListener() { }, removeAllListeners() { }, cancelRepeat() { } });
 export const MovementSpeed = React.createContext("300ms");
 
-const GAMEPAD_BUTTON_REPEAT_INITIAL = 300;
-const GAMEPAD_BUTTON_REPEAT = 200;
+const GAMEPAD_BUTTON_REPEAT_INITIAL = 400;
+const GAMEPAD_BUTTON_REPEAT = 250;
+/** The button repeats at which repeat-rate doubles */
 function gamepadAcceleration(repeats: number) {
 	if (repeats < 1) {
 		return GAMEPAD_BUTTON_REPEAT_INITIAL;
-	} else if (repeats < 40) {
+	} else if (repeats < 25) {
 		return GAMEPAD_BUTTON_REPEAT;
 	} else if (repeats < 60) {
-		return 50;
+		return 75;
 	} else if (repeats < 100) {
 		return 25;
 	} else {
@@ -75,7 +80,7 @@ function axisToButton(axis: GamepadStick, value: number) {
 			case GamepadStick.RightVertical:
 				return null;
 		}
-	} else {
+	} else /* (value LESS THAN 0) */ {
 		switch (axis) {
 			case GamepadStick.LeftHorizontal:
 				return GamepadButton.PadLeft;
@@ -88,7 +93,7 @@ function axisToButton(axis: GamepadStick, value: number) {
 	}
 }
 
-const JOYSTICK_THRESHOLD = Math.PI / 4 - 0.2;
+const JOYSTICK_THRESHOLD = 0.5;
 
 /**
  * # Controller Input System v0 spec
@@ -101,22 +106,51 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 			{children}
 		</>
 	);
-	const listeners = useRef(new Set<GamepadEventListener>());
-	const releaseListeners = useRef(new Set<GamepadEventListener>());
+	// const listeners = useRef(new Set<GamepadEventListener>());
+	// const releaseListeners = useRef(new Set<GamepadEventListener>());
 	const buttonsPressedRightNow = useRef(new Set<string>());
 	const axesActiveRightNow = useRef(new Set<GamepadButton>());
 	const frame = useRef<number | undefined>();
 	/** Last "update tick" in milliseconds */
 	const last = useRef(performance.now());
 	const gamepads = useRef<ReturnType<typeof navigator.getGamepads>>(navigator.getGamepads());
-	const countdown = useRef<number[]>([GAMEPAD_BUTTON_REPEAT_INITIAL].fill(-1, 0, 50));
+	// For some reason using a constant for these causes issues. No clue why!
+	const button_countdowns = useRef<number[]>([-1].fill(-1, 0, 50));
+	const axis_countdowns = useRef<number[]>([-1].fill(-1, 0, 50));
 	const buttonPresses = useRef<number[]>([0].fill(0, 0, 50));
 	const axisActivations = useRef<number[]>([0].fill(0, 0, 50));
 
 	const [transitionDuration, setTransitionDuration] = useState(300);
 
-	const contextValue = React.useRef({
-	});
+	/* const contextValue = React.useRef({
+		addListener: (listener: GamepadEventListener, type?: GamepadListenerType) => {
+			switch (type) {
+				case "release":
+					releaseListeners.current.add(listener);
+					break;
+				default:
+					listeners.current.add(listener);
+			}
+			// console.log("Gamepad listeners:", listeners.current.size);
+		},
+		removeListener: (listener: GamepadEventListener, type?: GamepadListenerType) => {
+			switch (type) {
+				case "release":
+					releaseListeners.current.add(listener);
+					break;
+				default:
+					listeners.current.delete(listener);
+			}
+			// console.log("Gamepad listeners:", listeners.current.size);
+		},
+		removeAllListeners: () => {
+			releaseListeners.current.clear();
+			listeners.current.clear();
+		},
+		cancelRepeat: (button: GamepadButton) => {
+			button_countdowns.current[button] = Infinity;
+		}
+	}); */
 
 	// EFFECTS
 	useEffect(() => {
@@ -146,20 +180,20 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 					for (const button in gamepad.buttons) {
 						if (!gamepad.buttons[button].pressed) {
 							buttonPresses.current[button] = 0;
-							countdown.current[button] = -1;
+							button_countdowns.current[button] = -1;
 							if (buttonsPressedRightNow.current.has(button)) {
 								buttonsPressedRightNow.current.delete(button);
 								releaseEventsToCall.push(button);
 							}
-						} else if (countdown.current[button] > 0) {
+						} else if (button_countdowns.current[button] > 0) {
 							// console.log("countdown:", countdown.current);
 							// console.log(delta);
-							countdown.current[button] = countdown.current[button] - delta;
+							button_countdowns.current[button] = button_countdowns.current[button] - delta;
 							// console.log(countdown.current[button]);
 						} else {
 							if (gamepad.buttons[button].pressed) {
 								const time = gamepadAcceleration(buttonPresses.current[button]);
-								countdown.current[button] = time;
+								button_countdowns.current[button] = time;
 								setTransitionDuration(time);
 								buttonsPressedRightNow.current.add(button);
 								buttonPresses.current[button]++;
@@ -171,36 +205,32 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 						const axis = i;
 						const value = gamepad.axes[i];
 						const active = value > JOYSTICK_THRESHOLD || value < -JOYSTICK_THRESHOLD;
-						const countdown_index = axis + 30;
+						const button = axisToButton(axis, value);
+						if (!button) continue;
+						const countdown_index = button;
 						if (!active) {
-							axisActivations.current[axis] = 0;
-							countdown.current[countdown_index] = -1;
-							if (axesActiveRightNow.current.has(axis)) {
-								axesActiveRightNow.current.delete(axis);
-								const button = axisToButton(axis, value);
-								if (button) releaseEventsToCall.push(button);
+							axisActivations.current[button] = 0;
+							axis_countdowns.current[countdown_index] = -1;
+							if (axesActiveRightNow.current.has(button)) {
+								axesActiveRightNow.current.delete(button);
+								releaseEventsToCall.push(button);
 							}
-						} else if (countdown.current[countdown_index] > 0) {
-							countdown.current[countdown_index] = countdown.current[countdown_index] - delta;
+						} else if (axis_countdowns.current[countdown_index] > 0) {
+							axis_countdowns.current[countdown_index] = axis_countdowns.current[countdown_index] - delta;
 						} else {
 							if (active) {
-								const time = gamepadAcceleration(axisActivations.current[axis]);
-								countdown.current[countdown_index] = time;
-								// setMovementInterval(time);
+								const time = gamepadAcceleration(axisActivations.current[button]) / (Math.abs(value) * 1.5);
+								axis_countdowns.current[countdown_index] = time;
 								setTransitionDuration(time);
-								const button = axisToButton(axis, value);
-								if (button) {
-									axesActiveRightNow.current.add(button);
-									buttonPresses.current[axis]++;
-									eventsToCall.push(button);
-								}
+								axesActiveRightNow.current.add(button);
+								axisActivations.current[button]++;
+								eventsToCall.push(button);
 							}
 						}
 					}
 				}
 			}
 			last.current = now;
-			frame.current = window.setTimeout(animate, 5);
 			for (const button of releaseEventsToCall) {
 				// for (const listener of releaseListeners.current) {
 				// 	listener({ key: GamepadButton[button] });
@@ -215,18 +245,21 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 				let event = new KeyboardEvent("keydown", { key: GamepadButton[button] });
 				window.dispatchEvent(event);
 			}
+			if (buttonsPressedRightNow.current.size == 0 && axesActiveRightNow.current.size == 0) {
+				setTransitionDuration(300);
+			}
 		};
-		frame.current = window.setTimeout(animate, 5);
-		return () => window.clearTimeout(frame.current);
+		frame.current = window.setInterval(animate, 5);
+		return () => window.clearInterval(frame.current);
 	}, []);
 
 	return (
-		<GamepadContext.Provider value={contextValue.current}>
-			<div style={{ "--standard-duration": `${transitionDuration - 15}ms` }}>
-				{/* <MovementSpeed.Provider value={"300ms"}> */}
-				{children}
-				{/* </MovementSpeed.Provider> */}
-			</div>
-		</GamepadContext.Provider>
+		// <GamepadContext.Provider value={contextValue.current}>
+		<div style={{ "--standard-duration": `${Math.min(transitionDuration - 40, 300)}ms` }}>
+			{/* <MovementSpeed.Provider value={"300ms"}> */}
+			{children}
+			{/* </MovementSpeed.Provider> */}
+		</div>
+		// </GamepadContext.Provider>
 	);
 };
