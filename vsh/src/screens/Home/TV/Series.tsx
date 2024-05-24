@@ -49,18 +49,30 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const [row, setRow] = useState(Row.Episodes);
 	const tab_row_content = useRef<HTMLDivElement>(null);
 	const episode_overview = useRef<HTMLDivElement>(null);
-	// Cheeky useRefs to avoid re-creating the callback several times.
-	const selectedRef = useRef(selected);
-	selectedRef.current = selected;
-	// Tab/Content row
-	const selectedRow = useRef(row);
-	selectedRow.current = row;
-	// Data - Episodes
-	const episodeData = useRef(episodes.data);
-	episodeData.current = episodes.data;
-	// Data - Seasons
-	const seasonsData = useRef(seasons.data);
-	seasonsData.current = seasons.data;
+	const menu_submit = useCallback((action: string, id: Id) => {
+		switch (action) {
+			case "mark_watched":
+				jellyfin.getPlaystateApi(api).markPlayedItem({
+					userId: auth.User!.Id!,
+					itemId: id,
+				}).then(() => {
+					console.log("Hopefully marked as watched?");
+					updateEpisodes(undefined, { revalidate: true });
+				});
+				break;
+			case "mark_unwatched":
+				jellyfin.getPlaystateApi(api).markUnplayedItem({
+					userId: auth.User!.Id!,
+					itemId: id,
+				}).then(() => {
+					console.log("Hopefully marked as unwatched?");
+					updateEpisodes(undefined, { revalidate: true });
+				});
+				break;
+		}
+		setMenuOpen(false);
+	}, [updateEpisodes]);
+	const menu_cancel = useCallback(() => setMenuOpen(false), []);
 	useEffect(() => {
 		if (loadingNextUp) return;
 		if (!nextUpSelected && nextUp) {
@@ -242,6 +254,27 @@ export function TvSeries(props: JellyfinScreenProps) {
 			setTabRowX(offsetLeft > screen_centre - HORIZONTAL_MARGIN ? Math.min(centre, max_offset) : 0);
 		}
 	}, [selected.season]);
+	const menu = useMemo((): XBMenuItem<Id>[] => {
+		if (episodes) {
+			const episode = episodes[selected.episode];
+			const id = episode.Id!;
+			const isWatched = episode.UserData?.Played ?? false;
+			return [
+				{
+					label: "Play",
+					id: "just_play",
+					value: id,
+				},
+				{
+					label: isWatched ? "Mark as unwatched" : "Mark as watched",
+					id: isWatched ? "mark_unwatched" : "mark_watched",
+					value: id,
+				},
+			];
+		} else {
+			return [];
+		}
+	}, [episodes, selected]);
 	if (!episodes || !seasons || !nextUpSelected || loadingNextUp) return null;
 	const runTimeTicks = episodes[selected.episode].RunTimeTicks;
 	const duration = runTimeTicks ? displayRunningTime(runTimeTicks) : null;
@@ -325,6 +358,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 					</div>
 				</div>
 			</div>
+			<Menu active={menuOpen} items={menu} onSubmit={menu_submit} onCancel={menu_cancel} />
 		</div>
 	);
 }
