@@ -1,6 +1,6 @@
 [workspace]
 members = [
-	"bootstrap",
+	# "bootstrap",
 	"vsh/src-tauri",
 ]
 resolver = "2"
