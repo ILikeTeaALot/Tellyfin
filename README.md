@@ -1,3 +1,7 @@
+# Tellyfin
+
+The goal for this is a PS3-style UI for films, TV shows, music, photos, emulators, and Steam (social features possibly included too... if possible).
+
 ## Current Status
 
 At present, playback and playback-control of media on the local filesystem works, selected by browsing through a local Jellyfin server.
