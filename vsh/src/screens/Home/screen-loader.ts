@@ -56,7 +56,7 @@ export async function selectScreen(updateScreens: Dispatch<StateUpdater<ScreenCo
 									userId: auth.User!.Id!,
 								});
 						}
-						console.log(items?.data?.Items);
+						// console.log(items?.data?.Items);
 						return items?.data?.Items;
 					})();
 					if (items) {
@@ -108,7 +108,7 @@ export async function selectScreen(updateScreens: Dispatch<StateUpdater<ScreenCo
 									type: ContentType.SettingsList,
 									content: [
 										{ id: "system.settings.music", name: "Music Settings" },
-										{ id: "system.settings.video", name: "Theme Settings" },
+										{ id: "system.settings.theme", name: "Theme Settings" },
 										{ id: "system.settings.video", name: "Video Settings" },
 										{ id: "system.settings.sound", name: "Sound Settings" },
 										{ id: "system.settings.display", name: "Display Settings" },
