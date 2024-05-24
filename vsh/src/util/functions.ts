@@ -33,6 +33,11 @@ export function refresh_mpv() {
 
 export const toHMS = (seconds: number) => `${Math.floor(seconds / 3600).toString().padStart(2, "0")}:${(Math.floor(seconds / 60) % 60).toString().padStart(2, "0")}:${Math.round(seconds % 60).toString().padStart(2, "0")}`;
 
-export type LangKey = keyof typeof langs;
+// export type LangKey = keyof typeof langs;
+export type LangKey = string;
 
-export const languageString = (lang: LangKey) => langs[lang].native.join(", ");
+export const languageString = (lang: LangKey) => languageStringIntl(lang);
+
+const intl = new Intl.DisplayNames(["en"], { type: "language" });
+
+export const languageStringIntl = (lang: string) => lang == "unk" ? "Unknown" : intl.of(lang) ?? "Unknown";
