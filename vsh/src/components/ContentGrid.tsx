@@ -4,6 +4,7 @@ import { ContentItem } from "./Content/types";
 import api from "../context/Jellyfin";
 import { AppMode } from "../context/AppState";
 import { AppState } from "../AppStates";
+import { useInput } from "../hooks";
 
 export type ContentGridProps = {
 	nav_position: number;
@@ -22,71 +23,68 @@ const GRID_WIDTH = ((COLUMNS - 1) * GAP + COLUMNS * WIDTH); // (5 * GAP + 6 * WI
 
 const MARGIN = (1920 - GRID_WIDTH) / 2;
 
+const columns = COLUMNS;
+
 export function ContentGrid(props: ContentGridProps) {
-	const columns = COLUMNS;
-	const { data, nav_position } = props;
+	const { data, nav_position, onNavigate } = props;
 	const state = useContext(AppMode);
-	// Handle keeping onNavigate callback... correct.
-	const onNavigate = useRef(props.onNavigate);
-	onNavigate.current = props.onNavigate;
+	const active = nav_position == 0 && state == AppState.Home;
 	// Normal stuff
 	const [selected, setSelected] = useState(0);
 	// Makes useEffect easier.
 	const data_length = data.length;
-	useEffect(() => {
-		if (nav_position == 0 && state == AppState.Home) {
-			function handler(e: KeyboardEvent) {
-				console.log(e.key);
-				switch (e.key) {
-					case "PadUp":
-					case "ArrowUp":
-						setSelected(current => {
-							if (current < columns) {
-								return current;
-							} else {
-								return Math.max(current - columns, 0);
-							}
-						});
-						break;
-					case "PadDown":
-					case "ArrowDown":
-						setSelected(current => Math.min(current + columns, data_length - 1));
-						break;
-					case "PadLeft":
-					case "ArrowLeft":
-						setSelected(current => Math.max(current - 1, 0));
-						break;
-					case "PadRight":
-					case "ArrowRight":
-						setSelected(current => {
-							if (current == data_length - 1 && (current + 1) % 6 != 0) {
-								if (data_length > columns) {
-									return current - 5;
-								} else {
-									return current;
-								}
-							} else {
-								return Math.min(current + 1, data_length - 1);
-							}
-						});
-						break;
-					case "Enter":
-						onNavigate.current(NavigateAction.Enter, selected);
-						break;
-					case "Backspace":
-					case "Back":
-						onNavigate.current(NavigateAction.Back);
-						break;
-					default:
-						break;
-				}
-			}
-			window.addEventListener("keydown", handler);
-			return () => { window.removeEventListener("keydown", handler); };
+	useInput(active, (button) => {
+		switch (button) {
+			case "Enter":
+				onNavigate(NavigateAction.Enter, selected);
+				break;
 		}
-	}, [data_length, nav_position, selected, onNavigate, state]);
-	const startIndex = Math.max((selected - (columns * 2)) - (selected % columns), 0);
-	const endIndex = Math.min(selected + (columns * 2) + (columns - (selected % columns)), data.length);
+	}, [onNavigate, selected]);
+	useInput(active, (button) => {
+		console.log(button);
+		switch (button) {
+			case "PadUp":
+			case "ArrowUp":
+				setSelected(current => {
+					if (current < columns) {
+						return current;
+					} else {
+						return Math.max(current - columns, 0);
+					}
+				});
+				break;
+			case "PadDown":
+			case "ArrowDown":
+				setSelected(current => Math.min(current + columns, data_length - 1));
+				break;
+			case "PadLeft":
+			case "ArrowLeft":
+				setSelected(current => Math.max(current - 1, 0));
+				break;
+			case "PadRight":
+			case "ArrowRight":
+				setSelected(current => {
+					if (current == data_length - 1 && (current + 1) % 6 != 0) {
+						if (data_length > columns) {
+							return current - 5;
+						} else {
+							return current;
+						}
+					} else {
+						return Math.min(current + 1, data_length - 1);
+					}
+				});
+				break;
+			case "Backspace":
+			case "Back":
+				onNavigate(NavigateAction.Back);
+				break;
+			default:
+				break;
+		}
+	}, [columns, data_length, onNavigate]);
+	const startIndex = Math.max((selected - (columns * 3)) - (selected % columns), 0);
+	const endIndex = Math.min(selected + (columns * 3) + (columns - (selected % columns)), data.length);
 	const selected_row = Math.floor(selected / columns);
 	const last_row = Math.floor((data.length - 1) / columns);
 	return (

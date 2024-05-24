@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "preact/hooks";
 import { ContentItem } from "./Content/types";
 import { AppMode } from "../context/AppState";
 import { AppState } from "../AppStates";
+import { useInput } from "../hooks";
 
 export const TEXT_ITEM_HEIGHT = 56;
 
@@ -27,34 +28,33 @@ export function ContentList(props: ContentListProps) {
 	const [selected, setSelected] = useState(0);
 	// Makes useEffect easier.
 	const h_length = props.data.length;
-	useEffect(() => {
-		if (nav_position == 0 && app_state == AppState.Home) {
-			function handler(e: KeyboardEvent) {
-				console.log(e.key);
-				switch (e.key) {
-					case "PadDown":
-					case "ArrowDown":
-						setSelected(current => Math.min(current + 1, h_length - 1));
-						break;
-					case "PadUp":
-					case "ArrowUp":
-						setSelected(current => Math.max(current - 1, 0));
-						break;
-					case "Enter":
-						onNavigate.current(NavigateAction.Enter, selected);
-						break;
-					case "Backspace":
-					case "Back":
-						onNavigate.current(NavigateAction.Back);
-						break;
-					default:
-						break;
-				}
-			}
-			window.addEventListener("keydown", handler);
-			return () => { window.removeEventListener("keydown", handler); };
+	const active = nav_position == 0 && app_state == AppState.Home;
+	useInput(active, (button) => {
+		switch (button) {
+			case "PadDown":
+			case "ArrowDown":
+				setSelected(current => Math.min(current + 1, h_length - 1));
+				break;
 		}
-	}, [h_length, nav_position, selected, onNavigate, app_state]);
+	}, [h_length]);
+	useInput(active, (button) => {
+		if (button == "Enter") onNavigate.current(NavigateAction.Enter, selected);
+	}, [selected]);
+	useInput(active, (button) => {
+		console.log(button);
+		switch (button) {
+			case "PadUp":
+			case "ArrowUp":
+				setSelected(current => Math.max(current - 1, 0));
+				break;
+			case "Backspace":
+			case "Back":
+				onNavigate.current(NavigateAction.Back);
+				break;
+			default:
+				break;
+		}
+	}, []);
 	return (
 		<div class="content-list text" style={{
 			opacity: nav_position == 0 ? 1 : 0,
