@@ -48,7 +48,7 @@ fn go_to_chapter(mpv: &mut Mpv, chapter: RelativeChapter) -> Result<(), libmpv2:
         RelativeChapter::Previous => {
             let chapter_seek_threshold = mpv.get_property::<f64>("chapter-seek-threshold")?;
 			let jump_prev = || {
-				match chapters.get(current as usize - 1) {
+				match chapters.get((current - 1) as usize) {
 					Some(Chapter { time, .. }) => mpv.command(
 						"seek",
 						&[&time.to_string(), "absolute"],
@@ -68,7 +68,7 @@ fn go_to_chapter(mpv: &mut Mpv, chapter: RelativeChapter) -> Result<(), libmpv2:
 				None => jump_prev(),
 			}
         }
-        RelativeChapter::Next => match chapters.get(current as usize + 1) {
+        RelativeChapter::Next => match chapters.get((current + 1) as usize) { // FIXME: This operation overflows on some files.
             Some(Chapter { time, .. }) => mpv.command("seek", &[&time.to_string(), "absolute"]),
             None => Ok(()),
         },
@@ -104,6 +104,21 @@ pub async fn seek(mode: String, seconds: f64, mpv: State<'_, MpvState>) -> Resul
             .map_err(|e| e.to_string()),
         "absolute" => mpv
             .command("seek", &[&seconds.to_string(), "absolute"])
+            .map_err(|e| e.to_string()),
+        _ => Err("Unrecognised seek type.".into()),
+    });
+    println!("{:?}", ok);
+    return ok;
+}
+
+#[tauri::command]
+pub async fn set_track(track: String, id: String, mpv: State<'_, MpvState>) -> Result<(), String> {
+    let ok = use_mpv_lock(mpv, |mpv| match &*track {
+        "audio" => mpv
+            .set_property("file-local-options/aid", id)
+            .map_err(|e| e.to_string()),
+        "subtitle" => mpv
+            .set_property("file-local-options/sid", id)
             .map_err(|e| e.to_string()),
         _ => Err("Unrecognised seek type.".into()),
     });

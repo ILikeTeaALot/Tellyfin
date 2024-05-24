@@ -19,6 +19,7 @@ serde_repr = "0.1"
 # To get the HWND to pass to MPV. version "0.6" because it's what tauri uses
 raw-window-handle = "0.6"
 libmpv2 = "3.0.0"
+libmpv2-sys = "*"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

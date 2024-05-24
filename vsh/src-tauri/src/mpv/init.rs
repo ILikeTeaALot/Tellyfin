@@ -28,8 +28,9 @@ pub fn init_mpv(app: &App) -> Result<(), Box<dyn Error>> {
 		mpv.set_property("osc", "no")?;
 		mpv.set_property("force-window", "immediate")?;
 		// OSC/OSD
-		mpv.set_property("osd-bar-align-y", "0.95")?;
-		mpv.set_property("osd-bar-w", "90")?;
+		mpv.set_property("osd-bar", "no")?;
+		/* mpv.set_property("osd-bar-align-y", "0.95")?;
+		mpv.set_property("osd-bar-w", "90")?; */
 		// Subtitles
 		mpv.set_property("slang", "en")?; // TODO :: Read from config file
 		mpv.set_property("subs-with-matching-audio", "forced")?; // TODO :: Read from config file

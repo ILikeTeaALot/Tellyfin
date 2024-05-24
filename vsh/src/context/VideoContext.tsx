@@ -22,6 +22,15 @@ export enum VideoRepeatType {
 	AB = 2,
 }
 
+export type TrackInfo = {
+	default: boolean;
+	forced: boolean;
+	selected: boolean;
+	name: string;
+	title: string | null;
+	track: number;
+}
+
 export type VideoContextType = {
 	position: {
 		time: {
@@ -43,6 +52,7 @@ export type VideoContextType = {
 		codec: string;
 		format: string;
 	};
+	tracks: Array<TrackInfo>;
 	status: {
 		playback_status: PlaybackStatus;
 		shuffle: boolean;
@@ -68,6 +78,7 @@ export const defaultVideoState: VideoContextType = {
 		chapter: 0,
 	},
 	title: null,
+	tracks: [],
 	audio: {
 		codec: null,
 		channels: null,

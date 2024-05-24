@@ -3,9 +3,11 @@
 
 mod mpv;
 mod states;
+mod window;
 use libmpv2::Mpv;
 use mpv::{control::*, init::*, status::*};
 use states::JellyfinId;
+use window::init_window;
 
 use std::sync::Mutex;
 use std::sync::Arc;
@@ -29,10 +31,12 @@ fn main() {
 			init_mpv(app).inspect_err(|e| {
 				eprintln!("Error occurred in MPV initialisation: {}", e)
 			})?;
+			init_window(app)?;
+			setup_status_event(app)?;
 			Ok(())
 		})
 		.plugin(tauri_plugin_shell::init())
-		.invoke_handler(tauri::generate_handler![greet, transport_command, seek, play_file, mpv_status])
+		.invoke_handler(tauri::generate_handler![greet, transport_command, seek, play_file, set_track, mpv_status])
 		.run(tauri::generate_context!())
 		.expect("error while running tauri application");
 }
