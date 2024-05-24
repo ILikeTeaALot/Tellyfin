@@ -1,3 +1,13 @@
+# Tellyfin
+
+The goal for this is a PS3-style UI for films, TV shows, music, photos, emulators, and Steam (social features possibly included too... if possible).
+
+## License Note
+
+At the time of writing I have not settled on a license.
+
+My intent for this is that it be free software, I'm just not 100% on specifically a GPL-style license.
+
 ## Current Status
 
 At present, playback and playback-control of media on the local filesystem works, selected by browsing through a local Jellyfin server.
