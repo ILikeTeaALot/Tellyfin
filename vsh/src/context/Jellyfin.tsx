@@ -3,6 +3,8 @@ import * as jf from "@jellyfin/sdk/lib/utils/api";
 
 import { deviceInfo, server_address, user } from "./jellyfin-settings.json";
 
+export * as jellyfin from "@jellyfin/sdk/lib/utils/api";
+
 const jellyfin = new Jellyfin({
 	clientInfo: {
 		name: 'XMB-X',
