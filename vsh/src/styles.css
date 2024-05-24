@@ -40,9 +40,20 @@
 
 	--text-colour: #FFF;
 	
-	--timing-function-decelerate: ease-out;
-	--timing-function-accelerate: ease-in;
-	--timing-function-ease: ease-in-out;
+	/* --timing-function-decelerate: cubic-bezier(0.61, 1, 0.88, 1);
+	--timing-function-accelerate: cubic-bezier(0.12, 0, 0.39, 0);
+	--timing-function-ease: cubic-bezier(0.37, 0, 0.63, 1); */
+	/* --timing-function-decelerate: ease-out; */
+	/* --timing-function-accelerate: ease-in; */
+	/* --timing-function-ease: ease-in-out; */
+	--timing-function-decelerate: cubic-bezier(0.5, 1, 0.89, 1); /* Ease-Out Quadratic */
+	/* --timing-function-decelerate: cubic-bezier(0, 0.55, 0.45, 1); */ /* Ease-Out Circle */
+	--timing-function-accelerate: cubic-bezier(0.11, 0, 0.5, 0); /* Ease-In Quadratic */
+	/* --timing-function-accelerate: cubic-bezier(0.55, 0, 1, 0.45); */ /* Ease-In Circle */
+	/* --timing-function-accelerate: cubic-bezier(0.7, 0, 0.84, 0); */ /* Ease-In Exponential */
+	/* --timing-function-ease: cubic-bezier(0.45, 0, 0.55, 1); */ /* Ease-In-Out Quadratic */
+	/* --timing-function-ease: cubic-bezier(0.5, 1, 0.89, 1); */ /* Ease-Out Quadratic */
+	--timing-function-ease: cubic-bezier(0, 0.55, 0.45, 1); /* Ease-Out Circle */
 	--transition-short: 150ms;
 	--standard-duration: 300ms;
 	--transition-standard: var(--standard-duration);
@@ -234,7 +245,8 @@ body {
 
 .series-info .episode-container {
 	animation: var(--fade-in);
-	animation-delay: var(--standard-duration);
+	animation-fill-mode: backwards;
+	animation-delay: var(--transition-short);
 	width: 400px;
 	position: absolute;
 	top: 420px;
@@ -291,6 +303,7 @@ body {
 	position: fixed;
 	top: var(--top);
 	left: 80px;
+	right: 80px;
 	transition-duration: var(--transition-standard);
 }
 
@@ -365,4 +378,48 @@ body {
 
 #playback-status-indicator *[stroke*="#"] {
 	stroke: #f6f6f6;
+}
+
+/* Confirmation Prompt */
+.dialog {
+	position: fixed;
+	inset: 0;
+	background:rgba(0, 0, 0, 0.95);
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	transition-duration: var(--transition-standard);
+}
+
+.dialog .content {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 2rem;
+	height: calc(100% - 280px);
+	border-top: 1px solid white;
+	border-bottom: 1px solid white;
+}
+
+.dialog .content .message {
+	display: flex;
+}
+
+.dialog .content .options {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	gap: 200px;
+}
+
+.dialog .content .options .option {
+	scale: 0.825;
+	transition-duration: var(--transition-standard);
+}
+
+.dialog .content .options .option.selected {
+	font-weight: 500;
+	scale: 1;
+	animation: var(--text-glow);
 }
