@@ -13,8 +13,9 @@ export function iconByName(name: string) {
 		case "SubtitleOptions":
 			return "Subtitles";
 		case "AVSettings":
+			return "AV Settings";
 		case "TimeOptions":
-			return null;
+			return "Time Options";
 		case "Display":
 			return "Display";
 		// Transport Controls
@@ -33,6 +34,6 @@ export function iconByName(name: string) {
 		case "Stop":
 			return <StopIcon width="64px" height="32px" />;
 		default:
-			return null;
+			return name;
 	}
 }

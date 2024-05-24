@@ -3,20 +3,21 @@ import { PanelButton } from "./ControlPanelButton";
 import { invoke } from "@tauri-apps/api/core";
 import { refresh_mpv } from "../util/functions";
 
-export type ControlPanelProps = {
+export type ControlPanelProps<Action, Config> = {
 	active: boolean;
-	onAction: (action: string) => void;
+	onAction: (action: Action) => void;
+	options: Array<Config>;
 };
 
-const video_configuration_functions: [string, string][] = [
-	["SceneSearch", "Scene Search"],
-	["GoTo", "Go to time"],
-	["AudioOptions", "Select audio settings"],
-	["SubtitleOptions", "Select subtitle options"],
+const video_configuration_functions = {
+	"SceneSearch": "Scene Search",
+	"GoTo": "Go to time",
+	"AudioOptions": "Select audio settings",
+	"SubtitleOptions": "Select subtitle options",
 	// "AVSettings",
 	// "TimeOptions",
-	["Display", "Show video information on-screen"],
-];
+	"Display": "Show video information on-screen",
+};
 
 const video_transport_functions: [string, string][] = [
 	["PrevChapter", "Jump to previous chapter"],
@@ -34,15 +35,22 @@ const video_transport_functions: [string, string][] = [
 	// "FrameForward",
 ];
 
-const functions = [video_configuration_functions, video_transport_functions];
 
-export function VideoControlPanel(props: ControlPanelProps) {
-	const { active } = props;
+export type VideoFunction = keyof typeof video_configuration_functions;
+
+const getConfigOptions = (options: Array<VideoFunction>) => options.map(key => [key, video_configuration_functions[key]] as [VideoFunction, string]);
+
+export function VideoControlPanel(props: ControlPanelProps<VideoFunction, VideoFunction>) {
+	const { active, options, onAction } = props;
 	// Handle keeping onAction callback... correct.
-	const onAction = useRef(props.onAction);
-	onAction.current = props.onAction;
+	const [configFuncs, setConfigFuncs] = useState(getConfigOptions(options));
+	useEffect(() => setConfigFuncs(getConfigOptions(options)), [options]);
+	const [functions, updateFunctions] = useState([configFuncs, video_transport_functions]);
+	useEffect(() => {
+		updateFunctions([configFuncs, video_transport_functions]);
+	}, [configFuncs]);
 	const [row, setRow] = useState(1);
-	const [selected, setSelected] = useState(2);
+	const [selected, setSelected] = useState(4);
 	useEffect(() => {
 		if (active) {
 			function handler(e: KeyboardEvent) {
@@ -95,12 +103,19 @@ export function VideoControlPanel(props: ControlPanelProps) {
 						});
 						break;
 					case "Enter":
-						const func = functions[row][selected];
+						const func = functions[row][selected][0];
 						if (row == 0) {
-							onAction.current(func[0]);
+							switch (func) {
+								case "SubtitleOptions":
+									invoke("transport_command", { function: func });
+									return;
+								default:
+									onAction(func as VideoFunction);
+									return;
+							}
 						} else if (row == 1) {
 							if (func) {
-								invoke("transport_command", { function: func[0] }).then(() => refresh_mpv());
+								invoke("transport_command", { function: func }).then(() => refresh_mpv());
 								// videoState.stateChanged();
 							}
 						}
@@ -115,18 +130,18 @@ export function VideoControlPanel(props: ControlPanelProps) {
 			window.addEventListener("keydown", handler);
 			return () => { window.removeEventListener("keydown", handler); };
 		}
-	}, [selected, onAction, active, row]);
-	console.log("row:", row, "selected:", selected);
+	}, [selected, onAction, active, row, configFuncs, functions]);
+	// console.log("row:", row, "selected:", selected);
 	return (
 		<div id="video-control-panel" className={active ? "control-panel active" : "control-panel"}>
 			<div className={"button-row"}>
-				{video_configuration_functions.map((action, idx) => (
-					action ? <PanelButton key={idx} active={(selected == idx) && (row == 0)} action={action[0]} /> : null
+				{functions[0].map(([action], idx) => (
+					<PanelButton key={action} active={(selected == idx) && (row == 0)} action={action} />
 				))}
 			</div>
 			<div className={"button-row"}>
-				{video_transport_functions.map(([action], idx) => (
-					<PanelButton key={idx} active={(selected == idx) && (row == 1)} action={action} />
+				{functions[1].map(([action], idx) => (
+					<PanelButton key={action} active={(selected == idx) && (row == 1)} action={action} />
 				))}
 			</div>
 			{functions[row][selected] ? <span>{functions[row][selected]![1]}</span> : null}
