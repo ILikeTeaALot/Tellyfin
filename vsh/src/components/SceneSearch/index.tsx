@@ -1,6 +1,6 @@
 import "./scene-search.css";
 import { InputProps } from "../Input";
-import { useContext, useEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useState } from "preact/hooks";
 import { useInput } from "../../hooks";
 import VideoState, { VideoContextType } from "../../context/VideoContext";
 import { ContentPanel, PanelState } from "../Panel";
@@ -46,24 +46,23 @@ const GAP = 40;
  */
 export function SceneSearch(props: ChapterSelectProps) {
 	// Props
-	const { active, default: _default, onCancel: _cancel, onSubmit: _submit } = props;
+	const { active, default: _default, onCancel: cancel, onSubmit: _submit } = props;
 	// Context
 	const videoState = useContext(VideoState);
 	const chapters = videoState.jellyfin_data?.Chapters ?? [];
+	const position = videoState.position.time.position ?? 0;
 	const duration = videoState.position.time.duration ?? 0;
-	// Refs
-	const submit = useRef(() => _submit(selectedScene));
-	const cancel = useRef(_cancel);
-	cancel.current = _cancel;
 	// Intervals
 	const [intervals, setIntervals] = useState(getIntervals(videoState));
 	useEffect(() => setIntervals(getIntervals(videoState)), [chapters, duration]);
 	// States
 	const [selectedScene, setScene] = useState(_default);
 	const [selectedInterval, setInterval] = useState(0);
-	useEffect(() => setInterval(0), [intervals]);
-	const currentStartPositionTicks = videoState.jellyfin_data?.Chapters?.[selectedScene].StartPositionTicks ?? TICKS_PER_SECOND;
-	if (!intervals[selectedInterval]) {
+	useEffect(() => setInterval(interval => Math.max(Math.min(interval, intervals.length - 1), 0)), [intervals]);
+	// "Constants"
+	const currentStartPositionTicks = videoState.jellyfin_data?.Chapters?.[selectedScene]?.StartPositionTicks ?? 0;
+	if (intervals.length == 0) {
+		cancel();
 		return null;
 	}
 	const interval = intervals[selectedInterval].interval;
@@ -71,35 +70,33 @@ export function SceneSearch(props: ChapterSelectProps) {
 		return null;
 	}
 	// Time
-	const [timeValue, setTime] = useState(0);
-	useEffect(() => setScene(_default), [active]);
+	const [timeValue, setTime] = useState(videoState.position.time.position ?? 0);
+	const [displayTime, setDisplayTime] = useState(timeValue);
+	// Callbacks
+	const submit = useCallback(() => {
+		const seconds = interval == -1 ? (
+			(currentStartPositionTicks ?? -1) / TICKS_PER_SECOND
+		) : timeValue;
+		if (seconds >= 0) _submit(seconds);
+	}, [currentStartPositionTicks, interval, timeValue]);
+	useEffect(() => setTime(position), [active]);
+	useEffect(() => {
+		let id = setTimeout(() => setScene(_default), 500);
+		return () => clearTimeout(id);
+	}, [active]);
 	// Submit
-	submit.current = () => {
-		if (chapters) {
-			const seconds = interval == -1 ? (
-				(currentStartPositionTicks ?? -1) / TICKS_PER_SECOND
-			) : timeValue;
-			if (seconds >= 0) _submit(seconds);
-		}
-	};
 	useEffect(() => {
 		if (interval == -1) {
-			const time = chapters?.[selectedScene].StartPositionTicks;
+			const time = currentStartPositionTicks;
 			if (time || time == 0) {
-				setTime(time / TICKS_PER_SECOND);
+				setDisplayTime(time / TICKS_PER_SECOND);
 			}
+		} else {
+			setDisplayTime(timeValue);
 		}
-	}, [selectedScene, selectedInterval, intervals, chapters]);
+	}, [selectedScene, selectedInterval, interval, timeValue, currentStartPositionTicks]);
 	useInput(active, (button) => {
 		switch (button) {
-			case "PadUp":
-			case "ArrowUp":
-				setInterval(current => Math.min(current + 1, intervals.length - 1));
-				return;
-			case "PadDown":
-			case "ArrowDown":
-				setInterval(current => Math.max(current - 1, 0));
-				return;
 			case "PadLeft":
 			case "ArrowLeft":
 				if (interval == -1) {
@@ -116,14 +113,30 @@ export function SceneSearch(props: ChapterSelectProps) {
 					setTime(current => Math.min(current + interval, duration));
 				}
 				return;
+		}
+	}, [interval, chapters, duration]);
+	useInput(active, (button) => {
+		switch (button) {
+			case "PadUp":
+			case "ArrowUp":
+				setInterval(current => Math.min(current + 1, intervals.length - 1));
+				return;
+			case "PadDown":
+			case "ArrowDown":
+				setInterval(current => Math.max(current - 1, 0));
+				return;
+		}
+	}, [intervals]);
+	useInput(active, (button) => {
+		switch (button) {
 			case "Enter":
-				submit.current();
+				submit();
 				return;
 			case "Back":
 			case "Backspace":
-				cancel.current();
+				cancel();
 		}
-	}, [intervals, selectedInterval, chapters]);
+	}, [submit, cancel]);
 	if (!videoState.position.time.duration) return null;
 	if (!videoState.jellyfin_data && !videoState.chapters) return null;
 	if (videoState.jellyfin_data?.Chapters) return (
@@ -140,7 +153,6 @@ export function SceneSearch(props: ChapterSelectProps) {
 			</div>
 			<div class="scenes" style={{
 				opacity: interval == -1 ? 1 : 0,
-				scale: interval == -1 ? "1 1" : "1 0",
 				transformOrigin: "top center",
 				position: "absolute",
 				top: 20 + 60 + GAP
@@ -167,12 +179,12 @@ export function SceneSearch(props: ChapterSelectProps) {
 				display: "flex",
 				opacity: interval == -1 ? 1 : 0,
 				position: "absolute",
-				// top: 20 + 60 + GAP + 180 + GAP,
-				bottom: GAP + 80 + GAP
+				top: 20 + 60 + GAP + 180 + GAP,
+				transformOrigin: "bottom center",
 				// translate: interval == -1 ? "0px" : `0px -${GAP + 180 + GAP}px`,
 			}}>{videoState.jellyfin_data.Chapters[selectedScene]?.Name ?? `Scene ${selectedScene + 1}`}</span>
 			<div style={{ display: "flex", right: 100, bottom: 80, marginLeft: "auto", position: "absolute" }}>
-				<Timeline mini position={timeValue} duration={videoState.position.time.duration} />
+				<Timeline mini position={displayTime} duration={videoState.position.time.duration} />
 			</div>
 		</div>
 	);
@@ -197,10 +209,10 @@ function getIntervals(videoState: VideoContextType): ChapterInterval[] {
 	if (videoState.position.time.duration > 60 * 5) {
 		intervals.push({ interval: 60, label: "1 Minute" });
 	}
-	if (videoState.position.time.duration > 60 * 30) {
+	if (videoState.position.time.duration > 60 * 20) {
 		intervals.push({ interval: 5 * 60, label: "5 Minutes" });
 	}
-	if (videoState.position.time.duration > 60 * 30) {
+	if (videoState.position.time.duration > 60 * 40) {
 		intervals.push({ interval: 10 * 60, label: "10 Minutes" });
 	}
 	// 1 Hour
