@@ -7,18 +7,18 @@ use tauri::{App, Manager};
 use crate::MpvState;
 
 pub fn init_mpv(app: &App) -> Result<(), Box<dyn Error>> {
-    let window = app.get_webview_window("main").unwrap();
+	let window = app.get_webview_window("main").unwrap();
 	let handle = window.window_handle()?;
 	let handle = match handle.as_raw() {
 		// RawWindowHandle::UiKit(handle) => { handle.ui_window as u32 }
-		RawWindowHandle::AppKit(handle) => { handle.ns_view.as_ptr() as u32 }
-		RawWindowHandle::Xlib(handle) => { handle.window as u32 }
-		RawWindowHandle::Xcb(handle) => { handle.window.get() as u32 }
+		RawWindowHandle::AppKit(handle) => handle.ns_view.as_ptr() as u32,
+		RawWindowHandle::Xlib(handle) => handle.window as u32,
+		RawWindowHandle::Xcb(handle) => handle.window.get() as u32,
 		// RawWindowHandle::Wayland(_) => {}
 		// RawWindowHandle::Drm(_) => {}
 		// RawWindowHandle::Gbm(_) => {}
-		RawWindowHandle::Win32(handle) => { handle.hwnd.get() as u32 }
-		_ => unimplemented!("Unsupported platform!")
+		RawWindowHandle::Win32(handle) => handle.hwnd.get() as u32,
+		_ => unimplemented!("Unsupported platform!"),
 	};
 	println!("About to load MPV...");
 	let mpv = Mpv::with_initializer(|mpv| {
@@ -65,8 +65,5 @@ pub fn init_mpv(app: &App) -> Result<(), Box<dyn Error>> {
 
 		println!("MPV Spawn Process complete!");
 	}
-
-	window.open_devtools();
-
 	Ok(())
 }

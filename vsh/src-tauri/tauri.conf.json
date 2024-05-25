@@ -1,7 +1,7 @@
 {
 	"productName": "vsh",
 	"version": "0.0.0",
-	"identifier": "com.tauri.dev",
+	"identifier": "org.tellyfin.vsh",
 	"build": {
 		"beforeDevCommand": "yarn dev",
 		"devUrl": "http://localhost:1420",
