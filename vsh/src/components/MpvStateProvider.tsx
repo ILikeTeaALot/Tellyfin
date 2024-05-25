@@ -1,12 +1,13 @@
-import * as jellyfin from "@jellyfin/sdk/lib/utils/api";
 import { ComponentChildren, createContext } from "preact";
 import VideoState, { PlaybackStatus, VideoContextType, defaultVideoState } from "../context/VideoContext";
 import { invoke } from "@tauri-apps/api/core";
 import useSWR, { type KeyedMutator } from "swr";
 import { useEffect, useState } from "preact/hooks";
-import api, { auth } from "../context/Jellyfin";
+import api, { auth, jellyfin } from "../context/Jellyfin";
 import { TICKS_PER_SECOND } from "../util/functions";
 import { listen, type Event } from "@tauri-apps/api/event";
+import { jellyfinUpdatePosition } from "../functions/update";
+import { jellyfinStopped } from "../functions/stopped";
 
 type MpvEvent = Object & ("Shutdown" | "GetPropertyReply" | "StartFile" | { "EndFile"?: number; "ClientMessage"?: Array<string>; "PropertyChange"?: { name: string, change: any; reply_userdata: number; }; } | "FileLoaded" | "VideoReconfig" | "AudioReconfig" | "Seek" | "PlaybackRestart" | "QueueOverflow" | "Deprecated");
 
@@ -32,13 +33,18 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					jellyfin.getItemsApi(api).getItemsByUserId({
 						ids: [data.jellyfin_id],
 						userId: auth.User!.Id!,
-						fields: ["ItemCounts", "PrimaryImageAspectRatio", "BasicSyncInfo", "MediaSourceCount", "Overview", "Path", "SpecialEpisodeNumbers", "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
+						fields: [/* "ItemCounts", "PrimaryImageAspectRatio", */ "BasicSyncInfo", "MediaSourceCount", "Overview", "Path", /* "SpecialEpisodeNumbers", */ "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
 					}).then(value => {
 						if (value.data.Items) {
 							let jellyfin_data = value.data.Items[0];
 							setVideoState(current => ({ ...current, jellyfin_data }));
 						}
 					});
+					if (data.status.playback_status == PlaybackStatus.Stopped) {
+						jellyfinStopped(data.jellyfin_id);
+					} else {
+						jellyfinUpdatePosition(data.jellyfin_id, data.position.time.position, data.status.playback_status == PlaybackStatus.Paused);
+					}
 				}
 			}
 			setVideoState(current => ({
@@ -76,15 +82,24 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 				}
 			} else {
 				if (payload["EndFile"]) {
-					mutate(current => current ? {
-						...current, status: { ...current.status, playback_status: PlaybackStatus.Stopped }
-					} : current);
+					mutate(current => {
+						if (current) {
+							if (current.jellyfin_id) {
+								jellyfinStopped(current.jellyfin_id);
+							}
+							return {
+								...current, status: { ...current.status, playback_status: PlaybackStatus.Stopped }
+							};
+						} else {
+							return current;
+						}
+					});
 				} else if (payload["PropertyChange"]) {
 					const change = payload["PropertyChange"].change;
 					switch (payload["PropertyChange"].name) {
 						case "pause":
 							mutate(current => current ? {
-								...current, status: {...current.status, playback_status: (change as boolean) ? PlaybackStatus.Paused : PlaybackStatus.Playing }
+								...current, status: { ...current.status, playback_status: (change as boolean) ? PlaybackStatus.Paused : PlaybackStatus.Playing }
 							} : current);
 							break;
 						default:

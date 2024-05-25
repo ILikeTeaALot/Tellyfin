@@ -12,6 +12,7 @@ import { displayRunningTime } from "../../../util/functions";
 import { MediaStreamInfo } from "../../../components/Jellyfin/MediaStreamInfo";
 import { VideoContextType } from "../../../context/VideoContext";
 import { useInput } from "../../../hooks";
+import { playFile } from "../../../functions/play";
 
 const WIDTH = 400;
 // const HEIGHT = 225;
@@ -49,14 +50,7 @@ export function FilmDetail(props: JellyfinScreenProps) {
 			case "Enter":
 				if (info && row == Row.Episodes) {
 					if (info.Path) {
-						invoke("play_file", { file: info.Path, jellyfinId: info.Id }).then(() => {
-							invoke("transport_command", { function: "Play" });
-							mutate<VideoContextType>("mpv_state", (current) => {
-								if (current) {
-									return { ...current, jellyfin_data: info ?? null };
-								}
-							});
-						});
+						playFile(info.Path, info.Id);
 					}
 				}
 				break;

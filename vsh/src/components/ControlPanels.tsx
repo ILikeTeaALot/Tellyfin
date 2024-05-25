@@ -42,7 +42,7 @@ const getConfigOptions = (options: Array<VideoFunction>) => options.map(key => [
 
 export function VideoControlPanel(props: ControlPanelProps<VideoFunction, VideoFunction>) {
 	const { active, options, onAction } = props;
-	// Handle keeping onAction callback... correct.
+	
 	const [configFuncs, setConfigFuncs] = useState(getConfigOptions(options));
 	useEffect(() => setConfigFuncs(getConfigOptions(options)), [options]);
 	const [functions, updateFunctions] = useState([configFuncs, video_transport_functions]);
