@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import "./clock.css";
-import { useRef, useState, useEffect } from "preact/hooks";
+import { useRef, useState, useEffect, useCallback } from "preact/hooks";
 
 export interface ClockProps {
 	spin?: boolean;
@@ -12,8 +12,7 @@ export function SpinnerClock(props: ClockProps) {
 	const frame = useRef<number | undefined>();
 	const spin_frame = useRef<number>(-1);
 	const last = useRef(performance.now());
-	const [hAngle, setHAngle] = useState(0);
-	const [mAngle, setMAngle] = useState(0);
+	const [angle, setAngle] = useState({ hour: 0, minute: 0 });
 	// const hHand = useRef<HTMLDivElement>(null);
 	// const mHand = useRef<HTMLDivElement>(null);
 
@@ -27,9 +26,8 @@ export function SpinnerClock(props: ClockProps) {
 			const now = performance.now();
 			const date_time = /* time || */ DateTime.local();
 			const minutes = date_time.minute + (date_time.second / 60) /* + (date_time.getMilliseconds() / 1000) / 60 */;
-			setMAngle(6 * minutes);
 			const hours = (date_time.hour % 12) + minutes / 60;
-			setHAngle(30 * hours);
+			setAngle({ hour: (30 * hours) + 360, minute: (6 * minutes) + 360 });
 			last.current = now;
 		};
 		frame.current = window.setInterval(animate, 100);
@@ -37,58 +35,55 @@ export function SpinnerClock(props: ClockProps) {
 	}, [animating]);
 
 	useEffect(() => {
-		if (animating) {
+		if (animating && !transition) {
 			let start_ms = performance.now();
 			let last_ms = performance.now();
 			const animate = () => {
 				const now_ms = performance.now();
 				const delta_ms = now_ms - last_ms;
 				const delta_seconds = delta_ms / 1000;
+				const newAngle = (prev_angle: number) => ((prev_angle + (360 * (delta_seconds * 0.75))) % 360);
 				console.log("delta (ms):", delta_ms);
 				console.log("delta (s):", delta_seconds);
-				const startDelta_ms = now_ms - start_ms;
-				if (startDelta_ms < 320) {
+				// const startDelta_ms = now_ms - start_ms;
+				/* if (startDelta_ms < 520) {
 					// Should hopefully be "transitioning" at this time
 				} else {
-					const newAngle = (prev_angle: number) => ((prev_angle + (360 * delta_seconds)) % 360) - 360;
-					setMAngle(newAngle);
-					setHAngle(newAngle);
-				}
-				if (startDelta_ms > 280) {
-					setTransitionEnabled(false);
-				}
+				} */
+				setAngle(prev => ({ hour: newAngle(prev.hour), minute: newAngle(prev.hour) }));
 				// Prepare for next run
 				last_ms = now_ms;
 				spin_frame.current = requestAnimationFrame(animate);
 			};
 			spin_frame.current = requestAnimationFrame(animate);
+			setAngle(prev => ({ hour: (prev.hour + 4.5) % 360, minute: (prev.hour + 4.5 /* (360 * 0.0125) */ % 360) }));
 			return () => cancelAnimationFrame(spin_frame.current);
 		}
-	}, [animating]);
+	}, [animating, transition]);
 
 	useEffect(() => {
 		if (spin) {
 			setTransitionEnabled(true);
 			setAnimationState(true);
-			setMAngle(360);
-			setHAngle(360);
+			setAngle({ hour: 720, minute: 720 });
 		} else {
 			setTimeout(() => {
 				setAnimationState(false);
-				setTransitionEnabled(true);
-			}, 600);
+			}, 800);
 		}
 	}, [spin]);
 
-	const transitionDuration = transition ? "var(--transition-standard)" : "0ms";
+	const disableTransition = useCallback(() => setTransitionEnabled(false), []);
+
+	const transitionDuration = transition ? "750ms" : "0ms";
 	return (
 		<div className={animating ? "clock spinner" : "clock"}>
 			<div /* ref={mHand} */ className="hand m" id="m-hand" style={{
-				transform: `rotate(${(mAngle - 180).toFixed(4)}deg)`,
+				transform: `rotate(${(angle.minute - 180).toFixed(4)}deg)`,
 				transitionDuration,
-			}} />
+			}} onTransitionEnd={disableTransition} />
 			<div /* ref={hHand} */ className="hand h" id="h-hand" style={{
-				transform: `rotate(${(hAngle - 180).toFixed(4)}deg)`,
+				transform: `rotate(${(angle.hour - 180).toFixed(4)}deg)`,
 				transitionDuration,
 			}} />
 		</div>

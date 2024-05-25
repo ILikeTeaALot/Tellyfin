@@ -42,12 +42,11 @@
 	transform-origin: var(--border-thickness) var(--border-thickness);
 	translate: calc(0px - var(--border-thickness) * 2) calc(0px - var(--border-thickness) * 2);
 
-	transition-duration: var(--transition-long);
-	transition-timing-function: var(--timing-function-decelerate);
+	transition-timing-function: cubic-bezier(0.61, 1, 0.88, 1); /* Sine Out */
 }
 
 .clock.spinner .hand {
-	transition-timing-function: var(--timing-function-accelerate);
+	transition-timing-function: cubic-bezier(0.12, 0, 0.39, 0); /* Sine In */
 }
 
 .clock .m {
