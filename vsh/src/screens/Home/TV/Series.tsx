@@ -38,10 +38,10 @@ export function TvSeries(props: JellyfinScreenProps) {
 	// Props
 	const { active: _active, nav_position, onNavigate } = props;
 	const [nextUpSelected, setNextUpSelected] = useState(false);
-	const { data: nextUp, isLoading: loadingNextUp } = useSWR(`next-up-${props.data.Id}`, () => getNextUp(props.data.Id!));
-	const { data: seasons, /* isLoading: seasonsLoading */ } = useSWR(`seasons-${props.data.Id}`, () => getSeasons(props.data.Id!));
+	const { data: nextUp, isLoading: loadingNextUp } = useSWR(`next-up-${props.data.Id}`, () => getNextUp(props.data.Id!), { revalidateOnMount: true });
+	const { data: seasons, /* isLoading: seasonsLoading */ } = useSWR(`seasons-${props.data.Id}`, () => getSeasons(props.data.Id!), { keepPreviousData: true });
 	const season_count = seasons?.length ?? 0;
-	const { data: episodes, /* isLoading: episodesLoading, */ mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!));
+	const { data: episodes, /* isLoading: episodesLoading, */ mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!), {keepPreviousData: true});
 	const [tabRowX, setTabRowX] = useState(0);
 	const [selected, setSelected] = useState({ season: 0, episode: 0 });
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -78,10 +78,11 @@ export function TvSeries(props: JellyfinScreenProps) {
 		if (!nextUpSelected && nextUp) {
 			if (nextUp.length == 1) {
 				setSelected(({ season, episode }) => {
-					const index = episodes?.findIndex(episode => episode.Id == nextUp[0].Id) ?? -1;
-					if (index > -1) {
+					const e_index = episodes?.findIndex(episode => episode.Id == nextUp[0].Id) ?? -1;
+					const s_index = seasons?.findIndex(season => season.Id == nextUp[0].SeasonId) ?? -1;
+					if (e_index > -1) {
 						setNextUpSelected(true);
-						return { season, episode: index ?? episode };
+						return { season: s_index > -1 ? s_index : season, episode: e_index ?? episode };
 					} else {
 						return { season, episode };
 					}
@@ -90,7 +91,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 				setNextUpSelected(true);
 			}
 		}
-	}, [nextUpSelected, nextUp, loadingNextUp, episodes]);
+	}, [nextUpSelected, nextUp, loadingNextUp, episodes, seasons]);
 	useInput(active, (button) => {
 		switch (button) {
 			case "Enter":
@@ -178,10 +179,6 @@ export function TvSeries(props: JellyfinScreenProps) {
 			case "ArrowDown":
 				setRow(row => row == Row.Seasons ? Row.Episodes : Row.Overview);
 				break;
-			case "Y":
-			case "t":
-				setMenuOpen(v => !v);
-				break;
 		}
 	}, []);
 	useInput(active && row == Row.Seasons, (button) => {
@@ -198,6 +195,10 @@ export function TvSeries(props: JellyfinScreenProps) {
 	}, [jumpSeasonLeft, jumpSeasonRight]);
 	useInput(active && row == Row.Episodes, (button) => {
 		switch (button) {
+			case "Y":
+			case "t":
+				setMenuOpen(v => !v);
+				break;
 			case "PadRight":
 			case "ArrowRight":
 				if (seasons && episodes) {
@@ -377,6 +378,7 @@ async function getSeasons(seriesId: Id) {
 	let { data } = await jellyfin.getTvShowsApi(api).getSeasons({
 		seriesId,
 		userId: auth.User!.Id!,
+		enableImages: true,
 		fields: ["ItemCounts", "PrimaryImageAspectRatio", "BasicSyncInfo", "MediaSourceCount", /* */ "ChildCount", "EnableMediaSourceDisplay"],
 	});
 	// console.log(data);
