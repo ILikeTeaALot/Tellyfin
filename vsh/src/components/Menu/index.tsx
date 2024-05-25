@@ -24,27 +24,32 @@ export type MenuProps<T> = {
 	onCancel: () => void;
 };
 
-const SelectionContext = createContext<(id: Id) => void>(() => { });
-
+/**
+ * In order for an `onSubmit` callback to be fired, an item must have an asociated value. However, this behaviour is liable to change.
+ * 
+ * @param props 
+ * @returns Menu Component
+ */
 export function Menu<T>(props: MenuProps<T>) {
 	const { active, default_item, items, onSubmit, onCancel } = props;
 
-	const [selected, setSelected] = useState(default_item ?? 0);
-	const [selectedId, setSelectedId] = useState<string>(items[selected].id);
 
-	const updateSelected = useCallback((id: Id) => {
-		setSelectedId(id);
-	}, []);
 
-	const submit = useCallback((value?: T) => {
-		if (value) onSubmit(selectedId, value);
-	}, [selectedId]);
+	const submit = useCallback((action: Id, value?: T) => {
+		if (value) onSubmit(action, value);
+	}, [onSubmit]);
+
+	useInput(active, (button) => {
+		switch (button) {
+			case "t":
+			case "Y":
+				onCancel();
+		}
+	}, [onCancel]);
 
 	return (
 		<div class="menu-container">
-			<SelectionContext.Provider value={updateSelected}>
-				<InnerMenu active={active} first items={items} onCancel={onCancel} onSubmit={submit} />
-			</SelectionContext.Provider>
+			<InnerMenu active={active} first items={items} onCancel={onCancel} onSubmit={submit} />
 		</div>
 	);
 }
@@ -55,7 +60,7 @@ type InnerMenuProps<T> = {
 	default_item?: number;
 	items: Array<XBMenuItem<T>>;
 	onCancel: () => void;
-	onSubmit: (value?: T) => void;
+	onSubmit: (action: Id, value?: T) => void;
 };
 
 const MENU_ITEM_HEIGHT = 28;
@@ -67,8 +72,6 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 
 	const item_count = items.length;
 
-	const setSelectedId = useContext(SelectionContext);
-
 	const [selected, setSelected] = useState(default_item);
 	const [submenuActive, setSubmenuActive] = useState(false);
 
@@ -76,17 +79,7 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 
 	useEffect(() => {
 		if (!active) setSubmenuActive(false);
-	}, [active])
-
-	useEffect(() => {
-		if (!submenuActive) {
-			setSelectedId(items[selected].id);
-		}
-	}, [active, submenuActive, items, selected]);
-
-	useEffect(() => {
-		setSelectedId(items[selected].id);
-	}, [items, selected]);
+	}, [active]);
 
 	useInput(active && !submenuActive, (button) => {
 		switch (button) {
@@ -104,7 +97,7 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 				onCancel();
 				break;
 		}
-	}, [onCancel])
+	}, [onCancel]);
 
 	const hasSubmenu = "submenu" in items[selected];
 
@@ -118,7 +111,7 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 	}, []);
 
 	useInput(active && !hasSubmenu, (button) => {
-		if (button == "Enter") onSubmit(items[selected].value);
+		if (button == "Enter") onSubmit(items[selected].id, items[selected].value);
 	}, [items, selected]);
 
 	useInput(active && !submenuActive, (button) => {
