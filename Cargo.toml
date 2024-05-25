@@ -3,4 +3,5 @@ members = [
 	# "bootstrap",
 	"vsh/src-tauri",
 ]
+exclude = ["bootstrap"]
 resolver = "2"
