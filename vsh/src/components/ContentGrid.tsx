@@ -1,10 +1,11 @@
-import { useRef, useState, useEffect, useContext } from "preact/hooks";
+import { useState, useContext, useMemo, useCallback } from "preact/hooks";
 import { NavigateAction } from "./ContentList";
-import { ContentItem } from "./Content/types";
-import api from "../context/Jellyfin";
+import { ContentItem, type Id } from "./Content/types";
+import api, { auth, jellyfin } from "../context/Jellyfin";
 import { AppMode } from "../context/AppState";
 import { AppState } from "../AppStates";
 import { useInput } from "../hooks";
+import { Menu } from "./Menu";
 
 export type ContentGridProps = {
 	nav_position: number;
@@ -31,16 +32,25 @@ export function ContentGrid(props: ContentGridProps) {
 	const active = nav_position == 0 && state == AppState.Home;
 	// Normal stuff
 	const [selected, setSelected] = useState(0);
+	const [menuOpen, setMenuOpen] = useState(false);
 	// Makes useEffect easier.
 	const data_length = data.length;
 	useInput(active, (button) => {
+		switch (button) {
+			case "Y":
+			case "t":
+				setMenuOpen(v => !v);
+				break;
+		}
+	}, []);
+	useInput(active && !menuOpen, (button) => {
 		switch (button) {
 			case "Enter":
 				onNavigate(NavigateAction.Enter, selected);
 				break;
 		}
 	}, [onNavigate, selected]);
-	useInput(active, (button) => {
+	useInput(active && !menuOpen, (button) => {
 		console.log(button);
 		switch (button) {
 			case "PadUp":
@@ -83,6 +93,46 @@ export function ContentGrid(props: ContentGridProps) {
 				break;
 		}
 	}, [columns, data_length, onNavigate]);
+	const menu_submit = useCallback((action: string, id: Id) => {
+		console.log("action:", action, "id", id);
+		switch (action) {
+			case "mark_watched":
+				jellyfin.getPlaystateApi(api).markPlayedItem({
+					userId: auth.User!.Id!,
+					itemId: id,
+				}).then(() => {
+					console.log("Hopefully marked as watched?");
+				});
+				break;
+			case "mark_unwatched":
+				jellyfin.getPlaystateApi(api).markUnplayedItem({
+					userId: auth.User!.Id!,
+					itemId: id,
+				}).then(() => {
+					console.log("Hopefully marked as unwatched?");
+				});
+				break;
+		}
+		setMenuOpen(false);
+	}, []);
+	const menu_cancel = useCallback(() => setMenuOpen(false), []);
+	const menu_content = useMemo(() => {
+		const jellyfin_data = data[selected].jellyfin_data;
+		if (jellyfin_data) {
+			const item = jellyfin_data;
+			const id = item.Id!;
+			const isWatched = item.UserData?.Played ?? false;
+			return [
+				{
+					label: isWatched ? "Mark as unwatched" : "Mark as watched",
+					id: isWatched ? "mark_unwatched" : "mark_watched",
+					value: id,
+				},
+			];
+		} else {
+			return [];
+		}
+	}, []);
 	const startIndex = Math.max((selected - (columns * 3)) - (selected % columns), 0);
 	const endIndex = Math.min(selected + (columns * 3) + (columns - (selected % columns)), data.length);
 	const selected_row = Math.floor(selected / columns);
@@ -139,6 +189,7 @@ export function ContentGrid(props: ContentGridProps) {
 					</div>
 				);
 			})}
+			<Menu active={menuOpen} items={menu_content} onSubmit={menu_submit} onCancel={menu_cancel} />
 		</div>
 	);
 }
