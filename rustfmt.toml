@@ -1,0 +1,3 @@
+imports_layout = "HorizontalVertical"
+hard_tabs = true
+edition = "2021"
