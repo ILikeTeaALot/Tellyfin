@@ -1,11 +1,11 @@
 import "./scene-search.css";
 import { InputProps } from "../Input";
-import { useCallback, useContext, useEffect, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useMemo, useState } from "preact/hooks";
 import { useInput } from "../../hooks";
-import VideoState, { VideoContextType } from "../../context/VideoContext";
+import VideoState from "../../context/VideoContext";
 import { ContentPanel, PanelState } from "../Panel";
 import api from "../../context/Jellyfin";
-import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
+import { BaseItemDto, type ChapterInfo } from "@jellyfin/sdk/lib/generated-client/models";
 import { TICKS_PER_SECOND } from "../../util/functions";
 import { Timeline } from "../Timeline";
 
@@ -49,26 +49,19 @@ export function SceneSearch(props: ChapterSelectProps) {
 	const { active, default: _default, onCancel: cancel, onSubmit: _submit } = props;
 	// Context
 	const videoState = useContext(VideoState);
-	const chapters = videoState.jellyfin_data?.Chapters ?? [];
+	const chapters = useMemo(() => videoState.jellyfin_data?.Chapters ?? [], [videoState.jellyfin_data?.Chapters]);
 	const position = videoState.position.time.position ?? 0;
 	const duration = videoState.position.time.duration ?? 0;
 	// Intervals
-	const [intervals, setIntervals] = useState(getIntervals(videoState));
-	useEffect(() => setIntervals(getIntervals(videoState)), [chapters, duration]);
+	const [intervals, setIntervals] = useState(getIntervals(chapters, duration));
+	useEffect(() => setIntervals(getIntervals(chapters, duration)), [chapters, duration]);
 	// States
 	const [selectedScene, setScene] = useState(_default);
 	const [selectedInterval, setInterval] = useState(0);
 	useEffect(() => setInterval(interval => Math.max(Math.min(interval, intervals.length - 1), 0)), [intervals]);
 	// "Constants"
 	const currentStartPositionTicks = videoState.jellyfin_data?.Chapters?.[selectedScene]?.StartPositionTicks ?? 0;
-	if (intervals.length == 0) {
-		cancel();
-		return null;
-	}
-	const interval = intervals[selectedInterval].interval;
-	if (typeof interval == "undefined") {
-		return null;
-	}
+	const interval: number | undefined = intervals[selectedInterval]?.interval;
 	// Time
 	const [timeValue, setTime] = useState(videoState.position.time.position ?? 0);
 	const [displayTime, setDisplayTime] = useState(timeValue);
@@ -78,11 +71,15 @@ export function SceneSearch(props: ChapterSelectProps) {
 			(currentStartPositionTicks ?? -1) / TICKS_PER_SECOND
 		) : timeValue;
 		if (seconds >= 0) _submit(seconds);
-	}, [currentStartPositionTicks, interval, timeValue]);
-	useEffect(() => setTime(position), [active]);
+	}, [_submit, currentStartPositionTicks, interval, timeValue]);
+	// `position` changes every ~10 seconds when the video is player. We don't want `time` to ever be changed outside of user control.
+	useEffect(() => setTime(position), [active]); // eslint-disable-line react-hooks/exhaustive-deps
+	/* eslint-disable react-hooks/exhaustive-deps */
 	useEffect(() => {
-		let id = setTimeout(() => setScene(_default), 500);
-		return () => clearTimeout(id);
+		if (!active) {
+			let id = setTimeout(() => setScene(_default), 500);
+			return () => clearTimeout(id);
+		}
 	}, [active]);
 	// Submit
 	useEffect(() => {
@@ -137,6 +134,13 @@ export function SceneSearch(props: ChapterSelectProps) {
 				cancel();
 		}
 	}, [submit, cancel]);
+	if (intervals.length == 0) {
+		cancel();
+		return null;
+	}
+	if (typeof interval == "undefined") {
+		return null;
+	}
 	if (!videoState.position.time.duration) return null;
 	if (!videoState.jellyfin_data && !videoState.chapters) return null;
 	if (videoState.jellyfin_data?.Chapters) return (
@@ -191,40 +195,40 @@ export function SceneSearch(props: ChapterSelectProps) {
 	return null;
 }
 
-function getIntervals(videoState: VideoContextType): ChapterInterval[] {
-	if (!videoState.position.time.duration) return [];
+function getIntervals(chapters: ChapterInfo[], duration: number): ChapterInterval[] {
+	if (!duration) return [];
 	let intervals: Array<ChapterInterval> = [];
-	if (videoState.chapters.length > 0) {
+	if (chapters.length > 0) {
 		intervals.push({ interval: -1, label: "Scenes" });
 	}
-	if (videoState.position.time.duration > 60) {
+	if (duration > 60) {
 		intervals.push({ interval: 5, label: "5 Seconds" });
 	}
-	if (videoState.position.time.duration > 60) {
+	if (duration > 60) {
 		intervals.push({ interval: 15, label: "15 Seconds" });
 	}
-	if (videoState.position.time.duration > 60 * 4) {
+	if (duration > 60 * 4) {
 		intervals.push({ interval: 30, label: "30 Seconds" });
 	}
-	if (videoState.position.time.duration > 60 * 5) {
+	if (duration > 60 * 5) {
 		intervals.push({ interval: 60, label: "1 Minute" });
 	}
-	if (videoState.position.time.duration > 60 * 20) {
+	if (duration > 60 * 20) {
 		intervals.push({ interval: 5 * 60, label: "5 Minutes" });
 	}
-	if (videoState.position.time.duration > 60 * 40) {
+	if (duration > 60 * 40) {
 		intervals.push({ interval: 10 * 60, label: "10 Minutes" });
 	}
 	// 1 Hour
-	if (videoState.position.time.duration > 60 * 60) {
+	if (duration > 60 * 60) {
 		intervals.push({ interval: 15 * 60, label: "15 Minutes" });
 	}
 	// 2 Hours
-	if (videoState.position.time.duration > 60 * 120) {
+	if (duration > 60 * 120) {
 		intervals.push({ interval: 30 * 60, label: "30 Minutes" });
 	}
 	// 3 Hours
-	if (videoState.position.time.duration > 60 * 180) {
+	if (duration > 60 * 180) {
 		intervals.push({ interval: 60 * 60, label: "60 Minutes" });
 	}
 	return intervals;
