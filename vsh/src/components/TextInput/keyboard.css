@@ -1,0 +1,137 @@
+@keyframes key-text-glow {
+	from {
+		text-shadow: 0 0 0;
+	}
+
+	to {
+		text-shadow: 0 0 0.2em;
+	}
+}
+
+@keyframes blink {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+/* Keyboard */
+
+.keyboard {
+	--blink-animation: 0.5s linear 0s infinite alternate blink;
+
+	font-size: 25px;
+	line-height: 1;
+	font-weight: 400;
+	display: flex;
+	flex: 0;
+	flex-direction: column;
+	gap: 0.4em;
+	padding: 0.4em;
+	border-radius: 0.6em;
+	background-color: black;
+	color: white;
+	text-align: center;
+	opacity: 0;
+	position: absolute;
+	z-index: 1000000;
+	box-shadow: 0 0 1px 1px #000000, 0 36px 100px 0 rgba(0, 0, 0, 0.70);
+	transition-duration: var(--transition-standard);
+}
+
+.keyboard.open {
+	opacity: 1;
+}
+
+.keyboard .input {
+	text-align: left;
+	white-space: pre;
+	height: 1.6em;
+	line-height: 1.5;
+	overflow: visible;
+}
+
+.keyboard .cursor {
+	position: absolute;
+	height: 1em;
+	margin: 0.25em 0;
+	width: 0;
+	box-sizing: border-box;
+	border-left: 0.05em solid;
+	border-right: 0.05em solid;
+	overflow: visible;
+	animation: var(--blink-animation);
+}
+
+.keyboard .row {
+	height: 1.4em;
+	gap: inherit;
+	display: grid;
+	grid-template-columns: repeat(10, 1.8em);
+}
+
+.keyboard .row .key {
+	display: flex;
+	height: 1.4em;
+	font-size: 1em;
+	position: relative;
+	align-content: center;
+	justify-content: center;
+	vertical-align: middle;
+	box-sizing: border-box;
+	border-radius: 0.2em;
+	background: #1F1F1F;
+	transition-duration: var(--transition-short);
+	border: 1px solid rgba(255, 255, 255, 0.20);
+	box-shadow: 0px 0px 0px 0px #000000, 0px 0px 0px 0px rgba(0, 0, 0, 0.70);
+}
+
+.keyboard .row .key .char {
+	display: flex;
+	margin: auto;
+	justify-content: center;
+	align-content: center;
+	vertical-align: middle;
+	font-feature-settings:
+		"ss03" 1,
+		"cv01" 1,
+		"cv06" 1,
+		"cv07" 1,
+		"cv10" 1,
+		"case" 1;
+}
+
+.keyboard .row .key .char.small {
+	font-size: 0.8em;
+}
+
+.keyboard .row .key .icon {
+	display: flex;
+	flex: 1;
+	text-align: center;
+	justify-content: center;
+	margin: auto;
+	font-family: "Microns";
+	font-size: 1.4em;
+	line-height: 0.8;
+}
+
+.keyboard.open .row .key.active {
+	background: #333333;
+	box-shadow: 0 0 1px 1px #000000, 0 9px 25px 0 rgba(0, 0, 0, 0.70);
+	z-index: 1000;
+	animation: var(--key-text-glow);
+	scale: 1.1;
+}
+
+.keyboard.open .row .key.highlight {
+	background: #00A4DC; /* Official Jellyfin accent colour */
+}
+
+.keyboard .row.functions-1 .key,
+.keyboard .row.functions-2 .key {
+	width: auto;
+}
