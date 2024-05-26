@@ -1,8 +1,7 @@
 import "./menu.css";
-import { useCallback, useContext, useEffect, useState } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 import type { Id } from "../Content/types";
 import { useInput } from "../../hooks";
-import { createContext } from "preact";
 
 export type XBMenuItem<T> = {
 	label: string;
@@ -49,7 +48,7 @@ export function Menu<T>(props: MenuProps<T>) {
 
 	return (
 		<div class="menu-container">
-			<InnerMenu active={active} first items={items} onCancel={onCancel} onSubmit={submit} />
+			<InnerMenu active={active} default_item={default_item} first items={items} onCancel={onCancel} onSubmit={submit} />
 		</div>
 	);
 }
