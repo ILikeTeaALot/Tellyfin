@@ -4,15 +4,17 @@ import { ScreenContent, ScreenProps } from "./common";
 import { ContentList, NavigateAction } from "../components/ContentList";
 import { ContentGrid } from "../components/ContentGrid";
 import api from "../context/Jellyfin";
-import { ContentType } from "../components/Content/types";
+import { ContentType, type ContentItem } from "../components/Content/types";
 import { selectScreen } from "./Home/screen-loader";
 import { JellyfinContent } from "./Home/Jellyfin";
 import { AppMode } from "../context/AppState";
 import { AppState } from "../AppStates";
+import { XBar } from "../components/XB";
+import { categories } from "../home-categories";
 
 const content: ScreenContent = {
 	id: "Home",
-	type: ContentType.List,
+	type: ContentType.Ignore,
 	content: [
 		// { id: "music.alto", name: "Alto" },
 		{ id: "system.settings", name: "Settings" },
@@ -23,9 +25,10 @@ const content: ScreenContent = {
 export function Home(props: ScreenProps) {
 	const { active, change_state } = props;
 	const state = useContext(AppMode);
-	const [screens, updateScreens] = useState([content]);
+	const [screens, updateScreens] = useState<Array<ScreenContent>>([content]);
 	const [currScreen, setCurrentScreen] = useState(0);
 	useEffect(() => {
+		return;
 		(async () => {
 			const libraries = await jf.getLibraryApi(api).getMediaFolders();
 			if (libraries.data.Items) {
@@ -60,7 +63,8 @@ export function Home(props: ScreenProps) {
 			await selectScreen(updateScreens, setCurrentScreen, action, currScreen, screens[currScreen].id, screens[currScreen].content[index]);
 			return;
 		}
-	}, [updateScreens, setCurrentScreen, currScreen, screens]);
+	}, [currScreen, screens, active, state]);
+	const handleRootNavigate = useCallback(async (item: ContentItem) => selectScreen(updateScreens, setCurrentScreen, NavigateAction.Enter, currScreen, "Home", item), [currScreen]);
 	return (
 		<div id="home-root" style={{ opacity: active ? 1 : 0 }}>
 			{screens.map((screen, index) => {
@@ -70,27 +74,30 @@ export function Home(props: ScreenProps) {
 				}
 				const zIndex = currScreen - index;
 				switch (screen.type) {
+					case ContentType.Ignore:
+						return null;
 					case ContentType.Jellyfin:
 						return (
-							<div style={{ zIndex }}>
-								<JellyfinContent key={screen.id} nav_position={nav_position} data={screen} onNavigate={handleNavigate} />
+							<div key={screen.id} style={{ zIndex }}>
+								<JellyfinContent nav_position={nav_position} data={screen} onNavigate={handleNavigate} />
 							</div>
 						);
 					case ContentType.List:
 					case ContentType.SettingsList:
 						return (
-							<div style={{ zIndex }}>
-								<ContentList key={screen.id} nav_position={nav_position} data={screen.content} onNavigate={handleNavigate} />
+							<div key={screen.id} style={{ zIndex }}>
+								<ContentList nav_position={nav_position} data={screen.content} onNavigate={handleNavigate} />
 							</div>
 						);
 					case ContentType.Grid:
 						return (
-							<div style={{ zIndex }}>
-								<ContentGrid key={screen.id} nav_position={nav_position} data={screen.content} onNavigate={handleNavigate} />
+							<div key={screen.id} style={{ zIndex }}>
+								<ContentGrid nav_position={nav_position} data={screen.content} onNavigate={handleNavigate} />
 							</div>
 						);
 				}
 			})}
+			<XBar nav_position={0 - currScreen} categories={categories} first_selected={2} onNavigate={handleRootNavigate} />
 		</div>
 	);
 }

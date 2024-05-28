@@ -11,6 +11,7 @@ export type ContentItem = {
 };
 
 export enum ContentType {
+	Ignore = -1,
 	List,
 	Grid,
 	SettingsList,
