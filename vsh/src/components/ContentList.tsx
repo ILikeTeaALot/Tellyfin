@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "preact/hooks";
+import { useContext, useRef, useState } from "preact/hooks";
 import { ContentItem } from "./Content/types";
 import { AppMode } from "../context/AppState";
 import { AppState } from "../AppStates";
