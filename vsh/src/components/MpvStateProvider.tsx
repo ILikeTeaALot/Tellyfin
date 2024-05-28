@@ -32,7 +32,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 				if (data.jellyfin_id) {
 					jellyfin.getItemsApi(api).getItemsByUserId({
 						ids: [data.jellyfin_id],
-						userId: auth.User!.Id!,
+						userId: auth.current.User!.Id!,
 						fields: [/* "ItemCounts", "PrimaryImageAspectRatio", */ "BasicSyncInfo", "MediaSourceCount", "Overview", "Path", /* "SpecialEpisodeNumbers", */ "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
 					}).then(value => {
 						if (value.data.Items) {

@@ -37,7 +37,7 @@ export async function selectScreen(updateScreens: Dispatch<StateUpdater<ScreenCo
 									imageTypeLimit: 1,
 									recursive: true,
 									includeItemTypes: ["Movie"],
-									userId: auth.User!.Id!,
+									userId: auth.current.User!.Id!,
 								});
 								break;
 							case "music":
@@ -53,8 +53,19 @@ export async function selectScreen(updateScreens: Dispatch<StateUpdater<ScreenCo
 									includeItemTypes: ["Series"],
 									recursive: true,
 									enableImageTypes: ["Primary", "Backdrop", "Banner", "Thumb"],
-									userId: auth.User!.Id!,
+									userId: auth.current.User!.Id!,
 								});
+								break;
+							default:
+								// http://192.168.1.88:8096/Users/6e9830156d1e47bb90e60fb126a6d3ab/Items?StartIndex=0&Limit=100&Fields=PrimaryImageAspectRatio%2CSortName%2CPath%2CSongCount%2CChildCount%2CMediaSourceCount%2CPrimaryImageAspectRatio&ImageTypeLimit=1&ParentId=34f331a89ce405e2b877d68d5ee4d4a2&SortBy=IsFolder%2CSortName&SortOrder=Ascending
+								items = await jf.getItemsApi(api).getItemsByUserId({
+									parentId: item.jellyfin_data!.Id,
+									sortBy: ["IsFolder"],
+									sortOrder: ["Ascending"],
+									imageTypeLimit: 1,
+									userId: auth.current.User!.Id!,
+								});
+								break;
 						}
 						// console.log(items?.data?.Items);
 						return items?.data?.Items;

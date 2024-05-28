@@ -98,7 +98,7 @@ export function ContentGrid(props: ContentGridProps) {
 		switch (action) {
 			case "mark_watched":
 				jellyfin.getPlaystateApi(api).markPlayedItem({
-					userId: auth.User!.Id!,
+					userId: auth.current.User!.Id!,
 					itemId: id,
 				}).then(() => {
 					console.log("Hopefully marked as watched?");
@@ -106,7 +106,7 @@ export function ContentGrid(props: ContentGridProps) {
 				break;
 			case "mark_unwatched":
 				jellyfin.getPlaystateApi(api).markUnplayedItem({
-					userId: auth.User!.Id!,
+					userId: auth.current.User!.Id!,
 					itemId: id,
 				}).then(() => {
 					console.log("Hopefully marked as unwatched?");

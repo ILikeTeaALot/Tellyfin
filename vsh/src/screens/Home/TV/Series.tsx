@@ -53,7 +53,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 		switch (action) {
 			case "mark_watched":
 				jellyfin.getPlaystateApi(api).markPlayedItem({
-					userId: auth.User!.Id!,
+					userId: auth.current.User!.Id!,
 					itemId: id,
 				}).then(() => {
 					console.log("Hopefully marked as watched?");
@@ -62,7 +62,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 				break;
 			case "mark_unwatched":
 				jellyfin.getPlaystateApi(api).markUnplayedItem({
-					userId: auth.User!.Id!,
+					userId: auth.current.User!.Id!,
 					itemId: id,
 				}).then(() => {
 					console.log("Hopefully marked as unwatched?");
@@ -367,7 +367,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 async function getNextUp(seriesId: Id) {
 	let { data } = await jellyfin.getTvShowsApi(api).getNextUp({
 		seriesId,
-		userId: auth.User!.Id!,
+		userId: auth.current.User!.Id!,
 		fields: ["MediaSourceCount"],
 	});
 	console.log("Next up:", data);
@@ -377,7 +377,7 @@ async function getNextUp(seriesId: Id) {
 async function getSeasons(seriesId: Id) {
 	let { data } = await jellyfin.getTvShowsApi(api).getSeasons({
 		seriesId,
-		userId: auth.User!.Id!,
+		userId: auth.current.User!.Id!,
 		enableImages: true,
 		fields: ["ItemCounts", "PrimaryImageAspectRatio", "BasicSyncInfo", "MediaSourceCount", /* */ "ChildCount", "EnableMediaSourceDisplay"],
 	});
@@ -391,7 +391,7 @@ async function getSeasons(seriesId: Id) {
 async function getEpisodes(seriesId: Id) {
 	let { data } = await jellyfin.getTvShowsApi(api).getEpisodes({
 		seriesId,
-		userId: auth.User!.Id!,
+		userId: auth.current.User!.Id!,
 		isMissing: false,
 		imageTypeLimit: 1,
 		enableUserData: true,

@@ -114,7 +114,7 @@ export function FilmDetail(props: JellyfinScreenProps) {
 async function getFilmInfo(id: Id) {
 	let { data } = await jellyfin.getItemsApi(api).getItemsByUserId({
 		ids: [id],
-		userId: auth.User!.Id!,
+		userId: auth.current.User!.Id!,
 		fields: ["PrimaryImageAspectRatio", "BasicSyncInfo", "MediaSourceCount", /* */ "EnableMediaSourceDisplay", "MediaStreams", "Path", "Overview", "Chapters"],
 	});
 	// console.log(data);
