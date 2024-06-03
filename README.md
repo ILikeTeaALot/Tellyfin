@@ -21,13 +21,13 @@ At present, playback and playback-control of media on the local filesystem works
 > [!NOTE]
 > Jellyfin user authentication details must be placed in `[PROJECT ROOT]\vsh\src\context\jellyfin-settings.json`. A template is provided in the adjacent `jellyfin-settings-example.json`.
 
-The User Interface design is a top-level interface based on the [XMB](https://en.wikipedia.org/wiki/XrossMediaBar), which navigates to a hybrid of vertical lists, grids, single-option landing pages (i.e. 1 option: *Play*), and a contiuous row of episodes for TV shows. When support for a few of the following is added the top-level interface will be altered to resemble the XMB:
+The User Interface design is a top-level interface based on the [XMB](https://en.wikipedia.org/wiki/XrossMediaBar), which navigates to a hybrid of vertical lists, grids, single-option landing pages (i.e. 1 option: *Play*), and a contiuous row of episodes for TV shows. Eventually the top-level menu will support navigating:
 
  - Multiple Jellyfin servers
- - Alto integration (the XMB works quite well for Music)
+ - Alto integration (the XMB works quite well as a GUI for Music)
  - Emulators/RetroArch
  - Steam
- - Navigable Settings (settings are currently hard-coded in a handful of places.)
+ - Navigable Settings (settings are currently hard-coded in a handful of places throughout the source code.)
 
 > [!NOTE]
 > The layout of the UI also only works properly at 1920x1080. To use at 4K, set the zoom to 200%; everything should work correctly\*.
