@@ -1,9 +1,8 @@
 # Tellyfin
 
-> [!NOTE]
-> Tellyfin is **very** early in development. It also only works on Windows at this time.
-
 > [!WARNING]
+> Tellyfin is **very** early in development. It also only works on Windows at this time.
+>
 > READ THIS BEFORE ATTEMPTING TO RUN Tellyfin/VSH
 
 The goal for this is a PS3-style UI for films, TV shows, music, photos, emulators, and Steam (social features possibly included too... maybe).
