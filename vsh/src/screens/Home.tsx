@@ -11,6 +11,8 @@ import { AppMode } from "../context/AppState";
 import { AppState } from "../AppStates";
 import { XBar } from "../components/XB";
 import { categories } from "../home-categories";
+import { XBList } from "../components/XB/List";
+import type { XBItem } from "../components/XB/content-fetcher";
 
 const content: ScreenContent = {
 	id: "Home",
@@ -64,6 +66,12 @@ export function Home(props: ScreenProps) {
 			return;
 		}
 	}, [currScreen, screens, active, state]);
+	const handleListNavigate = useCallback((item: XBItem) => {
+
+	}, []);
+	const handleListGoBack = useCallback(() => {
+		setCurrentScreen(current => Math.max(0, current - 1));
+	}, []);
 	const handleRootNavigate = useCallback(async (item: ContentItem) => selectScreen(updateScreens, setCurrentScreen, NavigateAction.Enter, currScreen, "Home", item), [currScreen]);
 	return (
 		<div id="home-root" style={{ opacity: active ? 1 : 0 }}>
@@ -86,7 +94,7 @@ export function Home(props: ScreenProps) {
 					case ContentType.SettingsList:
 						return (
 							<div key={screen.id} style={{ zIndex }}>
-								<ContentList nav_position={nav_position} data={screen.content} onNavigate={handleNavigate} />
+								<XBList nav_position={nav_position} data_key={screen.id.startsWith("system") ? screen.id : undefined} data={screen.content} onGoBack={handleListGoBack} onNavigate={handleListNavigate} />
 							</div>
 						);
 					case ContentType.Grid:
