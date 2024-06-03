@@ -1,8 +1,8 @@
-import api, { auth, jellyfin } from "../context/Jellyfin";
+import api, { jellyfin } from "../context/Jellyfin";
 
 export function jellyfinStopped(itemId: string) {
 	jellyfin.getPlaystateApi(api).onPlaybackStopped({
-		userId: auth.current.User!.Id!,
+		// userId: auth.User!.Id!,
 		itemId,
 	});
 }
