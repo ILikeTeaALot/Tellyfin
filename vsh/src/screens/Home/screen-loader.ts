@@ -10,7 +10,7 @@ import { ScreenContent } from "../common";
 export async function selectScreen(updateScreens: Dispatch<StateUpdater<ScreenContent[]>>, setCurrentScreen: Dispatch<StateUpdater<number>>, action: NavigateAction, current_screen: number, screen_id: string, current_item: ContentItem) {
 	if (action == NavigateAction.Enter) {
 		const item = current_item;
-		if (item.jellyfin && item.jellyfin_data) {
+		if (item.jellyfin_data) {
 			switch (item.jellyfin_data.Type) {
 				case "CollectionFolder": {
 					const items = await (async () => {

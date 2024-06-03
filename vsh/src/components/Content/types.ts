@@ -5,7 +5,6 @@ export type Id = string;
 export type ContentItem = {
 	id: Id;
 	name: string;
-	jellyfin?: boolean;
 	jellyfin_data?: BaseItemDto;
 	imageUrl?: string;
 };
