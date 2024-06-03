@@ -43,7 +43,7 @@ export function XBar(props: XBProps) {
 		onNavigate(item);
 	}, [onNavigate]);
 	return (
-		<div id="x-bar-root" class={active ? "active" : ""}>
+		<div id="x-bar-root" class={active ? "active" : ""} style={{ opacity: nav_position < -1 ? 0 : 1 }}>
 			<div class="categories">
 				{categories.map((cat, index) => {
 					// To keep state contained, they are rendered as their own component.
@@ -110,7 +110,7 @@ function XBCategory(props: XBCategoryProps) {
 					} else if (index == selected) {
 						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected);
 					} else /* if (index > selected) */ {
-						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) + 40;
+						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) + 80;
 					}
 					return (
 						<div class={selected == index ? "xb-item selected" : "xb-item"} style={{ translate: `0px ${y}px` }}>
@@ -118,7 +118,7 @@ function XBCategory(props: XBCategoryProps) {
 								{Icon ? typeof Icon == "string" ? <img
 									src={Icon}
 								/> : <Icon /> : <img
-									src="/xb-icons/icon_gamedata.png"
+									src="/xb-icons/tex/item_tex_plain_folder.png"
 								/>}
 							</div>
 							<div class="xb-item-info">
