@@ -3,8 +3,8 @@ import "./clock.css";
 import { useRef, useState, useEffect, useCallback } from "preact/hooks";
 
 export interface ClockProps {
-	spin?: boolean;
-	time: DateTime;
+	spin: boolean;
+	time?: DateTime;
 }
 
 export function SpinnerClock(props: ClockProps) {
@@ -17,11 +17,11 @@ export function SpinnerClock(props: ClockProps) {
 	// const mHand = useRef<HTMLDivElement>(null);
 
 	const [animating, setAnimationState] = useState(spin ?? false);
-	const [transition, setTransitionEnabled] = useState(!spin ?? true);
+	const [transition, setTransitionState] = useState(!spin ?? true);
 
 	useEffect(() => {
 		if (animating) return;
-		setTransitionEnabled(true);
+		setTransitionState(true);
 		const animate = (/* now: DOMHighResTimeStamp */) => {
 			const now = performance.now();
 			const date_time = /* time || */ DateTime.local();
@@ -32,12 +32,12 @@ export function SpinnerClock(props: ClockProps) {
 		};
 		frame.current = window.setInterval(animate, 100);
 		return () => window.clearInterval(frame.current);
-	}, [animating]);
+	}, [animating, transition]);
 
 	useEffect(() => {
+		let start_ms = performance.now();
+		let last_ms = start_ms;
 		if (animating && !transition) {
-			let start_ms = performance.now();
-			let last_ms = performance.now();
 			const animate = () => {
 				const now_ms = performance.now();
 				const delta_ms = now_ms - last_ms;
@@ -59,11 +59,12 @@ export function SpinnerClock(props: ClockProps) {
 			setAngle(prev => ({ hour: (prev.hour + 4.5) % 360, minute: (prev.hour + 4.5 /* (360 * 0.0125) */ % 360) }));
 			return () => cancelAnimationFrame(spin_frame.current);
 		}
+		return () => cancelAnimationFrame(spin_frame.current);
 	}, [animating, transition]);
 
 	useEffect(() => {
 		if (spin) {
-			setTransitionEnabled(true);
+			setTransitionState(true);
 			setAnimationState(true);
 			setAngle({ hour: 720, minute: 720 });
 		} else {
@@ -73,7 +74,7 @@ export function SpinnerClock(props: ClockProps) {
 		}
 	}, [spin]);
 
-	const disableTransition = useCallback(() => setTransitionEnabled(false), []);
+	const disableTransition = useCallback(() => setTransitionState(false), []);
 
 	const transitionDuration = transition ? "750ms" : "0ms";
 	return (

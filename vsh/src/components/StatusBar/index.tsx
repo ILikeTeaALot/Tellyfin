@@ -6,7 +6,7 @@ import "./style.css";
 
 interface StatusBarProps {
 	spinner_only?: boolean;
-	loading?: boolean;
+	loading: boolean;
 	show?: boolean;
 }
 
