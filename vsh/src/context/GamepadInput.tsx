@@ -255,7 +255,7 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 
 	return (
 		// <GamepadContext.Provider value={contextValue.current}>
-		<div style={{ "--standard-duration": `${Math.min(transitionDuration - 40, 300)}ms` }}>
+		<div style={{ "--standard-duration": `${Math.max(0, Math.min(transitionDuration - 40, 300))}ms`, "--transition-short": `${Math.max(0, Math.min((transitionDuration / 2) - 20, 150))}ms` }}>
 			{/* <MovementSpeed.Provider value={"300ms"}> */}
 			{children}
 			{/* </MovementSpeed.Provider> */}
