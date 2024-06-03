@@ -292,7 +292,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 					transitionDelay: nav_position == 0 ? "var(--transition-standard)" : "0ms",
 				}}>
 					<h1 style={{ marginLeft: 80, marginTop: 80 }}>{props.data.Name}</h1>
-					<div className="tab-row">
+					<div className={row == Row.Seasons ? "tab-row active" : "tab-row"}>
 						<div ref={tab_row_content} className="tab-row-content" style={{ translate: `${-tabRowX}px` }}>
 							{seasons?.map((season, index) => {
 								const is_selected = selected.season == index;
