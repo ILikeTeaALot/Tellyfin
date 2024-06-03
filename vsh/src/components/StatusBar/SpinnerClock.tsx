@@ -8,7 +8,7 @@ export interface ClockProps {
 }
 
 export function SpinnerClock(props: ClockProps) {
-	const { time, spin } = props;
+	const { spin } = props;
 	const frame = useRef<number | undefined>();
 	const spin_frame = useRef<number>(-1);
 	const last = useRef(performance.now());
@@ -59,7 +59,6 @@ export function SpinnerClock(props: ClockProps) {
 			setAngle(prev => ({ hour: (prev.hour + 4.5) % 360, minute: (prev.hour + 4.5 /* (360 * 0.0125) */ % 360) }));
 			return () => cancelAnimationFrame(spin_frame.current);
 		}
-		return () => cancelAnimationFrame(spin_frame.current);
 	}, [animating, transition]);
 
 	useEffect(() => {

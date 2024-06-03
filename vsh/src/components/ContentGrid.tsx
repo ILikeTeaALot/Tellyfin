@@ -98,7 +98,7 @@ export function ContentGrid(props: ContentGridProps) {
 		switch (action) {
 			case "mark_watched":
 				jellyfin.getPlaystateApi(api).markPlayedItem({
-					userId: auth.current.User!.Id!,
+					userId: auth.User!.Id!,
 					itemId: id,
 				}).then(() => {
 					console.log("Hopefully marked as watched?");
@@ -106,7 +106,7 @@ export function ContentGrid(props: ContentGridProps) {
 				break;
 			case "mark_unwatched":
 				jellyfin.getPlaystateApi(api).markUnplayedItem({
-					userId: auth.current.User!.Id!,
+					userId: auth.User!.Id!,
 					itemId: id,
 				}).then(() => {
 					console.log("Hopefully marked as unwatched?");
@@ -132,7 +132,7 @@ export function ContentGrid(props: ContentGridProps) {
 		} else {
 			return [];
 		}
-	}, []);
+	}, [data, selected]);
 	const startIndex = Math.max((selected - (columns * 3)) - (selected % columns), 0);
 	const endIndex = Math.min(selected + (columns * 3) + (columns - (selected % columns)), data.length);
 	const selected_row = Math.floor(selected / columns);

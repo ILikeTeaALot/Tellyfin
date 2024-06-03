@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { PanelButton } from "./ControlPanelButton";
 import { invoke } from "@tauri-apps/api/core";
 import { refresh_mpv } from "../util/functions";
