@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import * as jellyfin from "@jellyfin/sdk/lib/utils/api";
 import useSWR, { useSWRConfig } from "swr";
 
@@ -7,10 +7,8 @@ import { Id } from "../../../components/Content/types";
 import api, { auth } from "../../../context/Jellyfin";
 import { ContentPanel, PanelState } from "../../../components/Panel";
 import { NavigateAction } from "../../../components/ContentList";
-import { invoke } from "@tauri-apps/api/core";
 import { displayRunningTime } from "../../../util/functions";
 import { MediaStreamInfo } from "../../../components/Jellyfin/MediaStreamInfo";
-import { VideoContextType } from "../../../context/VideoContext";
 import { useInput } from "../../../hooks";
 import { playFile } from "../../../functions/play";
 
@@ -30,7 +28,7 @@ export function FilmDetail(props: JellyfinScreenProps) {
 	// Props
 	const { active, nav_position, onNavigate } = props;
 	const { data: info } = useSWR(`detail-${props.data.Id}`, () => getFilmInfo(props.data.Id!));
-	const [row, setRow] = useState(Row.Episodes);
+	const [row, /* setRow */] = useState(Row.Episodes);
 	const episode_overview = useRef<HTMLDivElement>(null);
 	// Cheeky useRefs to avoid re-creating the callback several times.
 	useInput(active, (button) => {
@@ -112,10 +110,10 @@ export function FilmDetail(props: JellyfinScreenProps) {
 }
 
 async function getFilmInfo(id: Id) {
-	let { data } = await jellyfin.getItemsApi(api).getItemsByUserId({
+	let { data } = await jellyfin.getItemsApi(api).getItems({
 		ids: [id],
-		userId: auth.current.User!.Id!,
-		fields: ["PrimaryImageAspectRatio", "BasicSyncInfo", "MediaSourceCount", /* */ "EnableMediaSourceDisplay", "MediaStreams", "Path", "Overview", "Chapters"],
+		userId: auth.User!.Id!,
+		fields: ["PrimaryImageAspectRatio", "MediaSourceCount", /* */ "EnableMediaSourceDisplay", "MediaStreams", "Path", "Overview", "Chapters"],
 	});
 	// console.log(data);
 	return data.Items![0];

@@ -13,6 +13,7 @@ import { MediaStreamInfo, mapCodecToDisplayName } from "../../../components/Jell
 import { VideoContextType } from "../../../context/VideoContext";
 import { useInput } from "../../../hooks";
 import { Menu, type XBMenuItem } from "../../../components/Menu";
+import type { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 
 // const WIDTH = 320;
 const WIDTH = 400;
@@ -39,7 +40,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const { active: _active, nav_position, onNavigate } = props;
 	const [nextUpSelected, setNextUpSelected] = useState(false);
 	const { data: nextUp, isLoading: loadingNextUp } = useSWR(`next-up-${props.data.Id}`, () => getNextUp(props.data.Id!), { revalidateOnMount: true });
-	const { data: seasons, /* isLoading: seasonsLoading */ } = useSWR(`seasons-${props.data.Id}`, () => getSeasons(props.data.Id!), { keepPreviousData: true });
+	const { data: episodes, /* isLoading: episodesLoading, */ mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!), { keepPreviousData: true });
 	const season_count = seasons?.length ?? 0;
 	const { data: episodes, /* isLoading: episodesLoading, */ mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!), {keepPreviousData: true});
 	const [tabRowX, setTabRowX] = useState(0);
@@ -53,7 +54,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 		switch (action) {
 			case "mark_watched":
 				jellyfin.getPlaystateApi(api).markPlayedItem({
-					userId: auth.current.User!.Id!,
+					userId: auth.User!.Id!,
 					itemId: id,
 				}).then(() => {
 					console.log("Hopefully marked as watched?");
@@ -62,7 +63,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 				break;
 			case "mark_unwatched":
 				jellyfin.getPlaystateApi(api).markUnplayedItem({
-					userId: auth.current.User!.Id!,
+					userId: auth.User!.Id!,
 					itemId: id,
 				}).then(() => {
 					console.log("Hopefully marked as unwatched?");
@@ -74,7 +75,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 	}, [updateEpisodes]);
 	const menu_cancel = useCallback(() => setMenuOpen(false), []);
 	useEffect(() => {
-		if (loadingNextUp) return;
+		if (loadingNextUp || loadingSeasons) return;
 		if (!nextUpSelected && nextUp) {
 			if (nextUp.length == 1) {
 				setSelected(({ season, episode }) => {
@@ -91,7 +92,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 				setNextUpSelected(true);
 			}
 		}
-	}, [nextUpSelected, nextUp, loadingNextUp, episodes, seasons]);
+	}, [nextUpSelected, nextUp, loadingNextUp, episodes, seasons, loadingSeasons]);
 	useInput(active, (button) => {
 		switch (button) {
 			case "Enter":
@@ -367,7 +368,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 async function getNextUp(seriesId: Id) {
 	let { data } = await jellyfin.getTvShowsApi(api).getNextUp({
 		seriesId,
-		userId: auth.current.User!.Id!,
+		userId: auth.User!.Id!,
 		fields: ["MediaSourceCount"],
 	});
 	console.log("Next up:", data);
@@ -377,12 +378,25 @@ async function getNextUp(seriesId: Id) {
 async function getSeasons(seriesId: Id) {
 	let { data } = await jellyfin.getTvShowsApi(api).getSeasons({
 		seriesId,
-		userId: auth.current.User!.Id!,
+		userId: auth.User!.Id!,
 		enableImages: true,
-		fields: ["ItemCounts", "PrimaryImageAspectRatio", "BasicSyncInfo", "MediaSourceCount", /* */ "ChildCount", "EnableMediaSourceDisplay"],
+		fields: ["ItemCounts", "PrimaryImageAspectRatio", "MediaSourceCount", /* */ "ChildCount", "EnableMediaSourceDisplay"],
+		isMissing: false,
 	});
 	// console.log(data);
 	return data.Items!/* .filter(season => season.ChildCount! > 0) */;
+}
+
+async function seasonsFromEpisodes(episodes?: BaseItemDto[]) {
+	if (episodes) {
+		// return episodes.reduce((prev, curr, index, arr) => {});
+		return Array.from(new Map(episodes.map(episode => [episode.SeasonId!, episode.SeasonName!]))).map(([Id, Name]) => ({
+			Name,
+			Id,
+		} as BaseItemDto));
+	} else {
+		return episodes;
+	}
 }
 
 /**
@@ -391,12 +405,12 @@ async function getSeasons(seriesId: Id) {
 async function getEpisodes(seriesId: Id) {
 	let { data } = await jellyfin.getTvShowsApi(api).getEpisodes({
 		seriesId,
-		userId: auth.current.User!.Id!,
+		userId: auth.User!.Id!,
 		isMissing: false,
 		imageTypeLimit: 1,
 		enableUserData: true,
 		// TODO: Fetch some of these when the file is played
-		fields: ["ItemCounts", "PrimaryImageAspectRatio", "BasicSyncInfo", "MediaSourceCount", "Overview", "Path", "SpecialEpisodeNumbers", "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
+		fields: ["ItemCounts", "PrimaryImageAspectRatio", "MediaSourceCount", "Overview", "Path", "SpecialEpisodeNumbers", "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
 	});
 	// console.log(data);
 	return data.Items!;
