@@ -20,16 +20,8 @@ export async function getXBarContent([_, category]: ["xb-category", string]): Pr
 		case "network":
 		case "social":
 		case "games":
-			return { content: [] };
 		case "services":
-			return {
-				content: [
-					{ id: "tv.dropout", name: "Dropout", desc: "Hopefully available in future?" },
-					{ id: "tv.nebula", name: "Nebula", desc: "Yeah... IDK" },
-					// { id: "org.invidious", name: "Youtube", desc: "Via Invidious\nComing soon!", Icon: "/invidious-colored-vector.svg" },
-					{ id: "org.invidious", name: "Youtube", desc: "Via Invidious – Coming soon!", Icon: "/xb-icons/youtube/white/youtube_social_squircle_white.png" },
-				]
-			};
+			return { content: [] };
 		case "video":
 			return getXBarVideoContent();
 		case "livetv":
