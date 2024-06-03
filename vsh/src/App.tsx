@@ -1,8 +1,7 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
-import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 import "./panel.css";
 import "./tab-row.css";
+import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
 import { Home } from "./screens/Home";
 import { AppState } from "./AppStates";
 import { Video } from "./screens/Video";
@@ -13,6 +12,7 @@ import { MpvStateProvider } from "./components/MpvStateProvider";
 import { refresh_mpv } from "./util/functions";
 import VideoState, { PlaybackStatus } from "./context/VideoContext";
 import { StatusBar } from "./components/StatusBar";
+import { DynamicBackground } from "./components/DynamicBackground";
 
 function AppInner() {
 	const [state, setState] = useState(AppState.Home);
@@ -31,7 +31,7 @@ function AppInner() {
 				});
 			};
 
-			return useSWRNext(key, extendedFetcher, config);
+			return useSWRNext(key, extendedFetcher, config); // eslint-disable-line
 		};
 	}, []);
 
@@ -92,6 +92,7 @@ function AppInner() {
 			<AppMode.Provider value={state}>
 				<SwitchMode.Provider value={change_state}>
 					<div className="background" style={{ opacity: state == AppState.Player ? 0 : 1 }} />
+					<DynamicBackground style={{ opacity: state == AppState.Player || playback_status != PlaybackStatus.Stopped ? 0 : 1 }} />
 					<Video active={state == AppState.Player && playback_status != PlaybackStatus.Stopped} change_state={change_state} />
 					<Home active={state == AppState.Home || playback_status == PlaybackStatus.Stopped} change_state={change_state} />
 					<StatusBar show={state == AppState.Home} loading={requestCount > 0} />
