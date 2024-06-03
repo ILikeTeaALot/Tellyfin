@@ -4,7 +4,6 @@ import { invoke } from "@tauri-apps/api/core";
 import useSWR, { type KeyedMutator } from "swr";
 import { useEffect, useState } from "preact/hooks";
 import api, { auth, jellyfin } from "../context/Jellyfin";
-import { TICKS_PER_SECOND } from "../util/functions";
 import { listen, type Event } from "@tauri-apps/api/event";
 import { jellyfinUpdatePosition } from "../functions/update";
 import { jellyfinStopped } from "../functions/stopped";
@@ -30,10 +29,10 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 		if (data) {
 			if (!data.jellyfin_data) {
 				if (data.jellyfin_id) {
-					jellyfin.getItemsApi(api).getItemsByUserId({
+					jellyfin.getItemsApi(api).getItems({
 						ids: [data.jellyfin_id],
-						userId: auth.current.User!.Id!,
-						fields: [/* "ItemCounts", "PrimaryImageAspectRatio", */ "BasicSyncInfo", "MediaSourceCount", "Overview", "Path", /* "SpecialEpisodeNumbers", */ "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
+						userId: auth.User!.Id!,
+						fields: [/* "ItemCounts", "PrimaryImageAspectRatio", */ "MediaSourceCount", "Overview", "Path", /* "SpecialEpisodeNumbers", */ "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
 					}).then(value => {
 						if (value.data.Items) {
 							let jellyfin_data = value.data.Items[0];
@@ -112,7 +111,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 		}
 		const unlisten = listen<MpvEvent>("mpv-event", handler);
 		return async () => (await unlisten)();
-	}, []);
+	}, [mutate]);
 	return (
 		<VideoState.Provider value={videoState}>
 			<MutateContext.Provider value={mutate}>
