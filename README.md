@@ -39,6 +39,7 @@ The User Interface design is a top-level interface based on the [XMB](https://en
 >
 > You can download the icons referenced in code from Sony [here](http://e1.dl.playstation.net/e1/downloads/ps3/themes/370/PS3_Custom_Theme_v200.zip) (regrettably not https.) Just extract the zip folder and copy all the `sample/simple/icon_*.png` files to `vsh/public/xb-icons/`
 
+
 ## Requirements
 
 1. A working Rust toolchain for compilation.
