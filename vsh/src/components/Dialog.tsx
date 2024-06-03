@@ -1,15 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 import { useInput } from "../hooks";
+
+export enum DialogType {
+	Confirm,
+	Message,
+}
 
 export type DialogProps = {
 	active: boolean;
 	children: string; // TOOD: Change this
 	onSubmit: (confirmed: boolean) => void;
 	onCancel: () => void;
+	type: DialogType,
 };
 
 export function Dialog(props: DialogProps) {
-	const { active, onCancel: cancel, onSubmit: _submit } = props;
+	const { active, onCancel: cancel, onSubmit: _submit, type } = props;
 	const [selected, setSelected] = useState(1);
 	// Submit
 	const submit = useCallback(() => {
@@ -36,15 +42,29 @@ export function Dialog(props: DialogProps) {
 				cancel();
 				break;
 		}
-	}, [cancel]);
+	}, [cancel, type]);
+	const options = useCallback(() => {
+		switch (type) {
+			case DialogType.Confirm:
+				return (
+					<div class="options">
+						<span class={selected == 0 ? "option selected" : "option"}>Yes</span>
+						<span class={selected == 1 ? "option selected" : "option"}>No</span>
+					</div>
+				);
+			case DialogType.Message:
+				return (
+					<div class="options">
+						<span class="option selected">OK</span>
+					</div>
+				);
+		}
+	}, [type, selected]);
 	return (
 		<div class="dialog" style={{ opacity: active ? 1 : 0 }}>
 			<div class="content">
 				<span class="message">{props.children}</span>
-				<div class="options">
-					<span class={selected == 0 ? "option selected" : "option"}>Yes</span>
-					<span class={selected == 1 ? "option selected" : "option"}>No</span>
-				</div>
+				{options()}
 			</div>
 		</div>
 	);

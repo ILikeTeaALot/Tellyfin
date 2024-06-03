@@ -9,7 +9,7 @@ import VideoState, { PlaybackStatus, VideoContextType } from "../context/VideoCo
 import { PauseIcon, PlayIcon, StopIcon } from "../Icons";
 import { useInput } from "../hooks";
 import { SceneSearch } from "../components/SceneSearch";
-import { Dialog } from "../components/Dialog";
+import { Dialog, DialogType } from "../components/Dialog";
 
 const withoutSceneSearch: VideoFunction[] = ["SubtitleOptions", "Display"];
 
@@ -168,7 +168,7 @@ export function Video(props: ScreenProps) {
 			}}>
 				{statusIcon(playback_status)}
 			</div>
-			<Dialog active={exitConfirmActive} onSubmit={on_dialog_submit} onCancel={on_cancel}>Do you want to stop playback?</Dialog>
+			<Dialog active={exitConfirmActive} onSubmit={on_dialog_submit} onCancel={on_cancel} type={DialogType.Confirm}>Do you want to stop playback?</Dialog>
 		</div>
 	);
 }
