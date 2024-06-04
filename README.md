@@ -5,6 +5,14 @@
 >
 > READ THIS BEFORE ATTEMPTING TO RUN Tellyfin/VSH
 
+> [!WARNING]
+> ###### ADDITIONAL
+>
+> For reasons unknown, and possibly only on my system (but I'm putting a note here to be safe), `cargo tauri dev` *does not work.* In order to run Tellyfin at this time, open 2 terminals:
+>
+> - [Terminal 1] should be open in the project root. If you have not done so already, run `yarn`/`yarn install` in the project root before your first run, and then run `cargo run`.
+> - [Terminal 2] should be open in `[PROJECT ROOT]/vsh`, and run `yarn dev`.
+
 The goal for this is a PS3-style UI for films, TV shows, music, photos, emulators, and Steam (social features possibly included too... maybe).
 
 > [!NOTE]
@@ -43,7 +51,7 @@ The User Interface design is a top-level interface based on the [XMB](https://en
 ## Requirements
 
 1. A working Rust toolchain for compilation.
-2. Node.js v20 or newer.
+2. Node.js v20 or newer + Yarn (other package managers *might* work).
 3. [libmpv](#libmpv).
 4. A running Jellyfin server.
 
