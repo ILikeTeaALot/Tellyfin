@@ -1,5 +1,7 @@
 # Tellyfin
 
+The goal for this is a PS3-style UI for films, TV shows, music, photos, emulators, and Steam (social features possibly included too... maybe).
+
 > [!WARNING]
 > Tellyfin is **very** early in development. It also only works on Windows at this time.
 >
@@ -13,7 +15,7 @@
 > - [Terminal 1] should be open in the project root. If you have not done so already, run `yarn`/`yarn install` in the project root before your first run, and then run `cargo run`.
 > - [Terminal 2] should be open in `[PROJECT ROOT]/vsh`, and run `yarn dev`.
 
-The goal for this is a PS3-style UI for films, TV shows, music, photos, emulators, and Steam (social features possibly included too... maybe).
+
 
 > [!NOTE]
 > ## License
