@@ -2,12 +2,19 @@
 
 The goal for this is a PS3-style UI for films, TV shows, music, photos, emulators, and Steam (social features possibly included too... maybe).
 
+> [!NOTE]
+> ###### Update 04-June-2024
+>
+> Relicensed under the GNU Affero GPLv3!!!
+>
+> Important TODO in light of this: implement a proper "About" screen to give an overview of the user's rights and where they can learn more and obtain a full licence and source code.
+
 > [!WARNING]
 > Tellyfin is **very** early in development. It also only works on Windows at this time.
 >
 > READ THIS BEFORE ATTEMPTING TO RUN Tellyfin/VSH
 
-> [!WARNING]
+> [!IMPORTANT]
 > ###### ADDITIONAL
 >
 > For reasons unknown, and possibly only on my system (but I'm putting a note here to be safe), `cargo tauri dev` *does not work.* In order to run Tellyfin at this time, open 2 terminals:
@@ -15,20 +22,11 @@ The goal for this is a PS3-style UI for films, TV shows, music, photos, emulator
 > - [Terminal 1] should be open in the project root. If you have not done so already, run `yarn`/`yarn install` in the project root before your first run, and then run `cargo run`.
 > - [Terminal 2] should be open in `[PROJECT ROOT]/vsh`, and run `yarn dev`.
 
-
-
-> [!NOTE]
-> ## License
->
-> At the time of writing I have not settled on a license.
->
-> My intent for this is that it be free software, I'm just not 100% on specifically a GPL-style license.
-
 ## Current Status
 
 At present, playback and playback-control of media on the local filesystem works, selected by browsing through a local Jellyfin server.
 
-> [!NOTE]
+> [!IMPORTANT]
 > Jellyfin user authentication details must be placed in `[PROJECT ROOT]\vsh\src\context\jellyfin-settings.json`. A template is provided in the adjacent `jellyfin-settings-example.json`.
 
 The User Interface design is a top-level interface based on the [XMB](https://en.wikipedia.org/wiki/XrossMediaBar), which navigates to a hybrid of vertical lists, grids, single-option landing pages (i.e. 1 option: *Play*), and a contiuous row of episodes for TV shows. Eventually the top-level menu will support navigating:
