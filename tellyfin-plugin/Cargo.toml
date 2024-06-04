@@ -1,0 +1,8 @@
+[package]
+name = "tellyfin-plugin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dlopen2 = "0.7.0"
+libtellyfin = { path = "../libtellyfin" }
