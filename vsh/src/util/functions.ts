@@ -1,4 +1,4 @@
-import langs from "./ISO_639-2.min.json";
+
 
 import { mutate } from "swr";
 
