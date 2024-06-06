@@ -1,7 +1,9 @@
 use std::ffi::{c_char, CString, OsStr};
 
-use dlopen2::wrapper::{Container, WrapperApi};
+use dlopen2::wrapper::WrapperApi;
 use libtellyfin::{PluginInfo, PluginResult, PluginXMBIconList};
+
+pub use dlopen2::wrapper::Container;
 
 #[derive(WrapperApi)]
 pub struct Plugin<'plugin> {
