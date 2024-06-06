@@ -169,6 +169,17 @@
 	</head>
 	<body>
 		<script>
+			function timeOfDay() {
+				var secondsInADay = 24 * 60 * 60;
+				var now = new Date();
+				var hours = now.getHours() * 60 * 60;
+				var minutes = now.getMinutes() * 60;
+				var seconds = now.getSeconds();
+				var totalSeconds = hours + minutes + seconds;
+				var percentSeconds = totalSeconds / secondsInADay;
+				return percentSeconds;
+			}
+
 			const regl = createREGL( {
 				attributes: {
 					antialias: true
@@ -311,7 +322,7 @@
 			let lastTime = 0;
 	
 			var tick = regl.frame( ( context ) => {
-				drawParams.backgroundColor.forEach( ( channel, i ) => drawParams.color[ i ] = channel * drawParams.brightness / 255 );
+				drawParams.backgroundColor.forEach( ( channel, i ) => drawParams.color[ i ] = channel * timeOfDay() / 255 );
 				drawParams.ratio = Math.max( 1.0, Math.min( context.viewportWidth / context.viewportHeight, 2.0 ) ) * 0.375;
 				drawParams.time = drawParams.time + ( context.time - lastTime ) * drawParams.flowSpeed;
 				lastTime = context.time;
