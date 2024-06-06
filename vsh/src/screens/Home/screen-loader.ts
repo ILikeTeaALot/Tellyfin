@@ -30,14 +30,14 @@ export async function selectScreen(updateScreens: Dispatch<StateUpdater<ScreenCo
 								// StartIndex=0
 								// ParentId=db4c1708cbb5dd1676284a40f2950aba
 								// Limit=100
-								items = await jf.getItemsApi(api).getItemsByUserId({
+								items = await jf.getItemsApi(api).getItems({
 									parentId: item.jellyfin_data!.Id,
 									sortBy: ["SortName", "ProductionYear"],
 									sortOrder: ["Ascending"],
 									imageTypeLimit: 1,
 									recursive: true,
 									includeItemTypes: ["Movie"],
-									userId: auth.current.User!.Id!,
+									userId: auth.User!.Id!,
 								});
 								break;
 							case "music":
@@ -47,23 +47,23 @@ export async function selectScreen(updateScreens: Dispatch<StateUpdater<ScreenCo
 								break;
 							case "tvshows":
 								// /Items?SortBy=SortName&SortOrder=Ascending&IncludeItemTypes=Series&Recursive=true&Fields=PrimaryImageAspectRatio%2CBasicSyncInfo&ImageTypeLimit=1&EnableImageTypes=Primary%2CBackdrop%2CBanner%2CThumb&StartIndex=0&Limit=100&ParentId=767bffe4f11c93ef34b805451a696a4e
-								items = await jf.getItemsApi(api).getItemsByUserId({
+								items = await jf.getItemsApi(api).getItems({
 									parentId: item.jellyfin_data!.Id,
 									sortBy: ["SortName"],
 									includeItemTypes: ["Series"],
 									recursive: true,
 									enableImageTypes: ["Primary", "Backdrop", "Banner", "Thumb"],
-									userId: auth.current.User!.Id!,
+									userId: auth.User!.Id!,
 								});
 								break;
 							default:
 								// http://192.168.1.88:8096/Users/6e9830156d1e47bb90e60fb126a6d3ab/Items?StartIndex=0&Limit=100&Fields=PrimaryImageAspectRatio%2CSortName%2CPath%2CSongCount%2CChildCount%2CMediaSourceCount%2CPrimaryImageAspectRatio&ImageTypeLimit=1&ParentId=34f331a89ce405e2b877d68d5ee4d4a2&SortBy=IsFolder%2CSortName&SortOrder=Ascending
-								items = await jf.getItemsApi(api).getItemsByUserId({
+								items = await jf.getItemsApi(api).getItems({
 									parentId: item.jellyfin_data!.Id,
 									sortBy: ["IsFolder"],
 									sortOrder: ["Ascending"],
 									imageTypeLimit: 1,
-									userId: auth.current.User!.Id!,
+									userId: auth.User!.Id!,
 								});
 								break;
 						}
