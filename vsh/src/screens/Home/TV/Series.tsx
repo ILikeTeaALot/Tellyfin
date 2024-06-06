@@ -41,8 +41,8 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const [nextUpSelected, setNextUpSelected] = useState(false);
 	const { data: nextUp, isLoading: loadingNextUp } = useSWR(`next-up-${props.data.Id}`, () => getNextUp(props.data.Id!), { revalidateOnMount: true });
 	const { data: episodes, /* isLoading: episodesLoading, */ mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!), { keepPreviousData: true });
+	const { data: seasons, isLoading: loadingSeasons } = useSWR(() => episodes ? `seasons-${props.data.Id}` : null, () => seasonsFromEpisodes(episodes), { keepPreviousData: true });
 	const season_count = seasons?.length ?? 0;
-	const { data: episodes, /* isLoading: episodesLoading, */ mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!), {keepPreviousData: true});
 	const [tabRowX, setTabRowX] = useState(0);
 	const [selected, setSelected] = useState({ season: 0, episode: 0 });
 	const [menuOpen, setMenuOpen] = useState(false);
