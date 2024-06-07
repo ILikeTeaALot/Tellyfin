@@ -1,6 +1,8 @@
 [workspace]
 members = [
 	# "bootstrap",
+	"libtellyfin",
+	"tellyfin-plugin",
 	"vsh/src-tauri",
 ]
 exclude = ["bootstrap"]

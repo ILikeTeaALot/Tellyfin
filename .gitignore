@@ -25,7 +25,7 @@ dist-ssr
 *.sln
 *.sw?
 
-##
+## Other
 
 # Jetbrains
 .idea

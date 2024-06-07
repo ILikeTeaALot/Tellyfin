@@ -1580,6 +1580,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "libtellyfin"
+version = "0.1.0"
+
+[[package]]
 name = "line-wrap"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3285,6 +3289,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "tellyfin-plugin"
+version = "0.1.0"
+dependencies = [
+ "dlopen2",
+ "libtellyfin",
+]
+
+[[package]]
 name = "tendril"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3724,6 +3736,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-shell",
+ "tellyfin-plugin",
 ]
 
 [[package]]
