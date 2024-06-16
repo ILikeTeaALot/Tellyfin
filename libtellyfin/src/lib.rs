@@ -1,8 +1,10 @@
-//! # Libtellyfin
+//! # libtellyfin
 //! 
 //! *Do you want to develop a plugin?*
 //! 
-//! This crate contains all the FFI types for building native tellyfin plugins.
+//! This crate contains all the FFI/C-types for building native tellyfin plugins.
+//! 
+//! If you do not require native code or network access, there in future there may be alternative options for plugin authoring.
 //! 
 //! # Plugin Safety
 //! 
@@ -13,15 +15,20 @@
 //! In fact, I would go so far as to say do not install any plugins that are not either:
 //! 
 //! a. Open source (Any form that allows you to compile it yourself, if only hypothetically)
-//! b. Officially endorsed
+//! b. Official
+//! 
+//! If not either of the above:
+//! 
+//! c. From a properly trustworthy, verifiable source. Do be careful though. Native plugins are like any other program.
 //! 
 //! # The Lifecycle of the common plugin
 //! 
-//! There are three primary methods exposed by a plugin:
+//! There are four primary methods exposed by a plugin:
 //! 
 //! 1. tf_plugin_init [Required]
-//! 2. tf_plugin_exec [Required]
-//! 3. tf_plugin_drop [Optional]
+//! 2. tf_plugin_info [Required] - Re-requesting [`PluginInfo`].
+//! 2. tf_plugin_exec [Required] - [See below]
+//! 3. tf_plugin_drop [Optional] - [See below]
 //! 
 //! ...each has a hopefully self-explanatory nature.
 //! 
@@ -91,12 +98,39 @@ pub enum PluginError {
 	InvalidArgsError,
 }
 
+/// (Upper 6 bits => MAJOR; Middle 16 bits => MINOR; Lower 10 bits: PATCH)
+/// 
+/// ∴ => Maximum plugin version: 63.65535.1023
+/// 
+/// Plugins should increment the patch version for every release, and should not have user-facing changes.
+/// 
+/// Minor versions allow new features and additions (including to config files), so long as configuration files remain compatible;
+/// if you run out of/overflow PATCH versions, just bump the MINOR and reset the PATCH to 0.
+/// 
+/// Major versions should be reserved for truly breaking changes i.e. config/first-run must be reset.
+/// (Tellyfin will use a major version change to put the user through a new setup wizard for the plugin.
+/// **ONLY BUMP MAJOR WHEN STRICTLY NECESSARY.**)
+/// 
+/// Most plugins should be able to maintain a v1.x.x indefinitely (assuming their API does not change).
+/// 
+/// If, by some miraculous means, you exceed major version 63, you will have to choose a new plugin identifier;
+/// I recommend the current one appended with ".v64" or ".next" (i.e. `org.tellyfin.invidious` => `org.tellyfin.invidious.v64`),
+/// and restart counting from version `0.0.0`.
+// 
+// => For example, version 2.6.32 == 0x02_0006_20 (but you should just use [`make_plugin_version`] `make_plugin_version(2, 6, 32)`)
+pub type PluginVersion = u32;
+pub type PluginMajorVersion = u8;
+pub type PluginMinorVersion = u16;
+pub type PluginPatchVersion = u16;
+
+pub type PluginVersionTriple = (PluginMajorVersion, PluginMinorVersion, PluginPatchVersion);
+
 #[derive(Debug)]
 #[repr(C)]
 pub struct PluginInfo<'plugin> {
 	pub id: PluginStr<'plugin>,
 	pub name: PluginStr<'plugin>,
-	pub version: u32,
+	pub version: PluginVersion,
 }
 
 #[derive(Debug)]
@@ -263,15 +297,46 @@ pub struct PluginXMBIconList<'a> {
 	len: usize,
 }
 
-impl<'a> PluginXMBIconList<'a> {
-	pub fn into(self) -> &'a [PluginXMBData<'a>] {
-		unsafe { slice::from_raw_parts(self.data, self.len) }
-	}
-
+impl PluginXMBIconList<'static> {
 	pub const fn from(value: &'static [PluginXMBData<'static>]) -> Self {
 		Self {
 			data: value.as_ptr(),
 			len: value.len(),
 		}
+	}
+}
+
+impl<'a> PluginXMBIconList<'a> {
+	pub fn into(self) -> &'a [PluginXMBData<'a>] {
+		unsafe { slice::from_raw_parts(self.data, self.len) }
+	}
+}
+
+pub const fn make_plugin_version(major: PluginMajorVersion, minor: PluginMinorVersion, patch: PluginPatchVersion) -> PluginVersion {
+	(((major as PluginVersion) & 0b11_1111) << 26) + ((minor as PluginVersion) << 10) + ((patch as PluginVersion) & 0b11_1111_1111)
+}
+
+pub fn read_plugin_version(version: PluginVersion) -> PluginVersionTriple {
+	((version >> 26) as PluginMajorVersion, (version >> 10) as PluginMinorVersion, (version & 0b11_1111_1111) as PluginPatchVersion)
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn it_works() {
+		// 6-16-10
+		let v = read_plugin_version(make_plugin_version(1, 0, 1));
+		assert_eq!(v, (1, 0, 1));
+		assert_eq!(make_plugin_version(v.0, v.1, v.2), make_plugin_version(1, 0, 1));
+
+		let v = read_plugin_version(make_plugin_version(63, 255, 255));
+		assert_eq!(v, (63, 255, 255));
+		assert_eq!(make_plugin_version(v.0, v.1, v.2), make_plugin_version(63, 255, 255));
+
+		let v = read_plugin_version(make_plugin_version(63, 65535, 1023));
+		assert_eq!(v, (63, 65535, 1023));
+		assert_eq!(make_plugin_version(v.0, v.1, v.2), make_plugin_version(63, 65535, 1023));
 	}
 }
