@@ -28,6 +28,21 @@
 :root {
 	cursor: none;
 	font-family: Inter, Avenir, Helvetica, Arial, "M PLUS 1P", "Microns", sans-serif;
+	font-feature-settings:
+		"ss07" 1,
+		"ss08" 1,
+		"cv01" 1,
+		/* "cv05" 1, */
+		/* "cv06" 1, */
+		"cv07" 1,
+		/* "cv08" 1, */
+		/* "cv09" 1, */
+		"cv10" 1, /* G with spur */
+		"calt" 1,
+		/* "case" 1, */
+		"ccmp" 1,
+		"cpsp" 1,
+		"dlig" 1;
 	font-size: 32px;
 	line-height: 40px;
 	font-weight: 400;
