@@ -3,7 +3,7 @@ members = [
 	# "bootstrap",
 	"libtellyfin",
 	"tellyfin-plugin",
-	"vsh/src-tauri",
+	"src-tauri",
 ]
 exclude = ["bootstrap"]
 resolver = "2"

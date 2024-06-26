@@ -1,0 +1,132 @@
+.tab-row {
+	display: flex;
+	/* flex-grow: 1; */
+	place-content: stretch;
+	justify-content: flex-start;
+	align-items: flex-start;
+	border-radius: 100000px;
+	transition-duration: var(--transition-short);
+	position: relative;
+	height: 50px;
+	padding-left: 80px;
+	width: auto;
+	min-width: 0px;
+}
+
+.tab-row.inactive {
+	/* transform: scale(1); */
+	filter: saturate(80%) brightness(80%);
+	opacity: 0.8;
+}
+
+/* .tab-row.active {
+	transform: scale(1.2);
+} */
+
+.tab-row:active {
+	transform: scale(1.1);
+}
+
+.tab-row div {
+	box-sizing: border-box;
+}
+
+.tab-row .tab-row-content {
+	/* width: 100%; */
+	width: min-content;
+	height: 100%;
+	/* position: relative; */
+	/* margin: 0; */
+	margin-right: auto;
+	border-radius: inherit;
+	display: flex;
+	/* flex-grow: 1; */
+	/* place-content: stretch; */
+	/* gap: 20px; */
+	gap: 40px;
+	transition-duration: var(--standard-duration);
+	will-change: translate;
+}
+
+/* .tab-row-image {
+	position: absolute;
+	width: inherit;
+	height: inherit;
+	border-radius: inherit;
+	display: flex;
+	flex-grow: 1;
+	place-content: center;
+	margin: auto;
+	background-image: url("../graphics/Loading.png");
+	background-size: auto;
+	background-position: center;
+	background-repeat: no-repeat;
+} */
+
+/* .tab-row.debug .tab-row-image {
+	overflow: visible;
+} */
+
+/* .tab-row .border-highlight {
+	position: absolute;
+	border: 2px solid rgba(255, 255, 255, 0.20);
+	border-radius: inherit;
+	width: 100%;
+	height: 100%;
+} */
+
+/* .tab-row .shadow {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border-radius: inherit;
+	background: rgba(0, 0, 0, 0.70);
+	box-shadow: 0 0 1px 1px #000000, 0 36px 100px 0 rgba(0, 0, 0, 0.70);
+	mix-blend-mode: multiply;
+} */
+
+.tab-row .tab {
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	align-content: center;
+	align-items: center;
+	/* padding: 0px 20px; */
+	/* border-radius: 100000px; */
+	border-radius: 8px;
+	/* height: calc(100% - 4px); */
+	/* height: 100%; */
+	height: calc(100% + 20px);
+	margin-block: auto;
+	padding-inline: 20px;
+	padding-block: 10px;
+	margin: -10px;
+	margin-inline: -20px;
+	font-size: 48px;
+	font-weight: 500;
+	transition-duration: var(--standard-duration);
+	scale: 1;
+	opacity: 0.5;
+}
+
+.tab-row .tab.selected, .tab-row .tab.active {
+	/* background: rgba(255, 255, 255, 0.20); */
+	opacity: 1;
+}
+
+.tab-row.active .tab {
+	/* scale: 0.9; */
+}
+
+.tab-row .tab.active {
+	/* scale: 1.1; */
+	animation: var(--text-glow);
+}
+
+.tab-row .tab.active {
+	/* border-color: rgba(255, 255, 255, 0.7); */
+	background: rgba(127, 127, 127, 0.1);
+	box-shadow:
+		0px 0px 4px 2px rgba(255, 255, 255, 0.7),
+		inset 0px 0px 3px 0px rgba(255, 255, 255, 0.7);
+}
