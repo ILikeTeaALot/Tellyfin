@@ -59,7 +59,7 @@ const GAMEPAD_BUTTON_REPEAT = 150;
 // const GAMEPAD_BUTTON_REPEAT = 200;
 // const GAMEPAD_BUTTON_REPEAT = 250;
 /** The button repeats at which repeat-rate doubles */
-function gamepadAcceleration(repeats: number) {
+function buttonAcceleration(repeats: number) {
 	if (repeats < 1) {
 		return GAMEPAD_BUTTON_REPEAT_INITIAL;
 		// } else if (repeats < 40) {
@@ -74,6 +74,16 @@ function gamepadAcceleration(repeats: number) {
 		return 15;
 	}
 };
+
+// const JOYSTICK_THRESHOLD = Math.PI / 4 - 0.4;
+// const JOYSTICK_THRESHOLD = 0.5;
+const JOYSTICK_THRESHOLD = 0.4;
+const JOYSTICK_REPEAT_BASE = 100;
+
+function axisAcceleration(repeats: number) {
+	// return (2 * GAMEPAD_BUTTON_REPEAT) / Math.max(Math.pow(repeats, 1 - 0.03125), 1)
+	return (2 * JOYSTICK_REPEAT_BASE) / Math.max(Math.pow(repeats + 1, 1/3), 1)
+}
 
 function axisToButton(axis: GamepadStick, value: number) {
 	if (value >= 0) {
@@ -98,9 +108,6 @@ function axisToButton(axis: GamepadStick, value: number) {
 		}
 	}
 }
-
-// const JOYSTICK_THRESHOLD = Math.PI / 4 - 0.4;
-const JOYSTICK_THRESHOLD = 0.5;
 
 // const EMPTY_COUNTDOWNS = [-1].fill(-1, 0, 50);
 // const EMPTY_PRESSES = [0].fill(0, 0, 50);
@@ -127,44 +134,14 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 	const last = useRef(performance.now());
 	const gamepads = useRef<ReturnType<typeof navigator.getGamepads>>(navigator.getGamepads());
 	// For some reason using a constant for these causes issues. No clue why!
-	const button_countdowns = useRef<number[]>([-1].fill(-1, 0, 50));
-	const axis_countdowns = useRef<number[]>([-1].fill(-1, 0, 50));
-	const buttonPresses = useRef<number[]>([0].fill(0, 0, 50));
+	const button_countdowns = useRef<{[key: string]: number}>({});
+	const axis_countdowns = useRef<number[]>([0].fill(-1, 0, 50));
+	const buttonPresses = useRef<{[key: string]: number}>({});
 	const axisActivations = useRef<number[]>([0].fill(0, 0, 50));
 
+	// STATES
 	const [transitionDuration, setTransitionDuration] = useState(300);
-
-	// const [movementInterval, setMovementInterval] = useState(GAMEPAD_BUTTON_REPEAT_INITIAL);
-
-	/* const contextValue = React.useRef({
-		addListener: (listener: GamepadEventListener, type?: GamepadListenerType) => {
-			switch (type) {
-				case "release":
-					releaseListeners.current.add(listener);
-					break;
-				default:
-					listeners.current.add(listener);
-			}
-			// console.log("Gamepad listeners:", listeners.current.size);
-		},
-		removeListener: (listener: GamepadEventListener, type?: GamepadListenerType) => {
-			switch (type) {
-				case "release":
-					releaseListeners.current.add(listener);
-					break;
-				default:
-					listeners.current.delete(listener);
-			}
-			// console.log("Gamepad listeners:", listeners.current.size);
-		},
-		removeAllListeners: () => {
-			releaseListeners.current.clear();
-			listeners.current.clear();
-		},
-		cancelRepeat: (button: GamepadButton) => {
-			button_countdowns.current[button] = Infinity;
-		}
-	}); */
+	const [pageIsFocused, setPageIsFocused] = useState(document.hasFocus());
 
 	// EFFECTS
 	useEffect(() => {
@@ -210,7 +187,7 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 							// console.log(countdown.current[button]);
 						} else {
 							if (gamepad.buttons[button].pressed) {
-								const time = gamepadAcceleration(buttonPresses.current[button]);
+								const time = buttonAcceleration(buttonPresses.current[button]);
 								button_countdowns.current[button] = time;
 								// setMovementInterval(time);
 								setTransitionDuration(time);
@@ -227,7 +204,7 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 					for (let i = 0; i < gamepad.axes.length; i++) {
 						const axis = i;
 						const value = gamepad.axes[i];
-						const active = value > JOYSTICK_THRESHOLD || value < -JOYSTICK_THRESHOLD;
+						const active = Math.abs(value) > JOYSTICK_THRESHOLD;
 						const button = axisToButton(axis, value);
 						if (!button) continue;
 						const countdown_index = button;
@@ -240,15 +217,13 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 							}
 						} else if (axis_countdowns.current[countdown_index] > 0) {
 							axis_countdowns.current[countdown_index] = axis_countdowns.current[countdown_index] - delta;
-						} else {
-							if (active) {
-								const time = gamepadAcceleration(axisActivations.current[button]) / (Math.abs(value) * 1.5);
-								axis_countdowns.current[countdown_index] = time;
-								setTransitionDuration(time);
-								axesActiveRightNow.current.add(button);
-								axisActivations.current[button]++;
-								eventsToCall.push(button);
-							}
+						} else if (active) {
+							const time = axisAcceleration(axisActivations.current[button]) / (Math.abs(value) * 1.5);
+							axis_countdowns.current[countdown_index] = time;
+							setTransitionDuration(time);
+							axesActiveRightNow.current.add(button);
+							axisActivations.current[button]++;
+							eventsToCall.push(button);
 						}
 					}
 				}
