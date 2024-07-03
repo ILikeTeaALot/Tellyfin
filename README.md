@@ -2,12 +2,16 @@
 
 The goal for this is a PS3-style UI for films, TV shows, music, photos, emulators, and Steam (social features possibly included too... maybe).
 
-> [!NOTE]
-> ###### Update 04-June-2024
->
-> Relicensed under the GNU Affero GPLv3!!!
->
-> Important TODO in light of this: implement a proper "About" screen to give an overview of the user's rights and where they can learn more and obtain a full licence and source code.
+## Cloning
+
+```sh
+# Clone main repository.
+git clone git@github.com:ILikeTeaALot/Tellyfin.git
+# Pull submodules (open an issue if you get an access/permission error.)
+git submodule update --init --recursive
+# JS dependencies
+yarn install
+```
 
 > [!WARNING]
 > Tellyfin is **very** early in development. It also only works on Windows at this time.
@@ -17,17 +21,17 @@ The goal for this is a PS3-style UI for films, TV shows, music, photos, emulator
 > [!IMPORTANT]
 > ###### ADDITIONAL
 >
-> For reasons unknown, and possibly only on my system (but I'm putting a note here to be safe), `cargo tauri dev` *does not work.* In order to run Tellyfin at this time, open 2 terminals:
+> For reasons unknown, and possibly only on my system (but I'm putting a note here to be safe), `cargo tauri dev` *does not work.* In order to run Tellyfin at this time, open 2 terminals in the project root:
 >
-> - [Terminal 1] should be open in the project root. If you have not done so already, run `yarn`/`yarn install` in the project root before your first run, and then run `cargo run`.
-> - [Terminal 2] should be open in `[PROJECT ROOT]/vsh`, and run `yarn dev`.
+> - [Terminal 1] Run `yarn`/`yarn install` if you have not already, and then run `yarn dev`.
+> - [Terminal 2] Run `cargo run`.
 
 ## Current Status
 
 At present, playback and playback-control of media on the local filesystem works, selected by browsing through a local Jellyfin server.
 
 > [!IMPORTANT]
-> Jellyfin user authentication details must be placed in `[PROJECT ROOT]\vsh\src\context\jellyfin-settings.json`. A template is provided in the adjacent `jellyfin-settings-example.json`.
+> Jellyfin user authentication details must be placed in `[PROJECT ROOT]\vsh\src\context\jellyfin-settings.json`. A template is provided in the adjacent `jellyfin-settings-example.json`. This is a temporary situation until the media server setup wizard is completed.
 
 The User Interface design is a top-level interface based on the [XMB](https://en.wikipedia.org/wiki/XrossMediaBar), which navigates to a hybrid of vertical lists, grids, single-option landing pages (i.e. 1 option: *Play*), and a contiuous row of episodes for TV shows. Eventually the top-level menu will support navigating:
 
