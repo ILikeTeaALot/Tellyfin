@@ -72,16 +72,17 @@
 }
 
 .keyboard .row {
-	height: 1.4em;
+	height: 1.8em;
 	gap: inherit;
 	display: grid;
-	grid-template-columns: repeat(10, 1.8em);
+	grid-template-columns: repeat(10, 2em);
 }
 
 .keyboard .row .key {
 	display: flex;
-	height: 1.4em;
-	font-size: 1em;
+	/* height: 1.6em; */
+	height: 100%;
+	font-size: 1.125em;
 	position: relative;
 	align-content: center;
 	justify-content: center;
