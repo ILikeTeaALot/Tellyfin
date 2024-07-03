@@ -18,10 +18,12 @@
 
 .panel.scale-down.inactive {
 	transform: scale(0.9);
+	z-index: 10;
 }
 
 .panel.active {
 	transform: scale(1.2);
+	z-index: 1000;
 }
 
 .panel:active {
@@ -53,7 +55,7 @@
 	place-content: center;
 	margin: auto;
 	overflow: hidden;
-	background-image: url("../graphics/Loading.png");
+	background-image: url("./assets/tex_loading_icon.png");
 	background-size: auto;
 	background-position: center;
 	background-repeat: no-repeat;
