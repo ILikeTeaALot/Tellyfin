@@ -1,12 +1,12 @@
 import { useState, useContext, useMemo, useCallback } from "preact/hooks";
 import { NavigateAction } from "./ContentList";
-import { ContentItem, type Id } from "./Content/types";
+import { ContentItem } from "./Content/types";
 import api, { auth, jellyfin } from "../context/Jellyfin";
 import { AppMode } from "../context/AppState";
 import { AppState } from "../AppStates";
-import { useInput } from "../hooks";
-import { Menu } from "./Menu";
-import { AudioFeedback, FeedbackSound } from "../context/AudioFeedback";
+import { useInput, useInputRelease } from "../hooks";
+import { Menu, type XBMenuItem } from "./Menu";
+import { FeedbackSound, playFeedback } from "../context/AudioFeedback";
 import { useDidUpdate } from "../hooks/use-did-update";
 
 export type ContentGridProps = {
@@ -37,7 +37,6 @@ export function ContentGrid(props: ContentGridProps) {
 	const [menuOpen, setMenuOpen] = useState(false);
 	// Makes useEffect easier.
 	const data_length = data.length;
-	const { play: playFeedback } = useContext(AudioFeedback);
 	useDidUpdate(() => {
 		playFeedback(FeedbackSound.SelectionMove);
 	}, [selected]);
@@ -56,6 +55,13 @@ export function ContentGrid(props: ContentGridProps) {
 				break;
 		}
 	}, [onNavigate, selected]);
+	const [canGoBackWithArrowKey, setCanGoBackWithArrowKey] = useState(true);
+	useInputRelease(() => {
+		setCanGoBackWithArrowKey(true);
+	}, active, []);
+	useInput(active, () => {
+		setCanGoBackWithArrowKey(false);
+	}, []);
 	useInput(active && !menuOpen, (button) => {
 		console.log(button);
 		switch (button) {
@@ -71,11 +77,26 @@ export function ContentGrid(props: ContentGridProps) {
 				break;
 			case "PadDown":
 			case "ArrowDown":
-				setSelected(current => Math.min(current + columns, data_length - 1));
+				setSelected(current => {
+					const last_row = Math.floor((data_length - 1) / columns);
+					const selected_row = Math.floor(current / columns);
+					if (selected_row != last_row) {
+						return Math.min(current + columns, data_length - 1);
+					}
+					return current;
+				});
 				break;
 			case "PadLeft":
 			case "ArrowLeft":
-				setSelected(current => Math.max(current - 1, 0));
+				setSelected(current => {
+					if (current == 0) {
+						if (canGoBackWithArrowKey) {
+							onNavigate(NavigateAction.Back);
+						}
+					}
+					setCanGoBackWithArrowKey(false);
+					return Math.max(current - 1, 0);
+				});
 				break;
 			case "PadRight":
 			case "ArrowRight":
@@ -103,8 +124,9 @@ export function ContentGrid(props: ContentGridProps) {
 			default:
 				break;
 		}
-	}, [columns, data_length, onNavigate]);
-	const menu_submit = useCallback((action: string, id: Id) => {
+	}, [canGoBackWithArrowKey, columns, data_length, onNavigate]);
+	const menu_submit = useCallback((item: XBMenuItem<string> & {value: string}) => {
+		const { id: action, value: id } = item;
 		console.log("action:", action, "id", id);
 		switch (action) {
 			case "mark_watched":
@@ -134,16 +156,6 @@ export function ContentGrid(props: ContentGridProps) {
 			const id = item.Id!;
 			const isWatched = item.UserData?.Played ?? false;
 			return [
-				// {
-				// 	label: "Play",
-				// 	id: "just_play",
-				// 	value: id,
-				// },
-				// {
-				// 	label: "Play from start",
-				// 	id: "play_from_start",
-				// 	value: id,
-				// },
 				{
 					label: isWatched ? "Mark as unwatched" : "Mark as watched",
 					id: isWatched ? "mark_unwatched" : "mark_watched",
