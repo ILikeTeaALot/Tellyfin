@@ -21,9 +21,10 @@ raw-window-handle = "0.6"
 libmpv2 = "3.0.0"
 libmpv2-sys = "*"
 
-libtellyfin = { path = "../libtellyfin" }
-tellyfin-plugin = { path = "../tellyfin-plugin" }
-web-audio-api = "0.45.2"
+# Dependencies specified at workspace root.
+libtellyfin = { workspace = true }
+tellyfin-plugin = { workspace = true }
+bass = { workspace = true }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

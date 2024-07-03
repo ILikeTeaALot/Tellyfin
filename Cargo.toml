@@ -3,6 +3,7 @@ members = [
 	# "bootstrap",
 	"crates/libtellyfin",
 	"crates/tellyfin-plugin",
+	"crates/bass",
 	"src-tauri",
 ]
 exclude = ["bootstrap"]
@@ -13,3 +14,5 @@ resolver = "2"
 libtellyfin = { path = "crates/libtellyfin" }
 tellyfin-plugin = { path = "crates/tellyfin-plugin" }
 steamlocate = { version = "2.0.0-beta", features = ["locate"] }
+# Others
+bass = { path = "crates/bass", features = ["mixer", "cd", "loud", "fx"] }
