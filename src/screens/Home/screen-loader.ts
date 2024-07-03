@@ -155,23 +155,28 @@ export async function selectScreen(updateScreens: Dispatch<StateUpdater<ScreenCo
 						case "system.settings.sound":
 						case "system.settings.display":
 						case "system.settings.server":
-							updateScreens(screens => [
-								...screens.slice(0, current_screen + 1),
-								{
-									id: current_item.id,
-									type: ContentType.SettingsList,
-									content: [],
-									// content: [
-									// 	{ id: "system.settings.music", name: "Music Settings" },
-									// 	{ id: "system.settings.theme", name: "Theme Settings" },
-									// 	{ id: "system.settings.video", name: "Video Settings" },
-									// 	{ id: "system.settings.sound", name: "Sound Settings" },
-									// 	{ id: "system.settings.display", name: "Display Settings" },
-									// ]
-								}
-							]);
-							setCurrentScreen(curr => curr + 1);
-							return;
+						// case "system.settings.plug-ins":
+						// case "system.settings.system":
+						// case "system.settings.home":
+					}
+					if (current_item.id.startsWith("system.settings.")) {
+						updateScreens(screens => [
+							...screens.slice(0, current_screen + 1),
+							{
+								id: current_item.id,
+								type: ContentType.SettingsList,
+								content: [],
+								// content: [
+								// 	{ id: "system.settings.music", name: "Music Settings" },
+								// 	{ id: "system.settings.theme", name: "Theme Settings" },
+								// 	{ id: "system.settings.video", name: "Video Settings" },
+								// 	{ id: "system.settings.sound", name: "Sound Settings" },
+								// 	{ id: "system.settings.display", name: "Display Settings" },
+								// ]
+							}
+						]);
+						setCurrentScreen(curr => curr + 1);
+						return;
 					}
 					switch (current_item.id) {
 						case "system.settings":
