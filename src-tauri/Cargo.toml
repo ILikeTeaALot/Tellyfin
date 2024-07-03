@@ -25,6 +25,7 @@ libmpv2-sys = "*"
 libtellyfin = { workspace = true }
 tellyfin-plugin = { workspace = true }
 bass = { workspace = true }
+toml = "0.8"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
