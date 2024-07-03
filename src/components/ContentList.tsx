@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "preact/hooks";
+import { useCallback, useContext, useState } from "preact/hooks";
 import { ContentItem } from "./Content/types";
 import { AppMode } from "../context/AppState";
 import { AppState } from "../AppStates";
@@ -19,11 +19,10 @@ export type ContentListProps = {
 };
 
 export function ContentList(props: ContentListProps) {
-	const { nav_position } = props;
+	const { nav_position, onNavigate: _onNavigate } = props;
 	const app_state = useContext(AppMode);
 	// Handle keeping onNavigate callback... correct.
-	const onNavigate = useRef(props.onNavigate);
-	onNavigate.current = props.onNavigate;
+	const onNavigate = useCallback((action: NavigateAction, index?: number) => _onNavigate(action, index), [_onNavigate]);
 	// Normal stuff
 	const [selected, setSelected] = useState(0);
 	// Makes useEffect easier.
@@ -38,7 +37,7 @@ export function ContentList(props: ContentListProps) {
 		}
 	}, [h_length]);
 	useInput(active, (button) => {
-		if (button == "Enter") onNavigate.current(NavigateAction.Enter, selected);
+		if (button == "Enter") onNavigate(NavigateAction.Enter, selected);
 	}, [selected]);
 	useInput(active, (button) => {
 		console.log(button);
@@ -49,7 +48,7 @@ export function ContentList(props: ContentListProps) {
 				break;
 			case "Backspace":
 			case "Back":
-				onNavigate.current(NavigateAction.Back);
+				onNavigate(NavigateAction.Back);
 				break;
 			default:
 				break;
