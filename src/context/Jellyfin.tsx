@@ -2,7 +2,6 @@ import { Jellyfin } from "@jellyfin/sdk";
 import * as jf from "@jellyfin/sdk/lib/utils/api";
 
 import { deviceInfo, server_address, user } from "./jellyfin-settings.json";
-import type { AuthenticationResult } from "@jellyfin/sdk/lib/generated-client/models";
 
 export * as jellyfin from "@jellyfin/sdk/lib/utils/api";
 
@@ -23,33 +22,6 @@ console.log('Info =>', info.data);
 // Fetch the list of public users
 const users = await jf.getUserApi(api).getPublicUsers();
 console.log('Users =>', users.data);
-
-class AuthData {
-	_current: AuthenticationResult;
-	// _interval: number;
-
-	constructor(data: AuthenticationResult) {
-		this._current = data;
-		// this._interval = window.setInterval(this.refreshAuth.bind(this), 2 * 60 * 1000);
-	}
-
-	// async refreshAuth() {
-	// 	const auth = await api.authenticateUserByName(user.username, user.password);
-	// 	this._current = auth.data;
-	// }
-
-	get current() {
-		return this._current;
-	}
-
-	set current(data: AuthenticationResult) {
-		this._current = data;
-	}
-
-	get session() {
-		return this.current.SessionInfo;
-	}
-}
 
 // A helper method for authentication has been added to the SDK because
 // the default method exposed in the generated Axios client is rather
