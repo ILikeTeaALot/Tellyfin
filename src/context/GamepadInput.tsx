@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useEffect, useRef, useState } from "preact/compat";
+import React, { useCallback, useEffect, useRef, useState } from "preact/compat";
 
 export enum GamepadButton {
 	Enter,
@@ -41,17 +41,7 @@ export interface ControllerStateType {
 	hasChanged: boolean;
 }
 
-// type GamepadEventListener = (e: { key: string; }) => void;
-
-// type GamepadListenerType = "press" | "release" | "change";
-
-// export const GamepadContext = React.createContext<{
-// 	addListener: (listener: GamepadEventListener, type?: GamepadListenerType) => void;
-// 	removeListener: (listener: GamepadEventListener, type?: GamepadListenerType) => void;
-// 	removeAllListeners: () => void;
-// 	cancelRepeat: (button: GamepadButton) => void;
-// }>({ addListener() { }, removeListener() { }, removeAllListeners() { }, cancelRepeat() { } });
-export const MovementSpeed = React.createContext("300ms");
+export const MovementSpeed = React.createContext(300);
 
 const GAMEPAD_BUTTON_REPEAT_INITIAL = 400;
 // const GAMEPAD_BUTTON_REPEAT = 75;
@@ -82,7 +72,7 @@ const JOYSTICK_REPEAT_BASE = 100;
 
 function axisAcceleration(repeats: number) {
 	// return (2 * GAMEPAD_BUTTON_REPEAT) / Math.max(Math.pow(repeats, 1 - 0.03125), 1)
-	return (2 * JOYSTICK_REPEAT_BASE) / Math.max(Math.pow(repeats + 1, 1/3), 1)
+	return (2 * JOYSTICK_REPEAT_BASE) / Math.min(Math.max(Math.pow(repeats + 1, 1 / 3), 1), 10000000);
 }
 
 function axisToButton(axis: GamepadStick, value: number) {
@@ -109,15 +99,18 @@ function axisToButton(axis: GamepadStick, value: number) {
 	}
 }
 
-// const EMPTY_COUNTDOWNS = [-1].fill(-1, 0, 50);
-// const EMPTY_PRESSES = [0].fill(0, 0, 50);
+declare global {
+	interface Window {
+		__INTERNAL_TELLYFIN_GAMEPAD__: {
+			transition: number;
+		};
+	}
+}
 
-// const GAMEPAD_ACCELERATION = [20, 40, 100];
+window.__INTERNAL_TELLYFIN_GAMEPAD__ = { transition: 300 };
 
 /**
- * # Controller Input System v0 spec
- * 
- * 
+ * This whole thing is probably worth moving to the native side...
  */
 export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChildren> = ({ children }) => {
 	if (!window.isSecureContext) return (
@@ -125,6 +118,7 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 			{children}
 		</>
 	);
+	// const transitionStandard = useRef(300);
 	// const listeners = useRef(new Set<GamepadEventListener>());
 	// const releaseListeners = useRef(new Set<GamepadEventListener>());
 	const buttonsPressedRightNow = useRef(new Set<string>());
@@ -134,13 +128,18 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 	const last = useRef(performance.now());
 	const gamepads = useRef<ReturnType<typeof navigator.getGamepads>>(navigator.getGamepads());
 	// For some reason using a constant for these causes issues. No clue why!
-	const button_countdowns = useRef<{[key: string]: number}>({});
+	// const button_countdowns = useRef<number[]>([1].fill(1, 0, 50));
+	const button_countdowns = useRef<{ [key: string]: number; }>({});
 	const axis_countdowns = useRef<number[]>([0].fill(-1, 0, 50));
-	const buttonPresses = useRef<{[key: string]: number}>({});
+	const buttonPresses = useRef<{ [key: string]: number; }>({});
 	const axisActivations = useRef<number[]>([0].fill(0, 0, 50));
 
 	// STATES
-	const [transitionDuration, setTransitionDuration] = useState(300);
+	const [transitionDuration, _setTransitionDuration] = useState(300);
+	const setTransitionDuration = useCallback((value: number) => { 
+		window.__INTERNAL_TELLYFIN_GAMEPAD__.transition = Math.max(0, Math.min(value - 40, 400));
+		_setTransitionDuration(value)
+	}, [_setTransitionDuration])
 	const [pageIsFocused, setPageIsFocused] = useState(document.hasFocus());
 
 	// EFFECTS
@@ -157,6 +156,21 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 	}, []);
 
 	useEffect(() => {
+		const handleBlur = () => setPageIsFocused(false);
+		const handleFocus = () => setPageIsFocused(true);
+		const handleVisChange = () => setPageIsFocused(!document.hidden);
+		window.addEventListener("blur", handleBlur);
+		window.addEventListener("focus", handleFocus);
+		window.addEventListener("visibiltychange", handleVisChange);
+		return () => {
+			window.removeEventListener("blur", handleBlur);
+			window.removeEventListener("focus", handleFocus);
+			window.removeEventListener("visibiltychange", handleVisChange);
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!pageIsFocused) return;
 		const animate = (/* now: DOMHighResTimeStamp */) => {
 			/** Milliseconds */
 			const now = performance.now();
@@ -183,7 +197,7 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 						} else if (button_countdowns.current[button] > 0) {
 							// console.log("countdown:", countdown.current);
 							// console.log(delta);
-							button_countdowns.current[button] = button_countdowns.current[button] - delta;
+							button_countdowns.current[button] = Math.max(button_countdowns.current[button] - delta, 0);
 							// console.log(countdown.current[button]);
 						} else {
 							if (gamepad.buttons[button].pressed) {
@@ -216,7 +230,7 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 								releaseEventsToCall.push(button);
 							}
 						} else if (axis_countdowns.current[countdown_index] > 0) {
-							axis_countdowns.current[countdown_index] = axis_countdowns.current[countdown_index] - delta;
+							axis_countdowns.current[countdown_index] = Math.max(axis_countdowns.current[countdown_index] - delta, 0);
 						} else if (active) {
 							const time = axisAcceleration(axisActivations.current[button]) / (Math.abs(value) * 1.5);
 							axis_countdowns.current[countdown_index] = time;
@@ -244,25 +258,21 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 				window.dispatchEvent(event);
 			}
 			if (buttonsPressedRightNow.current.size == 0 && axesActiveRightNow.current.size == 0) {
-				setTransitionDuration(300);
+				setTransitionDuration(400);
 			}
-			// frame.current = window.setTimeout(animate, 5);
-			// console.log("time to update gamepads:", now - performance.now());
-			// (async () => {
-			// })();
-			// setTimeout(() => {
-			// }, 0);
 		};
 		frame.current = window.setInterval(animate, 5);
 		return () => window.clearInterval(frame.current);
-	}, []);
+	}, [pageIsFocused, setTransitionDuration]);
+
+	const transitionStandard = Math.max(0, Math.min(transitionDuration - 40, 300));
 
 	return (
 		// <GamepadContext.Provider value={contextValue.current}>
-		<div style={{ "--standard-duration": `${Math.max(0, Math.min(transitionDuration - 40, 300))}ms`, "--transition-short": `${Math.max(0, Math.min((transitionDuration / 2) - 20, 150))}ms` }}>
-			{/* <MovementSpeed.Provider value={"300ms"}> */}
-			{children}
-			{/* </MovementSpeed.Provider> */}
+		<div style={{ "--standard-duration": `${transitionStandard}ms`, "--transition-short": `${Math.max(0, Math.min((transitionDuration / 2) - 20, 150))}ms` }}>
+			<MovementSpeed.Provider value={transitionStandard}>
+				{children}
+			</MovementSpeed.Provider>
 		</div>
 		// </GamepadContext.Provider>
 	);
