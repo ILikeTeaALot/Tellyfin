@@ -1,0 +1,6 @@
+[submodule "packages/tauri-settings"]
+	path = packages/tauri-settings
+	url = https://github.com/ILikeTeaALot/tauri-settings
+[submodule "crates/bass"]
+	path = crates/bass
+	url = git@github.com:ILikeTeaALot/bass
