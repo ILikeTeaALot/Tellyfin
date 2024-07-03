@@ -6,6 +6,7 @@ mod mpv;
 mod plugins;
 mod settings;
 mod states;
+pub mod util;
 mod window;
 use libmpv2::Mpv;
 use mpv::{control::*, init::*, status::*};
