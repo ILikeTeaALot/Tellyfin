@@ -63,6 +63,7 @@
 	-webkit-text-size-adjust: 100%;
 
 	--text-colour: #FFF;
+	--text-shadow: 0.5px 0.5px 1px #000;
 	
 	/* --timing-function-decelerate: cubic-bezier(0.61, 1, 0.88, 1);
 	--timing-function-accelerate: cubic-bezier(0.12, 0, 0.39, 0);
@@ -147,7 +148,7 @@ body {
 	position: absolute;
 	left: 300px;
 	display: flex;
-	transition-duration: var(--standard-duration);
+	transition-duration: var(--transition-standard);
 	flex-direction: column;
 }
 
@@ -245,7 +246,7 @@ body {
 	/* justify-content: center; */
 	position: fixed;
 	inset: 0;
-	/* transition-duration: var(--standard-duration); */
+	/* transition-duration: var(--transition-standard); */
 	transition-duration: var(--transition-long);
 	animation: var(--scale-fade-in);
 	will-change: opacity scale;
@@ -258,7 +259,7 @@ body {
 	/* background-color: grey; */
 	width: 240px;
 	height: 360px;
-	transition-duration: var(--standard-duration);
+	transition-duration: var(--transition-standard);
 	/* transition-timing-function: var(--timing-function-ease); */
 }
 
@@ -290,18 +291,21 @@ body {
 }
 
 .series-info .episode-container {
-	animation: var(--fade-in);
-	animation-fill-mode: backwards;
-	animation-delay: var(--transition-short);
 	width: 400px;
 	position: absolute;
 	top: 420px;
 	left: 120px;
-	transition-duration: var(--standard-duration);
+	transition-duration: var(--transition-standard);
 	display: flex;
 	flex-direction: column;
 	gap: 36px;
 	will-change: translate;
+}
+
+.series-info .episode-container img {
+	animation: var(--fade-in);
+	animation-fill-mode: backwards;
+	animation-delay: var(--transition-short);
 }
 
 .pseudo-episode-panel {
