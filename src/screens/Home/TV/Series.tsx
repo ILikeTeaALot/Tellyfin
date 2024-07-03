@@ -590,13 +590,52 @@ async function getSeasons(seriesId: Id) {
 	return data.Items!/* .filter(season => season.ChildCount! > 0) */;
 }
 
+const STEP = 25;
+
 async function seasonsFromEpisodes(episodes?: BaseItemDto[]) {
 	if (episodes) {
+		////// This *would* work if the highlight-selected-season/jump-to-episode-of-season code worked with it.
+		// return [...episodes]
+		// 	.map(value => ({ Name: value.SeasonName!, Id: value.SeasonId! }))
+		// 	.filter((v, i, arr) => {
+		// 		if (arr[i - 1]) return v.Id != arr[i - 1].Id;
+		// 		return true;
+		// 	});
+		//////
+		// return episodes.reduce((prev, curr, index, arr) => {
+		// 	return prev;
+		// }, [] as BaseItemDto[]);
 		// return episodes.reduce((prev, curr, index, arr) => {});
-		return Array.from(new Map(episodes.map(episode => [episode.SeasonId!, episode.SeasonName!]))).map(([Id, Name]) => ({
+		// const seasonsList: [string, string][] = [];
+		// for (let i = 0; i < episodes.length; i += STEP) {
+		// 	await new Promise<void>((ok) => setTimeout(() => {
+		// 		seasonsList.push(...episodes.slice(i, i + STEP).map(episode => [episode.SeasonId!, episode.SeasonName!] as [string, string]));
+		// 		ok();
+		// 	}, 0));
+		// }
+		const seasonsList = new Map();
+		// episodes.forEach(episode => seasonsList.set(episode.SeasonId!, episode.SeasonName!));
+		for (const episode of episodes!) {
+			seasonsList.set(episode.SeasonId, episode.SeasonName);
+		}
+		// const array = Array.from(new Map(seasonsList));
+		// const array = seasonsList;
+		const array = Array.from(seasonsList);
+		// let final: BaseItemDto[] = [];
+		// for (let i = 0; i < array.length; i += STEP) {
+		// 	await new Promise<void>((ok) => setTimeout(() => {
+		// 		final.push(...array.slice(i, i + STEP).map(([Id, Name]) => ({
+		// 			Name,
+		// 			Id,
+		// 		} as BaseItemDto)));
+		// 		ok();
+		// 	}, 0));
+		// }
+		const final = array.map(([Id, Name]) => ({
 			Name,
 			Id,
 		} as BaseItemDto));
+		return final;
 	} else {
 		return episodes;
 	}
@@ -606,16 +645,38 @@ async function seasonsFromEpisodes(episodes?: BaseItemDto[]) {
  * TODO: Pagination?
  */
 async function getEpisodes(seriesId: Id) {
-	let { data } = await jellyfin.getTvShowsApi(api).getEpisodes({
+	const getTvShows = jellyfin.getTvShowsApi(api);
+	let res = await getTvShows.getEpisodes({
 		seriesId,
 		userId: auth.User!.Id!,
 		isMissing: false,
-		imageTypeLimit: 1,
-		enableUserData: true,
-		sortBy: "ParentIndexNumber",
-		// TODO: Fetch some of these when the file is played
-		fields: ["ItemCounts", "PrimaryImageAspectRatio", "MediaSourceCount", "Overview", "Path", "SpecialEpisodeNumbers", "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
+		limit: 1,
+		fields: [],
 	});
-	console.log(data);
-	return data.Items!;
+	const total = res.data.TotalRecordCount;
+	if (!total) return [];
+	let all: BaseItemDto[] = [];
+	for (let startIndex = 0; startIndex < total; startIndex += STEP) {
+		await new Promise<void>((ok) => setTimeout(async () => {
+			let { data } = await getTvShows.getEpisodes({
+				// Auth
+				seriesId,
+				userId: auth.User!.Id!,
+				// Pagination
+				limit: STEP,
+				startIndex: startIndex,
+				// Query
+				isMissing: false,
+				imageTypeLimit: 1,
+				enableUserData: true,
+				sortBy: "ParentIndexNumber",
+				// TODO: Fetch some of these when the file is played
+				fields: ["ItemCounts", "PrimaryImageAspectRatio", "MediaSourceCount", "Overview", "Path", "SpecialEpisodeNumbers", "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
+			});
+			console.log(data);
+			if (data.Items) all.push(...data.Items);
+			ok();
+		}, 0));
+	}
+	return all;
 }
