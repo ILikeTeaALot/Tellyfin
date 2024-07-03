@@ -24,7 +24,6 @@ function refreshInterval(latest?: VideoContextType) {
 }
 
 export function MpvStateProvider(props: { children?: ComponentChildren; }) {
-	// const appMode = useContext(AppMode);
 	const [videoState, setVideoState] = useState(defaultVideoState);
 	const mpvState = useSWR("mpv_state", () => (invoke<VideoContextType>("mpv_status")), { fallbackData: defaultVideoState, refreshInterval });
 	const { data, mutate } = mpvState;
@@ -35,7 +34,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					jellyfin.getItemsApi(api).getItems({
 						ids: [data.jellyfin_id],
 						userId: auth.User!.Id!,
-						fields: [/* "ItemCounts", "PrimaryImageAspectRatio", */ "MediaSourceCount", "Overview", "Path", /* "SpecialEpisodeNumbers", */ "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
+						fields: ["MediaSourceCount", "Overview", "Path", "SpecialEpisodeNumbers", "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
 					}).then(value => {
 						if (value.data.Items) {
 							let jellyfin_data = value.data.Items[0];
@@ -56,6 +55,26 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 			}));
 		}
 	}, [data]);
+	const playback_status = data?.status?.playback_status;
+	useEffect(() => {
+		if (playback_status == PlaybackStatus.Stopped) {
+			invoke("play_background");
+		} else {
+			invoke("stop_background");
+		}
+	}, [playback_status]);
+	useEffect(() => {
+		switch (playback_status) {
+			case PlaybackStatus.Stopped:
+				invoke("reinit_bass");
+				break;
+			case PlaybackStatus.Paused:
+				break;
+			case PlaybackStatus.Playing:
+				invoke("stop_background");
+				break;
+		}
+	}, [playback_status]);
 	useEffect(() => {
 		function handler(e: Event<MpvEvent>) {
 			const { payload } = e;
@@ -118,9 +137,6 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 		const unlisten = listen<MpvEvent>("mpv-event", handler);
 		return async () => (await unlisten)();
 	}, [mutate]);
-	// useEffect(() => {
-	// 	mpvState.mutate();
-	// }, [appMode]);
 	return (
 		<VideoState.Provider value={videoState}>
 			<MutateContext.Provider value={mutate}>
