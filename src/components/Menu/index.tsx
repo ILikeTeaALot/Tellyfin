@@ -1,9 +1,10 @@
 import "./menu.css";
-import { useCallback, useContext, useEffect, useState } from "preact/hooks";
+
+import { useCallback, useEffect, useState } from "preact/hooks";
 import type { Id } from "../Content/types";
 import { useInput } from "../../hooks";
-import { AudioFeedback, FeedbackSound } from "../../context/AudioFeedback";
-import { useDidMount, useDidUpdate } from "../../hooks/use-did-update";
+import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
+import { useDidUpdate } from "../../hooks/use-did-update";
 
 export type XBMenuItem<T> = {
 	label: string;
@@ -21,7 +22,8 @@ export type MenuProps<T> = {
 	/** Defaults to 0 */
 	default_item?: number;
 	items: Array<XBMenuItem<T>>;
-	onSubmit: (action: Id, value: T) => void;
+	rootMinWidth?: number;
+	onSubmit: (item: { label: string; id: Id; value: T; }) => void;
 	onCancel: () => void;
 };
 
@@ -32,9 +34,7 @@ export type MenuProps<T> = {
  * @returns Menu Component
  */
 export function Menu<T>(props: MenuProps<T>) {
-	const { active, default_item, items, onSubmit, onCancel } = props;
-
-	const { play: playFeedback } = useContext(AudioFeedback);
+	const { active, default_item, items, rootMinWidth, onSubmit, onCancel } = props;
 
 	// const [selected, setSelected] = useState([default_item ?? 0]);
 	// const [selected, setSelected] = useState(default_item ?? 0);
@@ -57,17 +57,18 @@ export function Menu<T>(props: MenuProps<T>) {
 	// 	setSelectedId(id);
 	// }, []);
 
-	const submit = useCallback((action: Id, value?: T) => {
-		if (value) {
-			onSubmit(action, value);
+	const submit = useCallback((item: XBMenuItem<T>) => {
+		if (item.value) {
+			// onSubmit(action, value);
 			playFeedback(FeedbackSound.Enter);
+			onSubmit(item as any);
 		}
-	}, [onSubmit, playFeedback]);
+	}, [onSubmit]);
 
 	const cancel = useCallback(() => {
 		onCancel();
 		playFeedback(FeedbackSound.MenuClose);
-	}, [onCancel, playFeedback]);
+	}, [onCancel]);
 
 	useInput(active, (button) => {
 		switch (button) {
@@ -79,12 +80,17 @@ export function Menu<T>(props: MenuProps<T>) {
 
 	useEffect(() => {
 		if (active) playFeedback(FeedbackSound.MenuOpen);
-	}, [active]); // eslint-disable-line
+	}, [active]);
+
+	if (items.length == 0) {
+		onCancel();
+		return null;
+	}
 
 	return (
 		<div class="menu-container">
-			<InnerMenu active={active} default_item={default_item} first items={items} onCancel={cancel} onSubmit={submit} />
-				{/* {selected.map((selected, depth) => {
+			<InnerMenu active={active} default_item={default_item} first items={items} minWidth={rootMinWidth} onCancel={cancel} onSubmit={submit} />
+			{/* {selected.map((selected, depth) => {
 					return (
 						<div class="menu">
 							{items.map(item => {
@@ -107,29 +113,40 @@ type InnerMenuProps<T> = {
 	first?: boolean;
 	default_item?: number;
 	items: Array<XBMenuItem<T>>;
+	minWidth?: number;
 	onCancel: () => void;
-	onSubmit: (action: Id, value?: T) => void;
+	onSubmit: (item: XBMenuItem<T>) => void;
 };
 
 const MENU_ITEM_HEIGHT = 28;
 const GAP = 5;
 
 function InnerMenu<T>(props: InnerMenuProps<T>) {
-	const { active, first, items, onCancel, onSubmit } = props;
+	const { active, first, items, minWidth, onCancel, onSubmit } = props;
 	const default_item = props.default_item ?? 0;
 
 	const item_count = items.length;
 
 	const [selected, setSelected] = useState(default_item);
 	const [submenuActive, setSubmenuActive] = useState(false);
+	// Don't play move sound if `selected` was changed by props
+	const [playMoveSound, setPlayMoveSound] = useState(false);
 
 	const submenu = items[selected].submenu;
-	
-	const { play: playFeedback } = useContext(AudioFeedback);
 
 	useEffect(() => {
 		if (!active) setSubmenuActive(false);
 	}, [active]);
+
+	useEffect(() => {
+		if (!active) {
+			setSelected(selected => {
+				// Don't play move sound if `selected` was changed by props
+				if (selected != default_item) setPlayMoveSound(false);
+				return default_item;
+			});
+		}
+	}, [active, default_item]);
 
 	useInput(active && !submenuActive, (button) => {
 		switch (button) {
@@ -162,7 +179,8 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 	}, []);
 
 	useInput(active && !hasSubmenu, (button) => {
-		if (button == "Enter") onSubmit(items[selected].id, items[selected].value);
+		// if (button == "Enter") onSubmit(items[selected].id, items[selected].value);
+		if (button == "Enter") onSubmit(items[selected]);
 	}, [items, selected]);
 
 	useInput(active && !submenuActive, (button) => {
@@ -180,24 +198,50 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 		}
 	}, [item_count, selected]);
 
-	useDidUpdate(() => {
-		playFeedback(FeedbackSound.MenuMove);
+	useEffect(() => {
+		// Don't play move sound if `selected` was changed by props
+		if (playMoveSound) {
+			playFeedback(FeedbackSound.MenuMove);
+		} else {
+			setPlayMoveSound(true);
+		}
 	}, [selected]);
 
 	const onSubmenuClose = useCallback(() => {
 		setSubmenuActive(false);
 		playFeedback(FeedbackSound.MenuClose);
-	}, [playFeedback]);
+	}, []);
 
 	return (
 		<>
-			<div class={active ? "menu open" : "menu"} /* style={submenuActive ? { translate: "-250px" } : {}} */>
-				<div class="menu-item-container" style={{ opacity: submenuActive ? 0.4 : 1, filter: submenuActive ? "blur(5px)" : undefined, translate: `0px -${/* selected */ default_item * ((MENU_ITEM_HEIGHT * 1.2) + GAP)}px` }}>
+			<div class={active ? "menu open" : "menu"} /* style={submenuActive ? { translate: "-250px" } : {}} */ style={{
+				minWidth
+			}}>
+				<div class="menu-item-container" style={{
+					transition: !active ? "0ms" : undefined,
+					// transitionDelay: !active ? "var(--transition-standard)" : undefined,
+					opacity: submenuActive ? 0.4 : 1,
+					filter: submenuActive ? "blur(5px)" : undefined,
+					translate: `0px -${/* selected */ default_item * ((MENU_ITEM_HEIGHT * 1.2) + GAP)}px`,
+				}}>
 					{items.map((item, index) => {
+						const is_selected = index == selected;
 						return (
-							<div key={item.id} class={index == selected ? "menu-item selected" : "menu-item"}>
-								<span>{item.label} {item.submenu ? "›" : null}</span>
+							// <div style={{ display: "flex" }}>
+							<div
+								key={item.id}
+								class={is_selected ? item.submenu ? "menu-item submenu selected" : "menu-item selected" : item.submenu ? "menu-item submenu" : "menu-item"}
+								data-text={item.label}
+							>
+								{/* <span>{item.label} {item.submenu ? "›" : null}</span> */}
+								<span>{item.label}</span>
 							</div>
+							// 	{item.submenu ? <img key={`${item.id}-0`} src={back} style={{
+							// 		rotate: "-180deg", height: "0.875em",
+							// 		/* verticalAlign: "middle", */ /* position: "absolute", */
+							// 		marginLeft: "0.5ch", marginTop: "0.125em"
+							// 	}} /> : null}
+							// </div>
 						);
 					})}
 				</div>
