@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "preact/hooks";
 import * as jellyfin from "@jellyfin/sdk/lib/utils/api";
 import useSWR, { useSWRConfig } from "swr";
 
@@ -14,7 +14,7 @@ import { VideoContextType } from "../../../context/VideoContext";
 import { useInput, useInputRelease } from "../../../hooks";
 import { Menu, type XBMenuItem } from "../../../components/Menu";
 import type { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
-import { AudioFeedback, FeedbackSound } from "../../../context/AudioFeedback";
+import { FeedbackSound, playFeedback } from "../../../context/AudioFeedback";
 
 // const WIDTH = 320;
 const WIDTH = 400;
@@ -33,13 +33,30 @@ enum Row {
 	Overview,
 }
 
+type SelectionState = {
+	season: number;
+	episode: number;
+};
+
+type SelectionStateWithPrev = SelectionState & {
+	previous: SelectionState;
+};
+
+function selectionReducer(state: SelectionStateWithPrev, action: SelectionState | ((current: SelectionStateWithPrev) => SelectionState))/* : { season: number; episode: number; previous: { season: number; episode: number; } } */ {
+	if (typeof action == "function") {
+		const newState = action(state);
+		return { ...newState, previous: { season: state.season, episode: state.episode } };
+	} else {
+		return { ...action, previous: { season: state.season, episode: state.episode } };
+	}
+}
+
 export function TvSeries(props: JellyfinScreenProps) {
 	// console.log(props.data);
 	// Mutator
 	const { mutate } = useSWRConfig();
 	// Props
 	const { active: _active, nav_position, onNavigate } = props;
-	const { play: playFeedback } = useContext(AudioFeedback);
 	const [nextUpSelected, setNextUpSelected] = useState(false);
 	const { data: nextUp, isLoading: loadingNextUp } = useSWR(`next-up-${props.data.Id}`, () => getNextUp(props.data.Id!), { revalidateOnMount: true });
 	const { data: episodes, /* isLoading: episodesLoading, */ mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!), { keepPreviousData: true });
@@ -47,7 +64,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const { data: seasons, isLoading: loadingSeasons } = useSWR(() => episodes ? `seasons-${props.data.Id}` : null, () => seasonsFromEpisodes(episodes), { keepPreviousData: true });
 	const season_count = seasons?.length ?? 0;
 	const [tabRowX, setTabRowX] = useState(0);
-	const [selected, setSelected] = useState({ season: 0, episode: 0 });
+	const [selected, setSelected] = useReducer(selectionReducer, { season: 0, episode: 0, previous: { season: 0, episode: 0 } });
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [keyRepeatCount, setKeyRepeatCount] = useState(0);
 	const [enter_pressed, setEnterPressed] = useState(false);
@@ -187,10 +204,10 @@ export function TvSeries(props: JellyfinScreenProps) {
 					}
 				}
 				if (previousSeasonStartEpisodeIndex > -1) {
-					playFeedback(FeedbackSound.SelectionMove);
+					if (previousSeasonIndex < season || previousSeasonStartEpisodeIndex < episode) playFeedback(FeedbackSound.SelectionMove);
 					return { season: previousSeasonIndex, episode: previousSeasonStartEpisodeIndex };
 				} else {
-					playFeedback(FeedbackSound.SelectionMove);
+					if (previousSeasonIndex < season) playFeedback(FeedbackSound.SelectionMove);
 					return { season: previousSeasonIndex, episode };
 				}
 			} else {
@@ -210,7 +227,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 		// 		return current;
 		// 	}
 		// });
-	}, [episodes, seasons, playFeedback]);
+	}, [episodes, seasons]);
 	const jumpSeasonRight = useCallback((toEnd?: boolean) => {
 		setSelected(({ season, episode }) => {
 			if (episodes && seasons) {
@@ -222,10 +239,10 @@ export function TvSeries(props: JellyfinScreenProps) {
 				const index = episodes.findIndex(episode => episode.SeasonId == seasons![newIndex].Id);
 				if (index > -1) {
 					// setSelectedEpisode(index);
-					playFeedback(FeedbackSound.SelectionMove);
+					if (newIndex > season || index > episode) playFeedback(FeedbackSound.SelectionMove);
 					return { season: newIndex, episode: index };
 				} else {
-					playFeedback(FeedbackSound.SelectionMove);
+					if (newIndex > season) playFeedback(FeedbackSound.SelectionMove);
 					return { season: newIndex, episode };
 				}
 			} else {
@@ -248,7 +265,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 		// 		return current;
 		// 	}
 		// });
-	}, [episodes, seasons, playFeedback]);
+	}, [episodes, seasons]);
 	useInput(active && row != Row.Overview, (button) => {
 		switch (button) {
 			case "R1":
@@ -271,7 +288,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 				});
 				break;
 		}
-	}, [playFeedback]);
+	}, []);
 	useInput(active && row == Row.Seasons, (button) => {
 		switch (button) {
 			case "PadRight":
