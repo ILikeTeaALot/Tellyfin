@@ -27,6 +27,8 @@ const GAP = 50; // Inactive scale(0.9)
 const SCREEN_WIDTH = 1920;
 const HORIZONTAL_MARGIN = 80;
 
+const OVERDRAW = 1;
+
 enum Row {
 	Seasons,
 	Episodes,
@@ -74,7 +76,8 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const [row, setRow] = useState(Row.Episodes);
 	const tab_row_content = useRef<HTMLDivElement>(null);
 	const episode_overview = useRef<HTMLDivElement>(null);
-	const menu_submit = useCallback((action: string, id: Id) => {
+	const menu_submit = useCallback((item: XBMenuItem<Id> & { value: Id; }) => {
+		const { id: action, value: id } = item;
 		console.log("action:", action, "id", id);
 		switch (action) {
 			case "mark_watched":
@@ -442,8 +445,8 @@ export function TvSeries(props: JellyfinScreenProps) {
 	);
 	const runTimeTicks = episodes[selected.episode].RunTimeTicks;
 	const duration = runTimeTicks ? displayRunningTime(runTimeTicks) : null;
-	const startIndex = Math.max(0, selected.episode - 2);
-	const endIndex = Math.min(episodes.length, selected.episode + 5 + 1);
+	const startIndex = Math.max(0, selected.episode - (0 + OVERDRAW)); //   sel - (on-screen + overdraw)
+	const endIndex = Math.min(episodes.length, selected.episode + (4 + OVERDRAW)); // sel + (on-screen + overdraw)
 	return (
 		<div>
 			<div className="fullscreen-mask bottom">
@@ -481,46 +484,25 @@ export function TvSeries(props: JellyfinScreenProps) {
 						<h1>{episodes[selected.episode].Name ?? "Title Unknown"}</h1>
 						<h5>{episodes[selected.episode].SeasonName ?? "Unknown Season"} Episode {episodes[selected.episode].IndexNumber ?? "Unknown"}</h5>
 					</div>
-					<div className="episode-list" style={{ opacity: row != Row.Overview ? 1 : 0 }}>
+					<div className="episode-list" /* ref={animationParent} */ style={{
+						opacity: row != Row.Overview ? 1 : 0,
+						// "--transition-standard": "2s", // DEBUG
+						// "--standard-duration": "2s"//     DEBUG
+					}}>
 						{episodes.slice(startIndex, endIndex).map((episode, rawIndex) => {
 							const index = rawIndex + startIndex;
 							const row_selected = row != Row.Seasons;
+							const highlight_selected = row_selected /* && keyRepeatCount < 2 */;
 							// const visible = index >= startIndex && index < endIndex;
 							// if (!visible) return;
 							// const row_active = active && row_selected;
 							// const translate = (index * (WIDTH + GAP)) - (selected.episode * (WIDTH + GAP));
-							let translate: number;
-							const highlight_selected = row_selected /* && keyRepeatCount < 2 */;
-							if (!highlight_selected) {
-								translate = (index * (WIDTH + GAP)) - (selected.episode * (WIDTH + GAP)) - 40;
-							} else if (index < selected.episode) {
-								translate = (index * (WIDTH)) - (selected.episode * (WIDTH)) - GAP; // Inactive scale(.9)
-								// translate = (index * (WIDTH + GAP)) - (selected.episode * (WIDTH + GAP)) - GAP;
-							} else if (index == selected.episode) {
-								translate = (index * (WIDTH + GAP)) - (selected.episode * (WIDTH + GAP));
-							} else /* index > selected.episode */ {
-								translate = (index * (WIDTH)) - (selected.episode * (WIDTH)) + GAP; // Inactive scale(.9)
-								// translate = (index * (WIDTH + GAP)) - (selected.episode * (WIDTH + GAP)) + GAP;
-							}
 							// if (!visible) return (
 							// 	<div key={episode.Id} className="pseudo-episode-panel" style={{ translate: `${translate}px` }} />
 							// );
 							return (
-								<div key={episode.Id ?? index} className="episode-container" style={{ translate: `${translate}px`, /* display: index > startIndex && index < endIndex ? undefined : "none", */ }}>
-									{/* {menuOpen && index == selected.episode ? <div style={{ position: "fixed", inset: 0, backdropFilter: "blur(60px)" }} /> : null} */}
-									<ContentPanel scaleDownInactive state={highlight_selected /* && !(enter_pressed && selected.episode == index) */ ? (selected.episode == index ? PanelState.Active : PanelState.Inactive) : PanelState.None} width={WIDTH} height={HEIGHT}>
-										<img
-											decoding="async"
-											src={`${api.basePath}/Items/${episode.Id}/Images/Primary?fillWidth=${WIDTH}&fillHeight=${HEIGHT}`}
-											style={{
-												objectFit: "cover",
-												width: "100%",
-												height: "100%",
-											}}
-										/>
-									</ContentPanel>
-									{/* <span style={{ fontSize: 40, fontWeight: 600, whiteSpace: "nowrap" }}>{episode.Name}</span> */}
-								</div>
+								// EpisodePanel(episode, index, translate, highlight_selected, selected)
+								<EpisodePanel key={episode.Id ?? index} episode={episode} index={index} highlight_selected={highlight_selected} selected={selected.episode} prevSelected={selected.previous.episode} />
 							);
 						})}
 					</div>
@@ -566,6 +548,145 @@ export function TvSeries(props: JellyfinScreenProps) {
 			<Menu active={menuOpen} items={menu} onSubmit={menu_submit} onCancel={menu_cancel} />
 		</div>
 	);
+}
+
+type EpisodePanelProps = {
+	episode: BaseItemDto;
+	index: number;
+	highlight_selected: boolean;
+	selected: number;
+	prevSelected: number;
+};
+
+function calculateEpisodeTranslate(highlight_selected: boolean, index: number, selected: number) {
+	// let translate;
+	if (!highlight_selected) {
+		return (index * (WIDTH + GAP)) - (selected * (WIDTH + GAP)) - 40;
+	} else if (index < selected) {
+		return (index * (WIDTH)) - (selected * (WIDTH)) - GAP; // Inactive scale(.9)
+		// translate = (index * (WIDTH + GAP)) - (selected * (WIDTH + GAP)) - GAP;
+	} else if (index == selected) {
+		return (index * (WIDTH + GAP)) - (selected * (WIDTH + GAP));
+	} else /* index > selected */ {
+		return (index * (WIDTH)) - (selected * (WIDTH)) + GAP; // Inactive scale(.9)
+		// translate = (index * (WIDTH + GAP)) - (selected * (WIDTH + GAP)) + GAP;
+	}
+	// return translate;
+}
+
+function EpisodePanel(props: EpisodePanelProps) {
+	const { episode, index, highlight_selected: _highlight_selected, selected, prevSelected } = props;
+	const highlightSelected = _highlight_selected;
+	const ref = useRef<HTMLDivElement>(null);
+	const anim = useRef<Animation>();
+	// let translate: number;
+	// const [highlightSelected, setHighlightSelected] = useState(_highlight_selected);
+	// useLayoutEffect(() => {
+	// 	setHighlightSelected(_highlight_selected);
+	// }, [_highlight_selected]);
+	const [shouldHighlight, setShouldHighlight] = useState(false);
+	// const [translate, setTranslate] = useState(() => initialEpisodeTranslate(selected, prevSelected, _highlight_selected, index));
+	// const animationSpeed = useContext(MovementSpeed);
+	// const animate = useCallback(() => {}, []);
+	const translate = useRef(initialEpisodeTranslate(selected, prevSelected, _highlight_selected, index));
+	const wasHighlightSelected = useRef(_highlight_selected);
+	const animate = useCallback((highlightSelected: boolean) => {
+		/* Attempt 3? */
+		// const intialPosition = highlightSelected ? calculateEpisodeTranslate(highlightSelected, index, selected) : initialEpisodeTranslate(selected, prevSelected, highlightSelected, index);
+		const intialPosition = initialEpisodeTranslate(selected, prevSelected, highlightSelected, index);
+		const endPosition = calculateEpisodeTranslate(highlightSelected, index, selected);
+		if (ref.current) {
+			// const finalStartPosition = translate.current == intialPosition ? endPosition : intialPosition;
+			const finalStartPosition = intialPosition;
+			anim.current = ref.current.animate([
+				// { translate: `${translate.current == intialPosition ? endPosition : intialPosition}px` },
+				/* (wasHighlightSelected.current && (!wasHighlightSelected.current && highlightSelected))
+					|| !(!wasHighlightSelected.current && highlightSelected)
+					&& !(wasHighlightSelected.current && highlightSelected) */ highlightSelected == wasHighlightSelected.current ? {
+					translate: `${finalStartPosition}px`,
+				} : {},
+				{
+					translate: `${endPosition}px`,
+				},
+			], {
+				// duration: "var(--transition-standard)",
+				duration: window.__INTERNAL_TELLYFIN_GAMEPAD__.transition || 0,
+				// duration: 300,
+				// easing: "var(--timing-function-ease)",
+				easing: "cubic-bezier(0, 0.55, 0.45, 1)", // ease-out circle
+				fill: "both",
+				iterations: 1,
+				composite: "replace",
+			});
+			translate.current = finalStartPosition;
+			wasHighlightSelected.current = highlightSelected;
+		}
+	}, [index, selected, prevSelected])
+	useLayoutEffect(() => {
+		// if (ref.current) ref.current.style.transitionDuration = "0ms";
+		/* Attempt 2? */
+		// setTranslate(initialEpisodeTranslate(selected, prevSelected, _highlight_selected, index));
+		// setShouldHighlight(false);
+		/*  */
+		// setHighlightSelected(true);
+		// if (ref.current) { // Rendered already
+		// 	setTranslate(calculateEpisodeTranslate(highlightSelected, index, prevSelected));
+		// } else { // First Render
+		// }
+		// setTranslate(translate => {
+		// 	return translate == intialPosition ? endPosition : intialPosition;
+		// })
+		animate(_highlight_selected);
+	}, [_highlight_selected, animate]);
+	// useEffect(() => {
+	// 	// if (ref.current) ref.current.style.transitionDuration = "";
+	// 	/* Was working (Attempt 2?) */
+	// 	// setTranslate(calculateEpisodeTranslate(_highlight_selected, index, selected));
+	// 	// setShouldHighlight(true);
+	// 	/*  */
+	// 	// setHighlightSelected(_highlight_selected);
+	// }, [_highlight_selected, index, selected, prevSelected]);
+	return (
+		<div className="episode-container" ref={ref} style={{
+			/* Attempt 2 */
+			// translate: `${translate}px`,
+			/*  */
+			/* display: index > startIndex && index < endIndex ? undefined : "none", */
+		}}>
+			{/* {menuOpen && index == selected ? <div style={{ position: "fixed", inset: 0, backdropFilter: "blur(60px)" }} /> : null} */}
+			<ContentPanel scaleDownInactive state={highlightSelected /* && !(enter_pressed && selected == index) */ ? (selected == index ? PanelState.Active : PanelState.Inactive) : PanelState.None} width={WIDTH} height={HEIGHT}>
+				<img
+					decoding="async"
+					src={`${api.basePath}/Items/${episode.Id}/Images/Primary?fillWidth=${WIDTH}&fillHeight=${HEIGHT}`}
+					style={{
+						objectFit: "cover",
+						width: "100%",
+						height: "100%",
+					}} />
+				{/* Selected: {selected}
+				Previous: {prevSelected} */}
+			</ContentPanel>
+			{/* <span style={{ fontSize: 40, fontWeight: 600, whiteSpace: "nowrap" }}>{episode.Name}</span> */}
+		</div>
+	);
+}
+
+function initialEpisodeTranslate(selected: number, prevSelected: number, highlightSelected: boolean, index: number) {
+	if (Math.max(prevSelected, selected) - Math.min(prevSelected, selected) > OVERDRAW + 4) {
+		return calculateEpisodeTranslate(highlightSelected, index, selected);
+	} else {
+		return calculateEpisodeTranslate(highlightSelected, index, prevSelected);
+	}
+	// if (selected > prevSelected) { // (new)selected is to the right
+	// } else if (selected < prevSelected) { // (new)selected is to the left
+	// 	if (Math.max(prevSelected, selected) - Math.min(prevSelected, selected) > OVERDRAW + 4) {
+	// 		return calculateEpisodeTranslate(highlightSelected, index, selected);
+	// 	} else {
+	// 		return calculateEpisodeTranslate(highlightSelected, index, prevSelected);
+	// 	}
+	// } else {
+	// 	return calculateEpisodeTranslate(highlightSelected, index, selected);
+	// }
 }
 
 async function getNextUp(seriesId: Id) {
