@@ -2,12 +2,16 @@ import { useCallback, useContext, useEffect, useState } from "preact/hooks";
 import { XBList } from "./List";
 import { Menu, type XBMenuItem } from "../Menu";
 import type { CategoryContent, XBItem } from "./content-fetcher";
-import { SettingKind } from "../../settings/get";
 import useSWR from "swr";
 import { getXMLListContent } from "./list-content-fetcher";
 import { SettingsContext } from "../../context/Settings";
 import type { UserSettings } from "../../settings/types";
 import { useInput } from "../../hooks";
+
+export enum SettingKind {
+	List = "List",
+	Wizard = "Wizard",
+}
 
 export type XBSettingListProps = {
 	data_key: string;
