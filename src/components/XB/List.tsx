@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useContext } from "preact/hooks";
+import { useMemo, useState, useEffect } from "preact/hooks";
 import useSWR from "swr";
 import { useInput } from "../../hooks";
 import { type CategoryContent, type XBItem } from "./content-fetcher";
@@ -6,8 +6,9 @@ import { getXBListContent } from "./list-content-fetcher";
 import type { ContentItem } from "../Content/types";
 
 import back from "../../assets/arrow_l.svg";
-import { AudioFeedback, FeedbackSound } from "../../context/AudioFeedback";
+import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
 import { useDidUpdate } from "../../hooks/use-did-update";
+import { SELECTED_SCALE, UNSELECTED_SCALE } from "./shared";
 
 const XB_ITEM_HEIGHT = 120;
 const GAP = 0;
@@ -18,15 +19,18 @@ const GAP = 0;
 export type XBListProps = {
 	data?: Array<ContentItem>;
 	data_key?: string;
+	default_item?: number;
 	nav_position: number;
 	onGoBack: () => void;
-	onNavigate: (item: XBItem) => void;
+	onNavigate: (item: XBItem, index: number) => void;
 };
 
 export function XBList(props: XBListProps) {
 	const { data_key, nav_position, onGoBack, onNavigate } = props; // We can't access `props.key` because React consumes it.
 	const active = nav_position == 0;
-	const swr_key = useMemo(() => ["xb-list", data_key] as const, [data_key]);
+	/// @ts-expect-error Don't publicly expose props.override_active
+	const input_active = active && !props.override_active;
+	const swr_key = useMemo(() => ["xb-list", data_key, props.data] as const, [data_key, props.data]);
 	// Oh the joys of javascript... (I wish I had Rust's enums here...)
 	const { data } = useSWR(
 		swr_key,
@@ -35,21 +39,22 @@ export function XBList(props: XBListProps) {
 			error: props.data ? undefined : "Error: No data_key, No data",
 		},
 		{
+			dedupingInterval: 0,
 			keepPreviousData: true,
+			revalidateOnMount: true,
 			fallbackData: props.data ? { content: props.data ?? [] } : { content: [], error: "Error: No data" }
 		});
 	console.log(data);
 	const default_item = data?.default_item;
 	const data_length = data?.content.length ?? 0;
 	const [selected, setSelected] = useState(data?.default_item ?? 0);
-	const { play: playFeedback } = useContext(AudioFeedback);
 	useDidUpdate(() => {
 		playFeedback(FeedbackSound.SelectionMove);
 	}, [selected]);
 	useEffect(() => {
 		if (default_item) setSelected(default_item);
 	}, [default_item]);
-	useInput(active, (button) => {
+	useInput(input_active, (button) => {
 		switch (button) {
 			case "PadDown":
 			case "ArrowDown":
@@ -61,12 +66,12 @@ export function XBList(props: XBListProps) {
 				break;
 		}
 	}, [data_length]);
-	useInput(active, (button) => {
+	useInput(input_active, (button) => {
 		if (data) {
-			if (button == "Enter") onNavigate(data.content[selected]);
+			if (button == "Enter") onNavigate(data.content[selected], selected);
 		}
 	}, [data, selected, onNavigate]);
-	useInput(active, (button) => {
+	useInput(input_active, (button) => {
 		switch (button) {
 			case "PadLeft":
 			case "ArrowLeft":
@@ -83,17 +88,20 @@ export function XBList(props: XBListProps) {
 			<div class={"xb-category-content"}>
 				{data.content.map((item, index) => {
 					const { Icon } = item;
+					const item_selected = selected == index;
 					let y: number;
 					if (index < selected) {
-						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) - 80;
-					} else if (index == selected) {
+						// y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) - 80;
+						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP) * UNSELECTED_SCALE) - ((XB_ITEM_HEIGHT + GAP) * selected * UNSELECTED_SCALE) - 80;
+					} else if (item_selected) {
 						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected);
 					} else /* if (index > selected) */ {
-						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) + 80;
+						// y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) + 80;
+						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP) * UNSELECTED_SCALE) - ((XB_ITEM_HEIGHT + GAP) * selected * UNSELECTED_SCALE) + 80;
 					}
 					return (
-						<div class={selected == index ? "xb-item selected" : "xb-item"} style={{ translate: `0px ${y}px` }}>
-							<div class="xb-item-icon">
+						<div class={item_selected ? "xb-item selected" : "xb-item"} style={{ translate: `0px ${y}px` }} key={item.id}>
+							<div class="xb-item-icon" style={{ scale: item_selected ? SELECTED_SCALE.toString() : UNSELECTED_SCALE.toString() }}>
 								{Icon ? typeof Icon == "string" ? <img
 									src={Icon}
 								/> : <Icon /> : <img
@@ -105,6 +113,7 @@ export function XBList(props: XBListProps) {
 									{item.name}
 								</span>
 								{item.desc ? <span class="xb-item-desc">{item.desc}</span> : null}
+								{item.value ? <span class="xb-item-value">{item.value}</span> : null}
 							</div>
 						</div>
 					);

@@ -7,6 +7,8 @@ import api, { jellyfin } from "../../context/Jellyfin";
 export interface XBItem extends ContentItem {
 	Icon?: (() => JSX.Element) | string;
 	desc?: string;
+	/** E.g. current setting/option value */
+	value?: string | number;
 };
 
 export type CategoryContent = {
@@ -19,14 +21,16 @@ export async function getXBarContent([_, category]: ["xb-category", string]): Pr
 	switch (category) {
 		case "network":
 		case "social":
-		case "games":
 			return { content: [] };
+		case "games":
+			return {
+				content: [
+					{ id: "com.steampowered", name: "Steam", desc: "Your Steam library – Coming soon!", Icon: "/SteamFolder4.png" },
+				]
+			};
 		case "services":
 			return {
 				content: [
-					// { id: "tv.dropout", name: "Dropout", desc: "Hopefully available in future?" },
-					// { id: "tv.nebula", name: "Nebula", desc: "Yeah... IDK" },
-					// // { id: "org.invidious", name: "Youtube", desc: "Via Invidious\nComing soon!", Icon: "/invidious-colored-vector.svg" },
 					{ id: "org.tellyfin.invidious", name: "Youtube", desc: "Via Invidious – Coming soon!", Icon: "/xb-icons/youtube/white/youtube_social_squircle_white.png" },
 				]
 			};
@@ -45,13 +49,15 @@ export async function getXBarContent([_, category]: ["xb-category", string]): Pr
 				default_item: 1,
 				content: [
 					{ id: "system.settings.update", name: "Check for Updates", Icon: "/xb-icons/setting/tex_update.png", desc: "Connect to the internet and check for Tellyfin software updates." },
+					{ id: "system.settings.home", name: "Customise Home", Icon: "/xb-icons/setting/tex_sett.png", desc: "Customise the order and visibility of XBar Categories." },
 					{ id: "system.settings.music", name: "Music Settings", Icon: "/xb-icons/setting/tex_music.png", desc: "Adjusts settings for music playback from Audio CD, Alto™, and Jellyfin." },
 					{ id: "system.settings.theme", name: "Theme Settings", Icon: "/xb-icons/setting/tex_theme.png", desc: "Adjusts theme settings for Tellyfin, including icons, background, and fonts." },
 					{ id: "system.settings.video", name: "Video Settings", desc: "Adjusts settings for the MPV video player.", Icon: "/xb-icons/setting/tex_bddvd.png" },
-					{ id: "system.settings.server", name: "Media Server Connection Settings", desc: "Adjust settings for existing media server connections or connect to additional media servers.", Icon: "/xb-icons/setting/tex_network.png" },
+					{ id: "system.settings.media_server", name: "Media Server Connection Settings", desc: "Adjust settings for existing media server connections or connect to additional media servers.", Icon: "/xb-icons/setting/tex_network.png" },
 					{ id: "system.settings.sound", name: "Sound Settings", Icon: "/xb-icons/setting/tex_sound.png", desc: "Adjusts settings for audio devices and output formats." },
 					{ id: "system.settings.display", name: "Display Settings", Icon: "/xb-icons/setting/tex_display.png", desc: "Adjusts settings for display resolution and frame rate." },
 					{ id: "system.settings.plugins", name: "Plug-in Settings", Icon: "/xb-icons/setting/tex_console.png", desc: "Adjusts settings for plug-ins." },
+					{ id: "system.settings.system", name: "System Settings", Icon: "/xb-icons/setting/tex_console.png", desc: "Adjusts settings for and displays information about the system." },
 				]
 			};
 		case "system":

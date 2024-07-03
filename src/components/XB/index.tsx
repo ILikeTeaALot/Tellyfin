@@ -1,11 +1,12 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 import useSWR from "swr";
 import { getXBarContent, type XBItem } from "./content-fetcher";
 import { useInput } from "../../hooks";
 
 import "./style.css";
-import { AudioFeedback, FeedbackSound } from "../../context/AudioFeedback";
+import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
 import { useDidUpdate } from "../../hooks/use-did-update";
+import { SELECTED_SCALE, UNSELECTED_SCALE } from "./shared";
 
 const XB_CATEGORY_WIDTH = 128;
 const XB_CATEGORY_GAP = 80;
@@ -18,6 +19,7 @@ export type XBCategoryData = {
 };
 
 export type XBProps = {
+	active: boolean;
 	nav_position: number;
 	first_selected?: number;
 	categories: Array<XBCategoryData>;
@@ -25,10 +27,9 @@ export type XBProps = {
 };
 
 export function XBar(props: XBProps) {
-	const { nav_position, categories, first_selected, onNavigate } = props;
-	const active = nav_position == 0;
+	const { active: _active, nav_position, categories, first_selected, onNavigate } = props;
+	const active = _active && nav_position == 0;
 	const data_length = categories.length;
-	const { play: playFeedback } = useContext(AudioFeedback);
 	const [selected, setSelected] = useState(first_selected ?? 0);
 	useDidUpdate(() => playFeedback(FeedbackSound.SelectionMove), [selected]);
 	useInput(active, (button) => {
@@ -52,7 +53,7 @@ export function XBar(props: XBProps) {
 				{categories.map((cat, index) => {
 					// To keep state contained, they are rendered as their own component.
 					return (
-						<XBCategory {...cat} first={index == 0} last={index == categories.length - 1} onNavigate={handleNavigate} active={active && selected == index} selected={selected == index} id={cat.key} x={480 + (index * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP)) - (selected * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP))} />
+						<XBCategory {...cat} first={index == 0} last={index == categories.length - 1} onNavigate={handleNavigate} active={active && selected == index} selected={selected == index} id={cat.key} x={(nav_position == 0 ? 480 : selected == index ? 220 : 220) + (index * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP)) - (selected * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP))} />
 					);
 				})}
 			</div>
@@ -75,7 +76,6 @@ interface XBCategoryProps extends XBCategoryData {
 
 function XBCategory(props: XBCategoryProps) {
 	const { active, first, last, selected: is_selected, icon, id, name, x, onNavigate } = props; // We can't access `props.key` because React consumes it.
-	const { play: playFeedback } = useContext(AudioFeedback);
 	const swr_key = useMemo(() => ["xb-category", id] as const, [id]);
 	const { data } = useSWR(swr_key, getXBarContent, { keepPreviousData: true });
 	const default_item = data?.default_item;
@@ -121,7 +121,7 @@ function XBCategory(props: XBCategoryProps) {
 	if (!data) return null;
 	return (
 		<div class={is_selected ? "xb-category selected" : "xb-category"} style={{ translate: `${x}px` }}>
-			<div class={first ? "xb-category-icon first" : last ? "xb-category-icon last" : "xb-category-icon"}>
+			<div class={first ? "xb-category-icon first" : last ? "xb-category-icon last" : "xb-category-icon"} style={{ translate: !active && is_selected ? -140 : 0 }}>
 				<img src={icon} />
 				<span class="xb-category-title">{name}</span>
 			</div>
@@ -129,16 +129,19 @@ function XBCategory(props: XBCategoryProps) {
 				{data.content.map((item, index) => {
 					const { Icon } = item;
 					let y: number;
+					const item_selected = selected == index;
 					if (index < selected) {
-						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) - 240;
-					} else if (index == selected) {
+						// y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) - 240;
+						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP) * UNSELECTED_SCALE) - ((XB_ITEM_HEIGHT + GAP) * selected * UNSELECTED_SCALE) - 270;
+					} else if (item_selected) {
 						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected);
 					} else /* if (index > selected) */ {
-						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) + 80;
+						// y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) + 80;
+						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP) * UNSELECTED_SCALE) - ((XB_ITEM_HEIGHT + GAP) * selected * UNSELECTED_SCALE) + 120;
 					}
 					return (
-						<div class={selected == index ? "xb-item selected" : "xb-item"} style={{ translate: `0px ${y}px` }}>
-							<div class="xb-item-icon">
+						<div class={item_selected ? "xb-item selected" : "xb-item"} style={{ translate: `${!active && is_selected && item_selected ? -140 : 0}px ${y}px` }} key={item.id || index}>
+							<div class="xb-item-icon" style={{ scale: item_selected ? SELECTED_SCALE.toString() : UNSELECTED_SCALE.toString() }}>
 								{Icon ? typeof Icon == "string" ? <img
 									src={Icon}
 								/> : <Icon /> : <img
