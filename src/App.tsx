@@ -15,15 +15,49 @@ import { StatusBar } from "./components/StatusBar";
 import { useInput } from "./hooks";
 import { Keyboard } from "./components/TextInput/Keyboard";
 import { DynamicBackground } from "./components/DynamicBackground";
-import { AudioFeedbackProvider } from "./context/AudioFeedback";
+import { Coldboot } from "./components/Coldboot";
+import { invoke } from "@tauri-apps/api/core";
 
 function AppInner() {
-	const [state, setState] = useState(AppState.Home);
+	const [state, setState] = useState(AppState.Coldboot);
 	const [spinOverride, setSpinOverride] = useState(false);
 	const [DEBUG_keyboard, DEBUG_showKeyboard] = useState(false);
 	const videoState = useContext(VideoState);
 	const previousStatus = useRef(videoState.status.playback_status);
 	const idRef = useRef(videoState.jellyfin_id);
+	////
+	// Boot
+	////
+	const onColdbootFinish = useCallback(() => {
+		setState(AppState.Home);
+	}, []);
+	////
+
+	////
+	const [pageIsFocused, setPageIsFocused] = useState(!document.hidden);
+
+	useEffect(() => {
+		if (pageIsFocused) {
+			invoke("play_background");
+		} else {
+			invoke("stop_background");
+		}
+	}, [pageIsFocused]);
+
+	useEffect(() => {
+		const handleBlur = () => setPageIsFocused(false);
+		const handleFocus = () => setPageIsFocused(true);
+		const handleVisChange = () => setPageIsFocused(!document.hidden);
+		window.addEventListener("blur", handleBlur);
+		window.addEventListener("focus", handleFocus);
+		window.addEventListener("visibiltychange", handleVisChange);
+		return () => {
+			window.removeEventListener("blur", handleBlur);
+			window.removeEventListener("focus", handleFocus);
+			window.removeEventListener("visibiltychange", handleVisChange);
+		};
+	}, []);
+	////
 
 	// Loading tracker
 	const [requestCount, setRequestCount] = useState(0);
@@ -67,9 +101,9 @@ function AppInner() {
 			switch (e.key) {
 				case "Home":
 					if (playback_status == PlaybackStatus.Stopped) {
-						setState(AppState.Home);
+						setState(state => state == AppState.Coldboot ? AppState.Coldboot : AppState.Home);
 					} else {
-						setState(state => state == AppState.Home ? AppState.Player : AppState.Home);
+						setState(state => state == AppState.Coldboot ? AppState.Coldboot : state == AppState.Home ? AppState.Player : AppState.Home);
 					}
 					refresh_mpv();
 					break;
@@ -83,12 +117,13 @@ function AppInner() {
 
 	useEffect(() => {
 		if (playback_status == PlaybackStatus.Stopped) {
-			setState(AppState.Home);
+			setState(state => state == AppState.Coldboot ? AppState.Coldboot : AppState.Home);
 		}
 	}, [playback_status]);
 
 	const change_state = useCallback((state: AppState) => {
 		setState(_state => {
+			if (_state == AppState.Coldboot) return _state;
 			if (_state != state) {
 				refresh_mpv();
 			}
@@ -114,7 +149,9 @@ function AppInner() {
 
 	return (
 		<SWRConfig value={{
+			keepPreviousData: true,
 			revalidateOnMount: true,
+			revalidateOnFocus: false,
 			// refreshInterval: 5 * 60 * 1000,
 			use: [requestCounter],
 			refreshInterval: 0,
@@ -125,11 +162,12 @@ function AppInner() {
 					{/* <div className="background image" style={{ opacity: state == AppState.Player || playback_status != PlaybackStatus.Stopped ? 0 : 1 }} /> */}
 					<DynamicBackground style={{ opacity: state == AppState.Player || playback_status != PlaybackStatus.Stopped ? 0 : 1 }} />
 					<Video active={!DEBUG_keyboard && (state == AppState.Player && playback_status != PlaybackStatus.Stopped)} change_state={change_state} />
-					<Home active={!DEBUG_keyboard && (state == AppState.Home || playback_status == PlaybackStatus.Stopped)} change_state={change_state} />
+					<Home active={!DEBUG_keyboard && (state == AppState.Home || playback_status == PlaybackStatus.Stopped) && state != AppState.Coldboot} change_state={change_state} />
 					<StatusBar show={state == AppState.Home} loading={requestCount > 0 || spinOverride} />
 					<Keyboard active={DEBUG_keyboard} onCancel={dummy} onEnter={dummy} x={240} y={400} />
 					{/* <div style={{ opacity: overlayVisible ? "1" : "0", transitionDuration: "600ms" }}>
 						</div> */}
+					<Coldboot run={state == AppState.Coldboot} onComplete={onColdbootFinish} />
 				</SwitchMode.Provider>
 			</AppMode.Provider>
 		</SWRConfig>
@@ -139,11 +177,9 @@ function AppInner() {
 function App() {
 	return (
 		<GamepadContextProvider>
-			<AudioFeedbackProvider>
-				<MpvStateProvider>
-					<AppInner />
-				</MpvStateProvider>
-			</AudioFeedbackProvider>
+			<MpvStateProvider>
+				<AppInner />
+			</MpvStateProvider>
 		</GamepadContextProvider>
 	);
 }
