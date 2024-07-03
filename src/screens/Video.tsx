@@ -10,6 +10,7 @@ import { PauseIcon, PlayIcon, StopIcon } from "../Icons";
 import { useInput } from "../hooks";
 import { SceneSearch } from "../components/SceneSearch";
 import { Dialog, DialogType } from "../components/Dialog";
+import { StatusBar } from "../components/StatusBar";
 
 const withoutSceneSearch: VideoFunction[] = ["SubtitleOptions", "Display"];
 
@@ -169,6 +170,7 @@ export function Video(props: ScreenProps) {
 			<div>Timeline</div> */}
 			<div className="video-info" style={{ opacity: displayVisible || sceneSearchActive || seekActive ? 1 : 0 }}>
 				{displayTitle(state)}
+				<StatusBar loading={playback_status == PlaybackStatus.Playing && displayVisible} show disable_mask />
 			</div>
 			<div className="video-timeline" style={{ opacity: displayVisible ? 1 : 0 }}>
 				<div style={{ flexGrow: 1 }} />
