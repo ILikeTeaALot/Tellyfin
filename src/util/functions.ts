@@ -74,7 +74,7 @@ export function refresh_mpv() {
 	mutate("mpv_state");
 }
 
-export const toHMS = (seconds: number) => `${Math.floor(seconds / 3600).toString().padStart(2, "0")}:${(Math.floor(seconds / 60) % 60).toString().padStart(2, "0")}:${Math.round(seconds % 60).toString().padStart(2, "0")}`;
+export const toHMS = (seconds: number) => `${Math.floor(seconds / 3600).toString().padStart(2, "0")}:${(Math.floor(seconds / 60) % 60).toString().padStart(2, "0")}:${Math.floor(seconds % 60).toString().padStart(2, "0")}`;
 
 /* function csvJSON(csv: string) {
 
