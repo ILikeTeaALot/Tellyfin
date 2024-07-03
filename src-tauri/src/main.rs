@@ -4,6 +4,7 @@
 mod audio;
 mod mpv;
 mod plugins;
+mod settings;
 mod states;
 mod window;
 use libmpv2::Mpv;
@@ -15,6 +16,7 @@ use std::sync::Mutex;
 use std::sync::Arc;
 use std::error::Error;
 
+use settings::{save_settings, read_settings};
 use audio::{AudioFeedbackManager, play_feedback, play_background, stop_background, reinit_bass, bass::BassState};
 
 type MpvStateInner = Option<Mpv>;
@@ -51,6 +53,9 @@ fn main() {
 			play_background,
 			stop_background,
 			reinit_bass,
+			// MARK - Settings
+			save_settings,
+			read_settings,
 		])
 		.register_uri_scheme_protocol("mpv", |app, req| {
 			tauri::http::Response::builder().body(Vec::new()).unwrap()
