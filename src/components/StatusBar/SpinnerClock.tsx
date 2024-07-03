@@ -112,8 +112,8 @@ export function SpinnerClock(props: ClockProps) {
 				const delta_ms = now_ms - last_ms;
 				const delta_seconds = delta_ms / 1000;
 				const newAngle = (prev_angle: number) => ((prev_angle + (360 * (delta_seconds * 0.75))) % 360);
-				console.log("delta (ms):", delta_ms);
-				console.log("delta (s):", delta_seconds);
+				/* console.log("delta (ms):", delta_ms);
+				console.log("delta (s):", delta_seconds); */
 				// const startDelta_ms = now_ms - start_ms;
 				/* if (startDelta_ms < 520) {
 					// Should hopefully be "transitioning" at this time
