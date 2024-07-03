@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TellyXML version="1.0">
+	<Items class="List" key="system.settings" scope="User">
+		<Item class="Folder" key="update">
+			<!-- <Title>Software Update</Title> -->
+			<Title>Check for Updates</Title>
+			<Description>Connect to the internet and check for Tellyfin software updates.</Description>
+			<Icon src="/xb-icons/setting/tex_update.png" />
+		</Item>
+		<Item class="Folder" key="home">
+			<Title>Customise Home</Title>
+			<Description>Customise the order and visibility of XBar Categories.</Description>
+			<Icon src="/xb-icons/setting/tex_sett.png" />
+		</Item>
+		<Item class="Folder" key="music">
+			<Title>Music Settings</Title>
+			<Description>Adjusts settings for music playback from Audio CD, Alto™, and Jellyfin.</Description>
+			<Icon src="/xb-icons/setting/tex_music.png" />
+		</Item>
+		<Item class="Folder" key="theme">
+			<Title>Theme Settings</Title>
+			<Description>Adjusts theme settings for Tellyfin, including icons, background, and fonts.</Description>
+		</Item>
+		<Item class="Folder" key="video">
+			<Title>Video Settings</Title>
+			<Description>Adjusts settings for the MPV video player.</Description>
+		</Item>
+		<Item class="Folder" key="media_server">
+			<Title>Media Server Settings</Title>
+			<Description>Adjust settings for existing media server connections or connect to additional media servers.</Description>
+		</Item>
+		<Item class="Folder" key="sound">
+			<Title>Sound Settings</Title>
+			<Description>Adjusts settings for audio devices and output formats.</Description>
+		</Item>
+		<Item class="Folder" key="display">
+			<Title>Display Settings</Title>
+			<Description>Adjusts settings for display resolution and frame rate.</Description>
+		</Item>
+		<Item class="Folder" key="plugin">
+			<Title>Plug-in Settings</Title>
+			<Description>Adjusts settings for plug-ins.</Description>
+		</Item>
+		<Item class="Folder" key="system">
+			<Title>System Settings</Title>
+			<Description>Adjusts settings for and displays information about the system.</Description>
+		</Item>
+	</Items>
+</TellyXML>

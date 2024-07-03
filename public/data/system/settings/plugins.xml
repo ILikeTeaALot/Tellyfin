@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TellyXML version="1.0">
+	<Items class="SettingList" key="plugins" scope="User">
+		<Item class="Setting" key="none" kind="Setup">
+			<Title>Coming Soon (Sorry!)</Title>
+			<DisplayFormat> </DisplayFormat>
+		</Item>
+	</Items>
+</TellyXML>

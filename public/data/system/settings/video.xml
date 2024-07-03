@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TellyXML version="1.0">
+	<Items class="SettingList" key="video" scope="User">
+		<Item class="Setting" key="24hz" default="0" kind="Select">
+			<Title>1080p 24 Hz HDMI Video Output</Title>
+			<Description>Sets the playback method for content recorded at 24 Hz (frames/second).</Description>
+			<Options>
+				<Option value="On">On</Option>
+				<Option value="Off">Off</Option>
+			</Options>
+		</Item>
+		<Item class="Setting" key="auto_play" kind="Select">
+			<Title>Auto Play</Title>
+			<Description>Automatically play the next episode of a TV Series or Folder.</Description>
+			<Options>
+				<Option value="On">On</Option>
+				<Option value="Off">Off</Option>
+			</Options>
+		</Item>
+	</Items>
+</TellyXML>

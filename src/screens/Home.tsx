@@ -13,7 +13,8 @@ import { XBar } from "../components/XB";
 import { categories } from "../home-categories";
 import { XBList } from "../components/XB/List";
 import type { XBItem } from "../components/XB/content-fetcher";
-import { AudioFeedback, FeedbackSound } from "../context/AudioFeedback";
+import { FeedbackSound, playFeedback } from "../context/AudioFeedback";
+import { SettingList } from "../components/XB/SettingList";
 // import useSWR from "swr";
 // import { newSelectScreen, type SelectScreenParams } from "./Home/new-select-screen";
 // import useSWRMutation from "swr/mutation";
@@ -30,37 +31,11 @@ const content: ScreenContent = {
 
 export function Home(props: ScreenProps) {
 	const { active, change_state } = props;
-	const { play: playFeedback } = useContext(AudioFeedback);
 	const state = useContext(AppMode);
 	const [screens, updateScreens] = useState<Array<ScreenContent>>([content]);
 	// const { data, trigger } = useSWRMutation<[screen: number, screens: ScreenContent[]], never, "navigation-stack", SelectScreenParams>("navigation-stack", (_, {arg: options}) => newSelectScreen(options));
 	const [currScreen, setCurrentScreen] = useState(0);
 	// TODO: Convert to SWR
-	useEffect(() => {
-		return;
-		(async () => {
-			const libraries = await jf.getLibraryApi(api).getMediaFolders();
-			if (libraries.data.Items) {
-				updateScreens([
-					{
-						id: "Home",
-						type: ContentType.List,
-						content: [
-							// { id: "music.alto", name: "Alto" },
-							...libraries.data.Items.map(item => ({
-								id: item.Id ?? Math.round(Math.random() * 5000).toFixed(0),
-								name: item.Name ?? "Unknown",
-								jellyfin: true,
-								jellyfin_data: item,
-							})),
-							{ id: "system.settings", name: "Settings" },
-							{ id: "system.power", name: "Power (Exit)" },
-						]
-					}
-				]);
-			}
-		})();
-	}, []);
 	const handleNavigate = useCallback(async (action: NavigateAction, index?: number) => {
 		if (!active || state != AppState.Home) return;
 		console.log("action:", action, "id:", index);
@@ -177,18 +152,18 @@ export function Home(props: ScreenProps) {
 		// 		break;
 		// 	}
 		// }
-	}, [currScreen, screens, active, state, playFeedback]);
+	}, [currScreen, screens, active, state]);
 	const handleListNavigate = useCallback((item: XBItem) => {
 
 	}, []);
 	const handleListGoBack = useCallback(() => {
 		setCurrentScreen(current => Math.max(0, current - 1));
 		playFeedback(FeedbackSound.Back);
-	}, [playFeedback]);
+	}, []);
 	const handleRootNavigate = useCallback(async (item: ContentItem) => {
 		selectScreen(updateScreens, setCurrentScreen, NavigateAction.Enter, currScreen, "Home", item);
 		playFeedback(FeedbackSound.Enter);
-	}, [currScreen, playFeedback]);
+	}, [currScreen]);
 	return (
 		<div id="home-root" style={{ opacity: active ? 1 : 0 }}>
 			{screens.map((screen, index) => {
@@ -208,11 +183,16 @@ export function Home(props: ScreenProps) {
 							</div>
 						);
 					case ContentType.List:
+						return (
+							<div key={screen.id} style={{ zIndex }}>
+								<XBList nav_position={nav_position} data_key={screen.id.startsWith("system") ? screen.id : undefined} data={screen.content} onGoBack={handleListGoBack} onNavigate={handleListNavigate} />
+							</div>
+						);
 					case ContentType.SettingsList:
 						return (
 							<div key={screen.id} style={{ zIndex }}>
 								{/* <ContentList nav_position={nav_position} data={screen.content} onNavigate={handleNavigate} /> */}
-								<XBList nav_position={nav_position} data_key={screen.id.startsWith("system") ? screen.id : undefined} data={screen.content} onGoBack={handleListGoBack} onNavigate={handleListNavigate} />
+								<SettingList nav_position={nav_position} data_key={screen.id} onGoBack={handleListGoBack} onNavigate={handleListNavigate} />
 							</div>
 						);
 					case ContentType.Grid:
@@ -227,7 +207,7 @@ export function Home(props: ScreenProps) {
 						return null;
 				}
 			})}
-			<XBar nav_position={0 - currScreen} categories={categories} first_selected={2} onNavigate={handleRootNavigate} />
+			<XBar active={active} nav_position={0 - currScreen} categories={categories} first_selected={2} onNavigate={handleRootNavigate} />
 			{/* <button onClick={() => change_state(AppState.VideoPlaying)}>Go To Video Player</button> */}
 		</div>
 	);

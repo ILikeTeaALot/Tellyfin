@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TellyXML version="1.0">
+	<Items class="SettingList" id="MusicSettings" key="music" scope="User">
+		<Item class="Setting" key="preferred_library" default="0" kind="Select">
+			<Title>Preferred Library</Title>
+			<Description>Sets the preferred music library content listend under the [Music] category.</Description>
+			<Options>
+				<Option value="Alto">Alto</Option>
+				<!-- TODO: Query somehow? -->
+				<Query>
+					<Option value="jellyfin:{id}">{name}</Option>
+				</Query>
+			</Options>
+		</Item>
+		<Item class="Setting" key="cd_import" kind="Setup">
+			<Title>Audio CD Import</Title>
+			<Description>Sets the codec and bit rate when importing audio CDs.</Description>
+			<!-- For settings that are an Object, a display formatter is required. -->
+			<!-- This will be advancing to handle simple boolean logic in future. -->
+			<DisplayFormat>Format: {format} {bitrate} {vbr}</DisplayFormat>
+			<!-- Setups automatically have a confirmation screen at the end. -->
+			<Setup id="CDImportSettings" key="cd_import">
+				<Screen id="setup.cd_import.format" key="Format">
+					<Select key="cd_import.format">
+						<Option value="FLAC">FLAC</Option>
+						<Option value="ALAC">ALAC</Option>
+						<Option value="AAC">AAC</Option>
+						<Option value="MP3">MP3</Option>
+					</Select>
+				</Screen>
+				<Condition>
+					<If value="cd_import.format" eq="AAC|MP3">
+						<Screen id="setup.cd_import.bitrate.type" key="Bitrate-Type">
+							<Select key="cd_import.vbr">
+								<Option value="false">Constant</Option>
+								<Option value="true">Variable</Option>
+							</Select>
+						</Screen>
+						<Condition>
+							<If key="cd_import.vbr" eq="false">
+								<Screen id="setup.cd_import.bitrate.is_constant"
+									key="Bitrate-Constant">
+									<Select>
+										<Option key="cd_import.bitrate" value="128">128kbps</Option>
+										<Option key="cd_import.bitrate" value="160">160kbps</Option>
+										<Option key="cd_import.bitrate" value="192">192kbps</Option>
+										<Option key="cd_import.bitrate" value="228">228kbps</Option>
+										<Option key="cd_import.bitrate" value="256">256kbps</Option>
+										<Option key="cd_import.bitrate" value="320">320kbps</Option>
+									</Select>
+								</Screen>
+							</If>
+						</Condition>
+					</If>
+				</Condition>
+			</Setup>
+		</Item>
+		<Item class="Setting" key="crossfade" default="0" kind="Select">
+			<Title>Crossfade Playback</Title>
+			<Description>
+				Sets the amount of time that is crossfaded (overlapped) between music tracks. This Setting is used when playing content other than CD Audio.
+			</Description>
+			<Options>
+				<Option value="0">Off</Option>
+				<Option value="1">1 Second</Option>
+				<Option value="2">2 Seconds</Option>
+				<Option value="3">3 Seconds</Option>
+				<Option value="5">5 Seconds</Option>
+				<Option value="10">10 Seconds</Option>
+			</Options>
+		</Item>
+		<Item class="Setting" key="output_freq" default="2" kind="Select">
+			<Title>Output Frequency</Title>
+			<Description>
+				Sets the audio output frequency when playing music content.
+				Recommended: Auto or Upsample
+			</Description>
+			<Options>
+				<Option value="Convert">Always 48kHz</Option>
+				<Option value="Upsample">Upscale <Def>(44.1/48kHz upsampled to 88.2/96/176.4/192kHz)</Def></Option>
+				<Option value="Auto">Auto <Def>(Try to match file, typically 44.1/48kHz)</Def></Option>
+				<Option value="Force">Forced <Def>(Force output frequency to match file)</Def></Option>
+			</Options>
+		</Item>
+	</Items>
+</TellyXML>

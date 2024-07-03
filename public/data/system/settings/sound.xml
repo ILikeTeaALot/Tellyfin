@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TellyXML version="1.0">
+	<Items class="SettingList" key="sound" scope="User">
+		<Item class="Setting" key="output" default="0" kind="Setup">
+			<Title>Audio Output Settings</Title>
+			<Description>Adjust the audio output settings for the system.</Description>
+		</Item>
+		<Item class="Setting" key="multi_out" kind="Select">
+			<Title>Audio Multi-Output</Title>
+			<Description>Sets to output audio through multiple connectors simultaneously.</Description>
+			<Options>
+				<Option value="On">On</Option>
+				<Option value="Off">Off</Option>
+			</Options>
+		</Item>
+		<Item class="Setting" key="key_tone" kind="Select">
+			<Title>Key Tone</Title>
+			<Description>Sets whether or not to use key tones when navigating Tellyfin.</Description>
+			<Options>
+				<Option value="On">On</Option>
+				<Option value="Off">Off</Option>
+			</Options>
+		</Item>
+	</Items>
+</TellyXML>

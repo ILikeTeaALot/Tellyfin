@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TellyXML version="1.0">
+	<Items class="SettingList" key="theme" scope="User">
+		<Item class="Setting" key="theme" default="0" kind="Select">
+			<Title>Theme</Title>
+			<Description>Sets or installs a complete theme for the system.</Description>
+			<Options>
+				<Option function="InstallTheme">Install</Option>
+				<Query function="InstalledThemes">
+					<Option value="theme:{id}">{name}</Option>
+				</Query>
+			</Options>
+		</Item>
+		<Item class="Setting" key="sounds" kind="Select">
+			<Title>Sounds</Title>
+			<Description>Sets the sounds used when navigating the XMB.</Description>
+			<Options>
+				<Query function="ThemeSounds">
+					<Option value="theme:{id}">{name}</Option>
+				</Query>
+			</Options>
+		</Item>
+		<Item class="Setting" key="icons" kind="Select">
+			<Title>Icons</Title>
+			<Description>Sets the icons used for system functions.</Description>
+			<Options>
+				<Query function="ThemeIcons">
+					<Option value="theme:{id}">{name}</Option>
+				</Query>
+			</Options>
+		</Item>
+		<Item class="Setting" key="background" kind="Select">
+			<Title>Background</Title>
+			<Description>Sets the system background.</Description>
+			<Options>
+				<Option function="ThemeSelectWallpaper" value="Wallpaper">Wallpaper</Option>
+				<Query function="ThemeBackgrounds">
+					<Option value="theme:{id}">{name}</Option>
+				</Query>
+			</Options>
+		</Item>
+		<Item class="Setting" key="music" kind="Select">
+			<Title>System Music</Title>
+			<Description>Sets the background music/audio that plays when no other media is playing.</Description>
+			<Options>
+				<Query function="ThemeMusic">
+					<Option value="theme:{id}">{name}</Option>
+				</Query>
+			</Options>
+		</Item>
+	</Items>
+</TellyXML>

@@ -17,6 +17,7 @@ import { Keyboard } from "./components/TextInput/Keyboard";
 import { DynamicBackground } from "./components/DynamicBackground";
 import { Coldboot } from "./components/Coldboot";
 import { invoke } from "@tauri-apps/api/core";
+import { SettingsProvider } from "./components/SettingsProvider";
 
 function AppInner() {
 	const [state, setState] = useState(AppState.Coldboot);
@@ -158,16 +159,18 @@ function AppInner() {
 		}}>
 			<AppMode.Provider value={state}>
 				<SwitchMode.Provider value={change_state}>
-					<div className="background" style={{ opacity: state == AppState.Player ? 0 : 1 }} />
-					{/* <div className="background image" style={{ opacity: state == AppState.Player || playback_status != PlaybackStatus.Stopped ? 0 : 1 }} /> */}
-					<DynamicBackground style={{ opacity: state == AppState.Player || playback_status != PlaybackStatus.Stopped ? 0 : 1 }} />
-					<Video active={!DEBUG_keyboard && (state == AppState.Player && playback_status != PlaybackStatus.Stopped)} change_state={change_state} />
-					<Home active={!DEBUG_keyboard && (state == AppState.Home || playback_status == PlaybackStatus.Stopped) && state != AppState.Coldboot} change_state={change_state} />
-					<StatusBar show={state == AppState.Home} loading={requestCount > 0 || spinOverride} />
-					<Keyboard active={DEBUG_keyboard} onCancel={dummy} onEnter={dummy} x={240} y={400} />
-					{/* <div style={{ opacity: overlayVisible ? "1" : "0", transitionDuration: "600ms" }}>
+					<SettingsProvider>
+						<div className="background" style={{ opacity: state == AppState.Player ? 0 : 1 }} />
+						{/* <div className="background image" style={{ opacity: state == AppState.Player || playback_status != PlaybackStatus.Stopped ? 0 : 1 }} /> */}
+						<DynamicBackground style={{ opacity: state == AppState.Player || playback_status != PlaybackStatus.Stopped ? 0 : 1 }} />
+						<Video active={!DEBUG_keyboard && (state == AppState.Player && playback_status != PlaybackStatus.Stopped)} change_state={change_state} />
+						<Home active={!DEBUG_keyboard && (state == AppState.Home || playback_status == PlaybackStatus.Stopped) && state != AppState.Coldboot} change_state={change_state} />
+						<StatusBar show={state == AppState.Home} loading={requestCount > 0 || spinOverride} />
+						<Keyboard active={DEBUG_keyboard} onCancel={dummy} onEnter={dummy} x={240} y={400} />
+						{/* <div style={{ opacity: overlayVisible ? "1" : "0", transitionDuration: "600ms" }}>
 						</div> */}
-					<Coldboot run={state == AppState.Coldboot} onComplete={onColdbootFinish} />
+						<Coldboot run={state == AppState.Coldboot} onComplete={onColdbootFinish} />
+					</SettingsProvider>
 				</SwitchMode.Provider>
 			</AppMode.Provider>
 		</SWRConfig>

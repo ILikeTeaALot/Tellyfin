@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TellyXML version="1.0">
+	<Items class="SettingList" key="display" scope="User">
+		<Item class="Setting" key="about" kind="AboutTellyfin">
+			<Title>Linux Only</Title>
+			<Description>
+				TODO: Enable/Disable certain settings pages on different platforms…
+			</Description>
+			<DisplayFormat> </DisplayFormat>
+		</Item>
+	</Items>
+</TellyXML>
