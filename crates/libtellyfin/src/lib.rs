@@ -313,10 +313,14 @@ impl<'a> PluginXMBIconList<'a> {
 }
 
 pub const fn make_plugin_version(major: PluginMajorVersion, minor: PluginMinorVersion, patch: PluginPatchVersion) -> PluginVersion {
+	// ((major as PluginVersion) << 48) + ((minor as PluginVersion) << 32) + (patch as PluginVersion)
+	// ((major as PluginVersion) << 24) + ((minor as PluginVersion) << 8) + (patch as PluginVersion)
 	(((major as PluginVersion) & 0b11_1111) << 26) + ((minor as PluginVersion) << 10) + ((patch as PluginVersion) & 0b11_1111_1111)
 }
 
 pub fn read_plugin_version(version: PluginVersion) -> PluginVersionTriple {
+	// ((version >> 48) as PluginMajorVersion, (version >> 32) as PluginMinorVersion, version as PluginPatchVersion)
+	// ((version >> 24) as PluginMajorVersion, (version >> 16) as PluginMinorVersion, version as PluginPatchVersion)
 	((version >> 26) as PluginMajorVersion, (version >> 10) as PluginMinorVersion, (version & 0b11_1111_1111) as PluginPatchVersion)
 }
 
@@ -326,6 +330,25 @@ mod tests {
 
 	#[test]
 	fn it_works() {
+		// 16-16-32
+		// assert_eq!(0x0001_0000_00000001, make_plugin_version(1, 0, 1));
+		// assert_eq!(0x00FF_00FF_000000FF, make_plugin_version(255, 255, 255));
+		// assert_eq!(0xFFFF_FFFF_FFFFFFFF, make_plugin_version(0xFFFF, 0xFFFF, 0xFFFF_FFFF));
+		// assert_eq!(read_plugin_version(0x00FF_00FF_000000FF), (255, 255, 255));
+		// assert_eq!(read_plugin_version(0xFFFF_FFFF_FFFFFFFF), (0xFFFF, 0xFFFF, 0xFFFF_FFFF));
+
+		// 8-16-8
+		// assert_eq!(0x01_0000_01, make_plugin_version(1, 0, 1));
+		// assert_eq!(0xFF_00FF_FF, make_plugin_version(255, 255, 255));
+		// assert_eq!(read_plugin_version(0x01_0000_01), (1, 0, 1));
+		// assert_eq!(read_plugin_version(0xFF_00FF_FF), (255, 255, 255));
+		
+		// // 6-16-10 OR 4-16-12
+		// assert_eq!(0x64_0000_01, make_plugin_version(1, 0, 1));
+		// assert_eq!(0xFF_00FF_FF, make_plugin_version(63, 255, 255));
+		// assert_eq!(read_plugin_version(0x01_0000_01), (1, 0, 1));
+		// assert_eq!(read_plugin_version(0xFF_00FF_FF), (255, 255, 255));
+		
 		// 6-16-10
 		let v = read_plugin_version(make_plugin_version(1, 0, 1));
 		assert_eq!(v, (1, 0, 1));

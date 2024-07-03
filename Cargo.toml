@@ -1,9 +1,15 @@
 [workspace]
 members = [
 	# "bootstrap",
-	"libtellyfin",
-	"tellyfin-plugin",
+	"crates/libtellyfin",
+	"crates/tellyfin-plugin",
 	"src-tauri",
 ]
 exclude = ["bootstrap"]
 resolver = "2"
+
+[workspace.dependencies]
+# Tellyfin
+libtellyfin = { path = "crates/libtellyfin" }
+tellyfin-plugin = { path = "crates/tellyfin-plugin" }
+steamlocate = { version = "2.0.0-beta", features = ["locate"] }
