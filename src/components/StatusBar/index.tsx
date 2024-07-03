@@ -8,6 +8,7 @@ interface StatusBarProps {
 	spinner_only?: boolean;
 	loading: boolean;
 	show?: boolean;
+	disable_mask?: boolean;
 }
 
 export const StatusBar: FunctionComponent<StatusBarProps> = (props) => {
@@ -32,11 +33,12 @@ export const StatusBar: FunctionComponent<StatusBarProps> = (props) => {
 		);
 	}
 	return (
-		<div className={props.show ? "status-bar visible" : "status-bar"}>
+		<div className={props.show ? "status-bar visible" : "status-bar"} style={props.disable_mask ? { mask: "none", maskImage: "none", backdropFilter: "none" } : undefined}>
 			<div>
 				{/* Where profile pic/online friends etc would be */}
 			</div>
 			<div className="date">
+				<span className="time-label">{date_time.toFormat("EEE")}</span>
 				<span className="time-label">{date_time.toFormat("d/M")}</span>
 				<span className="time-label">{date_time.toFormat("HH:mm")}</span>
 			</div>

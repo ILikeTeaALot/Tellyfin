@@ -4,10 +4,11 @@
 	position: fixed;
 	top: 40px;
 	right: 0;
-	border: 2px solid rgba(255, 255, 255, 0.40);
+	/* border: 2px solid rgba(255, 255, 255, 0.40); */
 	border-right: none;
 	border-radius: 0.25rem 0 0 0.25rem;
-	width: 30vw;
+	/* width: 30vw; */
+	width: 25vw;
 	height: 1.8rem;
 	padding-right: 7.5vw;
 	gap: 0.5em;
@@ -17,10 +18,23 @@
 	align-items: center;
 	display: flex;
 	/* box-sizing: border-box; */
-	backdrop-filter: blur(60px) saturate(280%) brightness(60%);
+	backdrop-filter: blur(60px) /* saturate(280%) */ /* brightness(60%) */;
+	/* filter: drop-shadow(var(--text-shadow)); */
+	text-shadow: var(--text-shadow);
 	opacity: 0;
 	transition-duration: var(--standard-duration);
 	transition-delay: var(--standard-duration);
+	/* Mask */
+	--fuzz: 0.3rem;
+	--mask-vertical: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, black var(--fuzz), black calc(100% - var(--fuzz)), rgba(0, 0, 0, 0) 100%);
+	--mask-horizontal: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, black var(--fuzz), black 100%);
+	mask-mode: alpha;
+	mask-image: var(--mask-horizontal), var(--mask-vertical);
+	/* Interesting but not good... */
+	/* mask-composite: exclude; */
+	/* mask-composite: subtract; */
+	mask-composite: intersect;
+	/* -webkit-mask-image: var(--mask-horizontal), var(--mask-vertical); */
 }
 
 .status-bar.visible {
