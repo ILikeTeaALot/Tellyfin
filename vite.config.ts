@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
-import content from '@originjs/vite-plugin-content'
 import preact from "@preact/preset-vite";
 import checker from "vite-plugin-checker";
+import { ViteToml } from 'vite-plugin-toml'
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
@@ -11,7 +11,7 @@ export default defineConfig(async () => ({
 			// e.g. use TypeScript check
 			typescript: true,
 		}),
-		content(),
+		ViteToml(),
 	],
 
 	// Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

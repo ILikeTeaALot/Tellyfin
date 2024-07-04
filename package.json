@@ -23,7 +23,6 @@
     "swr": "^2.2.5"
   },
   "devDependencies": {
-    "@originjs/vite-plugin-content": "^1.0.5",
     "@preact/preset-vite": "^2.5.0",
     "@tauri-apps/cli": "^1.5.14",
     "@types/luxon": "^3.4.2",
@@ -31,6 +30,7 @@
     "eslint-config-react-app": "^7.0.1",
     "typescript": "^5.0.2",
     "vite": "^5.2.12",
-    "vite-plugin-checker": "^0.7.0"
+    "vite-plugin-checker": "^0.7.0",
+    "vite-plugin-toml": "^0.7.0"
   }
 }
