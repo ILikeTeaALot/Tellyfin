@@ -238,14 +238,14 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 							parsed.searchParams.get("ssort"),
 							parsed.searchParams.get("genre"),
 						);
-						for (const option of options) {
+						for (const [opt_index, option] of options.entries()) {
 							menu_items.push({
 								value: option.identifier,
 								label: option.name,
 								id: `${key}.${option.id}`,
 							});
 							if (option.identifier == raw_value) {
-								default_item = index;
+								default_item = opt_index + index;
 								if (!display_format_string) displayValue = option.name;
 							}
 						}
