@@ -3,7 +3,6 @@ mod sound;
 use std::{
 	ffi::OsStr,
 	fs::{self, ReadDir},
-	os::windows::fs::FileTypeExt,
 	path::Path,
 	sync::Mutex,
 };
@@ -77,7 +76,7 @@ fn register_themes(app: AppHandle, dir: ReadDir) {
 		match entry {
 			Ok(entry) => match entry.file_type() {
 				Ok(ok) => {
-					if ok.is_dir() || ok.is_symlink_dir() {
+					if ok.is_dir() {
 						// Look for [dir]/Theme.toml
 						let path = entry.path().join("Theme.toml");
 						match fs::read_to_string(&path) {
