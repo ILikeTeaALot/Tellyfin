@@ -41,22 +41,21 @@ struct ThemeDefinition {
 	pub theme: ThemeTable,
 }
 
-pub struct ThemeManager(Mutex<Connection>, i64);
+pub struct ThemeManager {
+	database: Mutex<Connection>,
+	theme_id: String,
+}
 
 impl ThemeManager {
 	pub fn new(path: impl AsRef<Path>) -> Self {
 		let database = Connection::open(path).expect("Cannot run without database");
-		database
-			.execute(include_str!("create_table.sql"), [])
-			.expect("THEMES table required.");
-		Self(Mutex::new(database), 0)
+		database.execute(include_str!("create_table.sql"), []).expect("THEMES table required.");
+		Self { database: Mutex::new(database), theme_id: String::from("iliketeaalot.ps3") }
 	}
 
 	pub fn register_themes(&self, app: &mut App) {
 		match fs::read_dir("./themes") {
-			Ok(dir) => {
-				register_themes(app.handle().clone(), dir)
-			}
+			Ok(dir) => register_themes(app.handle().clone(), dir),
 			Err(e) => {
 				eprintln!("Error: {}", e);
 				match fs::create_dir("./themes") {
