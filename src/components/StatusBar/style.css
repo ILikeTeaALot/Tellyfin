@@ -18,7 +18,7 @@
 	align-items: center;
 	display: flex;
 	/* box-sizing: border-box; */
-	backdrop-filter: blur(60px) /* saturate(280%) */ /* brightness(60%) */;
+	/* backdrop-filter: blur(60px); */ /* saturate(280%); */ /* brightness(60%); */
 	/* filter: drop-shadow(var(--text-shadow)); */
 	text-shadow: var(--text-shadow);
 	opacity: 0;
