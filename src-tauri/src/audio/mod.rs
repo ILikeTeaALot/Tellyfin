@@ -1,4 +1,4 @@
-use std::{os::raw::c_void, sync::Arc};
+use std::{os::raw::c_void, sync::{Arc, Mutex}};
 
 use bass::BassState;
 use ::bass::{
@@ -10,6 +10,8 @@ use ::bass::{
 };
 use serde::Deserialize;
 use tauri::State;
+
+use crate::{theme::ThemeManager, util::SafeLock};
 
 pub mod bass;
 
@@ -24,6 +26,7 @@ pub enum FeedbackSound {
 	Ok,
 	No,
 	Coldboot,
+	Gameboot,
 }
 
 // static SFX_CURSOR: &[u8] = include_bytes!("./data/PS2/SCPH-10000_00015.wav");
@@ -54,16 +57,16 @@ pub struct AudioFeedbackManager {
 	// _move: &'static [u8],
 	// enter: &'static [u8],
 	// back: &'static [u8],
-	coldboot: Stream,
-	gameboot: Sample,
-	move_vertical: Sample,
-	enter: Sample,
-	back: Sample,
-	cursor: Sample,
-	move_category: Sample,
-	ok: Sample,
-	no: Sample,
-	background: Stream,
+	coldboot: Mutex<Stream>,
+	gameboot: Mutex<Sample>,
+	move_vertical: Mutex<Sample>,
+	enter: Mutex<Sample>,
+	back: Mutex<Sample>,
+	cursor: Mutex<Sample>,
+	move_category: Mutex<Sample>,
+	ok: Mutex<Sample>,
+	no: Mutex<Sample>,
+	background: Mutex<Stream>,
 
 	mixer: Arc<Mixer>,
 }
@@ -83,7 +86,7 @@ extern "C" fn restart_background(_: HSYNC, handle: DWORD, data: DWORD, _: *mut c
 }
 
 impl AudioFeedbackManager {
-	pub fn new() -> Self {
+	pub fn new(theme_manager: &ThemeManager) -> Self {
 		let mixer = Mixer::new(48000, 8, Some(1.), BASS_MIXER_NONSTOP | BASS_SAMPLE_FLOAT | BASS_MIXER_RESUME);
 		mixer.play(TRUE).ok();
 		// mixer.set_attribute(ChannelSetAttribute::Buffer, 0.);
@@ -102,31 +105,31 @@ impl AudioFeedbackManager {
 		BASS_ChannelSetPosition(background.handle(), BACKGROUND_START, BASS_POS_BYTE);
 		// mixer.add(background.handle(), 0).ok();
 		Self {
-			background,
-			coldboot: Stream::new(
-				"./themes/PS3/sound/coldboot_multi.wav",
+			background: Mutex::new(background),
+			coldboot: Mutex::new(Stream::new(
+				"./themes/PS3/sound/coldboot_multi.ac3",
 				BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE,
 				// 0,
 				// None::<DWORD>,
 				// 65535,
 				None::<DWORD>,
 			)
-			.expect("Sample MUST work"),
+			.expect("Sample MUST work")),
 			// coldboot: Stream::new(
 			// 	"/Users/ghost/Downloads/ps2 ambience uncompressed.wav",
 			// 	BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE,
 			// 	None::<DWORD>,
 			// ).expect("Sample MUST work"),
-			gameboot: Sample::new_file(
-				"./themes/PS3/sound/gameboot_multi.wav",
+			gameboot: Mutex::new(Sample::new_file(
+				"./themes/PS3/sound/gameboot_multi.ac3",
 				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
 				0,
 				None::<DWORD>,
 				65535,
 				None::<DWORD>,
 			)
-			.expect("Sample MUST work"),
-			move_vertical: Sample::new_file(
+			.expect("Sample MUST work")),
+			move_vertical: Mutex::new(Sample::new_file(
 				"./themes/PS3/sound/snd_cursor.wav",
 				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
 				0,
@@ -134,8 +137,8 @@ impl AudioFeedbackManager {
 				65535,
 				None::<DWORD>,
 			)
-			.expect("Sample MUST work"),
-			enter: Sample::new_file(
+			.expect("Sample MUST work")),
+			enter: Mutex::new(Sample::new_file(
 				"./themes/PS3/sound/snd_decide.wav",
 				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
 				0,
@@ -143,8 +146,8 @@ impl AudioFeedbackManager {
 				65535,
 				None::<DWORD>,
 			)
-			.expect("Sample MUST work"),
-			back: Sample::new_file(
+			.expect("Sample MUST work")),
+			back: Mutex::new(Sample::new_file(
 				"./themes/PS3/sound/snd_cancel.wav",
 				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
 				0,
@@ -152,8 +155,8 @@ impl AudioFeedbackManager {
 				65535,
 				None::<DWORD>,
 			)
-			.expect("Sample MUST work"),
-			cursor: Sample::new_file(
+			.expect("Sample MUST work")),
+			cursor: Mutex::new(Sample::new_file(
 				"./themes/PS3/sound/snd_cursor.wav",
 				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
 				0,
@@ -161,8 +164,8 @@ impl AudioFeedbackManager {
 				65535,
 				None::<DWORD>,
 			)
-			.expect("Sample MUST work"),
-			move_category: Sample::new_file(
+			.expect("Sample MUST work")),
+			move_category: Mutex::new(Sample::new_file(
 				"./themes/PS3/sound/snd_category_decide.wav",
 				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
 				0,
@@ -170,8 +173,8 @@ impl AudioFeedbackManager {
 				65535,
 				None::<DWORD>,
 			)
-			.expect("Sample MUST work"),
-			no: Sample::new_file(
+			.expect("Sample MUST work")),
+			no: Mutex::new(Sample::new_file(
 				"./themes/PS3/sound/snd_system_ng.wav",
 				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
 				0,
@@ -179,8 +182,8 @@ impl AudioFeedbackManager {
 				65535,
 				None::<DWORD>,
 			)
-			.expect("Sample MUST work"),
-			ok: Sample::new_file(
+			.expect("Sample MUST work")),
+			ok: Mutex::new(Sample::new_file(
 				"./themes/PS3/sound/snd_system_ok.wav",
 				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
 				0,
@@ -188,7 +191,7 @@ impl AudioFeedbackManager {
 				65535,
 				None::<DWORD>,
 			)
-			.expect("Sample MUST work"),
+			.expect("Sample MUST work")),
 			mixer,
 		}
 	}
@@ -237,17 +240,19 @@ impl AudioFeedbackManager {
 		/* Attempt 3 */
 		let flags = BASS_SAMPLE_OVER_POS | BASS_SAMCHAN_STREAM | BASS_STREAM_DECODE;
 		let chan = match sound {
-			FeedbackSound::Enter => self.enter.get_channel(flags),
-			FeedbackSound::Move => self.move_vertical.get_channel(flags),
-			FeedbackSound::Back => self.back.get_channel(flags),
-			FeedbackSound::MoveCategory => self.move_category.get_channel(flags),
-			FeedbackSound::Cursor => self.cursor.get_channel(flags),
-			FeedbackSound::Ok => self.ok.get_channel(flags),
-			FeedbackSound::No => self.no.get_channel(flags),
+			FeedbackSound::Enter => self.enter.safe_lock().get_channel(flags),
+			FeedbackSound::Move => self.move_vertical.safe_lock().get_channel(flags),
+			FeedbackSound::Back => self.back.safe_lock().get_channel(flags),
+			FeedbackSound::MoveCategory => self.move_category.safe_lock().get_channel(flags),
+			FeedbackSound::Cursor => self.cursor.safe_lock().get_channel(flags),
+			FeedbackSound::Ok => self.ok.safe_lock().get_channel(flags),
+			FeedbackSound::No => self.no.safe_lock().get_channel(flags),
 			FeedbackSound::Coldboot => {
-				self.coldboot.set_position_bytes(0);
-				Some(*self.coldboot.handle())
-			} // FeedbackSound::Coldboot => None,
+				let lock = self.coldboot.safe_lock();
+				lock.set_position_bytes(0);
+				Some(*lock.handle())
+			}
+			FeedbackSound::Gameboot => self.gameboot.safe_lock().get_channel(flags),
 		};
 		if let Some(chan) = chan {
 			if sound == FeedbackSound::Coldboot {
@@ -263,7 +268,7 @@ impl AudioFeedbackManager {
 				// }
 				self.mixer.pause().ok();
 				self.mixer.dump().ok();
-				BASS_ChannelSetPosition(self.background.handle(), BACKGROUND_START, BASS_POS_BYTE);
+				BASS_ChannelSetPosition(self.background.safe_lock().handle(), BACKGROUND_START, BASS_POS_BYTE);
 				// self.mixer.flush();
 			}
 			let flags = if sound == FeedbackSound::Coldboot { BASS_MIXER_CHAN_DOWNMIX } else { BASS_STREAM_AUTOFREE | BASS_MIXER_CHAN_DOWNMIX };
@@ -291,11 +296,11 @@ impl AudioFeedbackManager {
 	// }
 
 	pub fn play_background(&self) {
-		self.mixer.add(self.background.handle(), BASS_MIXER_CHAN_DOWNMIX).ok();
+		self.mixer.add(self.background.safe_lock().handle(), BASS_MIXER_CHAN_DOWNMIX).ok();
 	}
 
 	pub fn stop_background(&self) {
-		self.mixer.remove_channel(self.background.handle()).ok();
+		self.mixer.remove_channel(self.background.safe_lock().handle()).ok();
 	}
 }
 
