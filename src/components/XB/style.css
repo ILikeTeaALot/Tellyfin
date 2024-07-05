@@ -2,11 +2,22 @@
 	--transition-standard: calc(var(var(--transition-standard)) - 125ms);
 	position: fixed;
 	transition-duration: var(--transition-standard);
+	transition-timing-function: var(--timing-function-ease);
 	z-index: -5;
+	width: 100vw;
+	height: 100vh;
 }
 
 #x-bar-root.active {
 	translate: 0px;
+}
+
+#x-bar-root:not(.active) {
+	backdrop-filter: blur(30px);
+}
+
+#x-bar-root .categories {
+	transition: inherit;
 }
 
 .xb-category {

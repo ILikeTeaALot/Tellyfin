@@ -11,6 +11,9 @@ import { SELECTED_SCALE, UNSELECTED_SCALE } from "./shared";
 const XB_CATEGORY_WIDTH = 128;
 const XB_CATEGORY_GAP = 80;
 
+const OFFSET_HAS_NAVIGATED = 180;
+const OFFSET_SELECTED_CATEGORY = 80 - OFFSET_HAS_NAVIGATED;
+
 export type XBCategoryData = {
 	/** Unique identifer for this category (a name will suffice) */
 	key: string;
@@ -48,12 +51,12 @@ export function XBar(props: XBProps) {
 		onNavigate(item);
 	}, [onNavigate]);
 	return (
-		<div id="x-bar-root" class={active ? "active" : ""} style={{ opacity: nav_position < -1 ? 0 : 1 }}>
-			<div class="categories">
+		<div id="x-bar-root" class={active ? "active" : ""}>
+			<div class="categories" style={{ opacity: nav_position < -1 ? 0 : 1 }}>
 				{categories.map((cat, index) => {
 					// To keep state contained, they are rendered as their own component.
 					return (
-						<XBCategory {...cat} first={index == 0} last={index == categories.length - 1} onNavigate={handleNavigate} active={active && selected == index} selected={selected == index} id={cat.key} x={(nav_position == 0 ? 480 : selected == index ? 220 : 220) + (index * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP)) - (selected * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP))} />
+						<XBCategory {...cat} first={index == 0} last={index == categories.length - 1} onNavigate={handleNavigate} active={active && selected == index} selected={selected == index} id={cat.key} x={(nav_position == 0 ? 480 : selected == index ? OFFSET_HAS_NAVIGATED : OFFSET_HAS_NAVIGATED) + (index * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP)) - (selected * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP))} />
 					);
 				})}
 			</div>
@@ -121,7 +124,7 @@ function XBCategory(props: XBCategoryProps) {
 	if (!data) return null;
 	return (
 		<div class={is_selected ? "xb-category selected" : "xb-category"} style={{ translate: `${x}px` }}>
-			<div class={first ? "xb-category-icon first" : last ? "xb-category-icon last" : "xb-category-icon"} style={{ translate: !active && is_selected ? -140 : 0 }}>
+			<div class={first ? "xb-category-icon first" : last ? "xb-category-icon last" : "xb-category-icon"} style={{ translate: !active && is_selected ? OFFSET_SELECTED_CATEGORY : 0 }}>
 				<img src={icon} />
 				<span class="xb-category-title">{name}</span>
 			</div>
@@ -140,7 +143,7 @@ function XBCategory(props: XBCategoryProps) {
 						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP) * UNSELECTED_SCALE) - ((XB_ITEM_HEIGHT + GAP) * selected * UNSELECTED_SCALE) + 120;
 					}
 					return (
-						<div class={item_selected ? "xb-item selected" : "xb-item"} style={{ translate: `${!active && is_selected && item_selected ? -140 : 0}px ${y}px` }} key={item.id || index}>
+						<div class={item_selected ? "xb-item selected" : "xb-item"} style={{ translate: `${!active && is_selected && item_selected ? OFFSET_SELECTED_CATEGORY : 0}px ${y}px` }} key={item.id || index}>
 							<div class="xb-item-icon" style={{ scale: item_selected ? SELECTED_SCALE.toString() : UNSELECTED_SCALE.toString() }}>
 								{Icon ? typeof Icon == "string" ? <img
 									src={Icon}
