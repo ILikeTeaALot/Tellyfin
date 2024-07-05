@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TellyXML version="1.0">
 	<Items class="SettingList" id="MusicSettings" key="music" scope="User">
-		<Item class="Setting" key="preferred_library" default="0" kind="Select">
+		<Item class="Setting" key="preferred_library" kind="Select">
 			<Title>Preferred Library</Title>
 			<Description>Sets the preferred music library content listend under the [Music] category.</Description>
 			<Options>
 				<Option value="Alto">Alto</Option>
-				<!-- TODO: Query somehow? -->
-				<Query>
+				<!-- TODO: Music Sources Database -->
+				<!-- <Query src="xb://localhost/query?table=MUSIC_SOURCES">
 					<Option value="jellyfin:{id}">{name}</Option>
-				</Query>
+				</Query> -->
 			</Options>
 		</Item>
 		<Item class="Setting" key="cd_import" kind="Setup">
@@ -55,7 +55,7 @@
 				</Condition>
 			</Setup>
 		</Item>
-		<Item class="Setting" key="crossfade" default="0" kind="Select">
+		<Item class="Setting" key="crossfade" kind="Select">
 			<Title>Crossfade Playback</Title>
 			<Description>
 				Sets the amount of time that is crossfaded (overlapped) between music tracks. This Setting is used when playing content other than CD Audio.
@@ -69,7 +69,7 @@
 				<Option value="10">10 Seconds</Option>
 			</Options>
 		</Item>
-		<Item class="Setting" key="output_freq" default="2" kind="Select">
+		<Item class="Setting" key="output_freq" kind="Select">
 			<Title>Output Frequency</Title>
 			<Description>
 				Sets the audio output frequency when playing music content.

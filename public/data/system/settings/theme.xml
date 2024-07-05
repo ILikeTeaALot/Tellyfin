@@ -6,7 +6,7 @@
 			<Description>Sets or installs a complete theme for the system.</Description>
 			<Options>
 				<Option function="InstallTheme">Install</Option>
-				<Query function="InstalledThemes">
+				<Query function="InstalledThemes" src="xb://localhost/query?table=THEMES">
 					<Option value="theme:{id}">{name}</Option>
 				</Query>
 			</Options>
@@ -15,7 +15,8 @@
 			<Title>Sounds</Title>
 			<Description>Sets the sounds used when navigating the XMB.</Description>
 			<Options>
-				<Query function="ThemeSounds">
+				<!-- Note: escaping & as &amp; causes no issues when file is actually parsed. -->
+				<Query function="ThemeSounds" src="xb://localhost/query?table=THEMES&amp;sort=name&amp;cond=sound:true">
 					<Option value="theme:{id}">{name}</Option>
 				</Query>
 			</Options>
@@ -24,7 +25,7 @@
 			<Title>Icons</Title>
 			<Description>Sets the icons used for system functions.</Description>
 			<Options>
-				<Query function="ThemeIcons">
+				<Query function="ThemeIcons" src="xb://localhost/query?table=THEMES&amp;sort=name&amp;cond=icons:true">
 					<Option value="theme:{id}">{name}</Option>
 				</Query>
 			</Options>
@@ -34,17 +35,18 @@
 			<Description>Sets the system background.</Description>
 			<Options>
 				<Option function="ThemeSelectWallpaper" value="Wallpaper">Wallpaper</Option>
-				<Query function="ThemeBackgrounds">
+				<!-- <Query function="ThemeBackgrounds" src="xb://localhost/query?table=THEMES&amp;sort=name&amp;cond=background:true">
 					<Option value="theme:{id}">{name}</Option>
-				</Query>
+				</Query> -->
 			</Options>
 		</Item>
 		<Item class="Setting" key="music" kind="Select">
 			<Title>System Music</Title>
 			<Description>Sets the background music/audio that plays when no other media is playing.</Description>
 			<Options>
-				<Query function="ThemeMusic">
-					<Option value="theme:{id}">{name}</Option>
+				<Option value="None">None</Option>
+				<Query function="ThemeMusic" src="xb://localhost/query?table=THEMES&amp;sort=name&amp;cond=music:true">
+					<Option value="Some({id})">{name}</Option>
 				</Query>
 			</Options>
 		</Item>

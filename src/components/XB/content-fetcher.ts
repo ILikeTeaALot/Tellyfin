@@ -25,7 +25,7 @@ export async function getXBarContent([_, category]: ["xb-category", string]): Pr
 		case "games":
 			return {
 				content: [
-					{ id: "com.steampowered", name: "Steam", desc: "Your Steam library – Coming soon!", Icon: "/SteamFolder4.png" },
+					{ id: "com.steampowered", name: "Steam", desc: "Your Steam library – Coming soon!", Icon: "/SteamFolder5.png" },
 				]
 			};
 		case "services":
@@ -133,7 +133,7 @@ async function getXBarTVContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "/xb-icons/tex/video_tex_album_default.png" : undefined,
+				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "/tv_tex_album_default.png" : undefined,
 				jellyfin: true,
 				jellyfin_data: item,
 			}))

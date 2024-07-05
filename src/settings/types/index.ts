@@ -34,8 +34,8 @@ export type UserSettings = {
 	};
 	theme: {
 		theme: string;
-		sound_theme: string;
-		icon: string;
+		sound: string;
+		icons: string;
 		background: {
 			type: BackgroundType;
 			name: string;

@@ -14,8 +14,8 @@ export const default_user_settings: UserSettings = {
 	},
 	theme: {
 		theme: "PS3",
-		sound_theme: "PS3",
-		icon: "PS3",
+		sound: "PS3",
+		icons: "PS3",
 		background: {
 			type: BackgroundType.Dynamic,
 			name: "PS3"

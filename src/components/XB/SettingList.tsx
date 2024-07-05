@@ -7,6 +7,7 @@ import { getXMLListContent } from "./list-content-fetcher";
 import { SettingsContext } from "../../context/Settings";
 import type { UserSettings } from "../../settings/types";
 import { useInput } from "../../hooks";
+import { DB } from "../../database";
 
 export enum SettingKind {
 	List = "List",
@@ -169,7 +170,7 @@ export function SettingList(props: XBSettingListProps) {
 }
 
 type RootKey = keyof UserSettings;
-type Key = keyof UserSettings[RootKey];
+type Key<T extends keyof UserSettings> = keyof T[keyof T];
 
 type SettingOptionSet = {
 	kind?: SettingKind.List;
@@ -187,13 +188,13 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 	if (!document || !settings) return [null, null];
 	const root = document.querySelector(`Items[class="SettingList"]`)!;
 	const root_key = root.getAttribute("key")! as RootKey;
-	const list = document.querySelectorAll(`Item[class="Setting"]`);
+	const list = root.querySelectorAll(`Item[class="Setting"]`);
 	// const list = document.evaluate("//Items/Item", document.getRootNode());
 	const settingsList: XBItem[] = [];
 	const menus: SettingOptionSet[] = [];
 	// for (let setting = list.iterateNext(); setting != null; setting = list.iterateNext()) {
 	for (const [, setting] of list.entries()) {
-		const key = setting.getAttribute("key")! as Key;
+		const key = setting.getAttribute("key")! as Key<typeof root_key>;
 		const kind = setting.getAttribute("kind")! as "Select" | "Setup";
 		const title = setting.querySelector("Title")?.textContent!;
 		const desc = setting.querySelector("Description")?.textContent;
@@ -201,25 +202,59 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 		const raw_value = settings[root_key]?.[key];
 		let displayValue = null;
 		if (kind == "Select") {
-			// const optionsNode = setting.querySelector("Options")!;
-			const options = setting.querySelectorAll("Option")!;
+			const optionsNode = setting.querySelector("Options")!;
+			// const options = setting.querySelectorAll("Option")!;
+			let options = [...optionsNode.children];
 			let default_item = 0;
 			let menu_items: Array<XBMenuItem<string | number>> = [];
 			for (const entry of options.entries()) {
 				// const option = options[index];
 				const [index, option] = entry;
 				// menus[index].items.push()
-				menu_items.push({
-					value: option.getAttribute("value")!,
-					label: option.textContent!,
-					id: `${key}.${option.getAttribute("value")!}`,
-				});
-				if (option.getAttribute("value") == raw_value) {
-					default_item = index;
-					if (!display_format_string) for (const node of option.childNodes) {
-						if (node.nodeType == node.TEXT_NODE) {
-							displayValue = node.textContent;
+				if (option.tagName == "Option") {
+					menu_items.push({
+						value: option.getAttribute("value")!,
+						label: option.textContent!,
+						id: `${key}.${option.getAttribute("value")!}`,
+					});
+					if (option.getAttribute("value") == raw_value) {
+						default_item = index;
+						if (!display_format_string) for (const node of option.childNodes) {
+							if (node.nodeType == node.TEXT_NODE) {
+								displayValue = node.textContent;
+							}
 						}
+					}
+				} else if (option.tagName == "Query") {
+					// This will change when there's more options than just `xb://...`
+					let src = option.getAttribute("src");
+					if (src) {
+						const parsed = new URL(src);
+						const options = await DB.processQuery(
+							parsed.searchParams.get("table")!,
+							parsed.searchParams.get("cond")?.replace(/:/g, "="),
+							parsed.searchParams.get("scond"),
+							parsed.searchParams.get("sort"),
+							parsed.searchParams.get("ssort"),
+							parsed.searchParams.get("genre"),
+						);
+						for (const option of options) {
+							menu_items.push({
+								value: option.identifier,
+								label: option.name,
+								id: `${key}.${option.id}`,
+							});
+							if (option.identifier == raw_value) {
+								default_item = index;
+								if (!display_format_string) displayValue = option.name;
+							}
+						}
+					} else {
+						// menu_items.push({
+						// 	value: "None",
+						// 	label: "Unknown",
+						// 	id: Math.round(Math.random() * 4000).toString()
+						// })
 					}
 				}
 			}
@@ -228,7 +263,7 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 			}
 			const forced_default = setting.getAttribute("default");
 			if (forced_default) {
-				default_item = parseInt(forced_default);
+				default_item = parseInt(JSON.parse(forced_default));
 			}
 			menus.push({
 				default_item,
