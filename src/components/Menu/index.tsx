@@ -1,6 +1,6 @@
 import "./menu.css";
 
-import { useCallback, useEffect, useState } from "preact/hooks";
+import { useCallback, useEffect, useLayoutEffect, useState } from "preact/hooks";
 import type { Id } from "../Content/types";
 import { useInput } from "../../hooks";
 import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
@@ -132,21 +132,21 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 	// Don't play move sound if `selected` was changed by props
 	const [playMoveSound, setPlayMoveSound] = useState(false);
 
-	const submenu = items[selected].submenu;
+	const submenu = items[selected]?.submenu;
 
-	useEffect(() => {
-		if (!active) setSubmenuActive(false);
-	}, [active]);
-
-	useEffect(() => {
+	useLayoutEffect(() => {
 		if (!active) {
 			setSelected(selected => {
 				// Don't play move sound if `selected` was changed by props
 				if (selected != default_item) setPlayMoveSound(false);
-				return default_item;
+				return Math.min(default_item, item_count - 1);
 			});
 		}
-	}, [active, default_item]);
+	}, [active, default_item, item_count]);
+
+	useEffect(() => {
+		if (!active) setSubmenuActive(false);
+	}, [active]);
 
 	useInput(active && !submenuActive, (button) => {
 		switch (button) {
@@ -166,7 +166,7 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 		}
 	}, [onCancel]);
 
-	const hasSubmenu = "submenu" in items[selected];
+	const hasSubmenu = !!items[selected]?.submenu;
 
 	useInput(active && hasSubmenu, (button) => {
 		switch (button) {
@@ -211,6 +211,11 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 		setSubmenuActive(false);
 		playFeedback(FeedbackSound.MenuClose);
 	}, []);
+
+	if (items.length == 0) {
+		onCancel();
+		return null;
+	}
 
 	return (
 		<>
