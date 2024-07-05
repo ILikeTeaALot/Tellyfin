@@ -15,16 +15,26 @@ export type ContentGridProps = {
 	onNavigate: (action: NavigateAction, index?: number) => void;
 };
 
-const COLUMNS = 6;
+const COLUMNS = 5;
 
-const WIDTH = 240;
-const HEIGHT = 360;
+const ITEM_WIDTH = 280;
+const ITEM_HEIGHT = 420;
 
 const GAP = 60;
 
-const GRID_WIDTH = ((COLUMNS - 1) * GAP + COLUMNS * WIDTH); // (5 * GAP + 6 * WIDTH) // 1740
+const GRID_WIDTH = ((COLUMNS - 1) * GAP + (COLUMNS * ITEM_WIDTH)); // (5 * GAP + 6 * WIDTH) // 1740
 
-const MARGIN = (1920 - GRID_WIDTH) / 2;
+// const MARGIN_TOP = 120;
+const MARGIN_TOP = 160;
+// const MARGIN_TOP = 200;
+const FADE = 40;
+
+const OFFSET_Y = 80;
+
+// const MARGIN_LEFT = ((window.innerWidth - GRID_WIDTH) / 2);
+// const MARGIN_LEFT = 360;
+// const MARGIN_LEFT = 200;
+const MARGIN_LEFT = ((window.innerWidth - GRID_WIDTH) - 80);
 
 const columns = COLUMNS;
 
@@ -125,7 +135,7 @@ export function ContentGrid(props: ContentGridProps) {
 				break;
 		}
 	}, [canGoBackWithArrowKey, columns, data_length, onNavigate]);
-	const menu_submit = useCallback((item: XBMenuItem<string> & {value: string}) => {
+	const menu_submit = useCallback((item: XBMenuItem<string> & { value: string; }) => {
 		const { id: action, value: id } = item;
 		console.log("action:", action, "id", id);
 		switch (action) {
@@ -171,66 +181,75 @@ export function ContentGrid(props: ContentGridProps) {
 	const selected_row = Math.floor(selected / columns);
 	const last_row = Math.floor((data.length - 1) / columns);
 	return (
-		// <div class="fullscreen-mask top bottom">
-		<div className="content-grid" style={{
-			opacity: nav_position == 0 ? 1 : 0,
-			// translate: `${position * 240}px`,
-			scale: `${1 + (Math.max(Math.min(nav_position, 1), -1) * -0.2)}`,
-			// filter: nav_position == 0 ? undefined : "blur(40px) saturate(180%)",
-			transitionTimingFunction: nav_position == 0 ? "var(--timing-function-decelerate)" : "var(--timing-function-accelerate)",
-			transitionDelay: nav_position == 0 ? "var(--transition-standard)" : "0ms"
+		<div style={{
+			inset: 0,
+			position: "fixed",
+			mask: `linear-gradient(to bottom, transparent ${MARGIN_TOP}px, black ${MARGIN_TOP + FADE}px, black /* calc(100% - ${MARGIN_TOP + FADE}px), transparent */ 100%)`,
 		}}>
-			{data.slice(startIndex, endIndex).map((item, _index) => {
-				const index = startIndex + _index;
-				const row = Math.floor(index / columns);
-				let yPosition = ((window.innerHeight / 2) - (HEIGHT / 2)) + (((HEIGHT + GAP) * (row))) - ((HEIGHT + GAP) * selected_row);
-				if (selected_row == 0) {
-					yPosition -= (HEIGHT + GAP) / 2;
-				}
-				if (selected_row == last_row) {
-					yPosition += (HEIGHT + GAP) / 2;
-				}
-				return (
-					<div key={item.id} class="grid-item" style={{
-						// translate: `0px ${(window.innerHeight / 2) - (HEIGHT / 2) - ((HEIGHT + GAP) * Math.floor(selected / columns))}px`,
-						translate: `${MARGIN + ((index % columns) * (WIDTH + GAP))}px ${yPosition}px`,
-					}}>
-						<div className={selected == index ? "panel active" : props.nav_position <= 0 ? "panel inactive" : "panel"} style={{
-							width: WIDTH,
-							height: HEIGHT,
-							borderRadius: 16,
+			<div className="content-grid" style={{
+				opacity: nav_position == 0 ? 1 : 0,
+				// translate: `${position * 240}px`,
+				scale: `${1 + (Math.max(Math.min(nav_position, 1), -1) * -0.2)}`,
+				// filter: nav_position == 0 ? undefined : "blur(40px) saturate(180%)",
+				transitionTimingFunction: nav_position == 0 ? "var(--timing-function-decelerate)" : "var(--timing-function-accelerate)",
+				transitionDelay: nav_position == 0 ? "var(--transition-standard)" : "0ms"
+			}}>
+				{data.slice(startIndex, endIndex).map((item, _index) => {
+					const index = startIndex + _index;
+					const row = Math.floor(index / columns);
+					let yPosition = ((window.innerHeight / 2) - (ITEM_HEIGHT / 2)) + (((ITEM_HEIGHT + GAP) * (row))) - ((ITEM_HEIGHT + GAP) * selected_row);
+					if (selected_row == 0) {
+						yPosition -= (ITEM_HEIGHT + GAP) / 2;
+						yPosition += MARGIN_TOP;
+					} else {
+						yPosition += OFFSET_Y; // OR MARGIN_TOP
+					}
+					if (selected_row == last_row) {
+						// yPosition += (ITEM_HEIGHT + GAP) / 2;
+					}
+					return (
+						<div key={item.id} class="grid-item" style={{
+							// opacity: selected_row > row ? 0.2 : 1,
+							opacity: selected_row == row ? 1 : 0.7,
+							// translate: `0px ${(window.innerHeight / 2) - (HEIGHT / 2) - ((HEIGHT + GAP) * Math.floor(selected / columns))}px`,
+							translate: `${MARGIN_LEFT + ((index % columns) * (ITEM_WIDTH + GAP))}px ${yPosition}px`,
 						}}>
-							<div className={"panel-content"}>
-								<div className={"shadow"} />
-								<div className={"panel-image"}>
-									{/* {item.jellyfin_data ? <JellyfinPosterImage data={item.jellyfin_data} /> : null} */}
-									{item.jellyfin_data ? <img
-										decoding="async"
-										// src={`${api.basePath}/Items/${item.id}/Images/Primary?fillWidth=${WIDTH}&fillHeight=${HEIGHT}`}
-										src={`${api.basePath}/Items/${item.id}/Images/Primary?width=${WIDTH * 2}&quality=100`}
-										style={{
-											objectFit: "cover",
-											width: "100%",
-											height: "100%",
-										}}
-									/> : (
-										<div style={{ padding: 20, display: "flex", justifyContent: "flex-start" }}>
-											<span style={{
-												// position: "absolute",
-												fontWeight: 600,
-												display: "flex",
-											}}>{item.name}</span>
-										</div>
-									)}{/* TODO */}
+							<div className={selected == index ? "panel active" : props.nav_position <= 0 ? "panel inactive" : "panel"} style={{
+								width: ITEM_WIDTH,
+								height: ITEM_HEIGHT,
+								borderRadius: 16,
+							}}>
+								<div className={"panel-content"}>
+									<div className={"shadow"} />
+									<div className={"panel-image"}>
+										{/* {item.jellyfin_data ? <JellyfinPosterImage data={item.jellyfin_data} /> : null} */}
+										{item.jellyfin_data ? <img
+											decoding="async"
+											// src={`${api.basePath}/Items/${item.id}/Images/Primary?fillWidth=${WIDTH}&fillHeight=${HEIGHT}`}
+											src={`${api.basePath}/Items/${item.id}/Images/Primary?width=${ITEM_WIDTH * 2}&quality=100`}
+											style={{
+												objectFit: "cover",
+												width: "100%",
+												height: "100%",
+											}}
+										/> : (
+											<div style={{ padding: 20, display: "flex", justifyContent: "flex-start" }}>
+												<span style={{
+													// position: "absolute",
+													fontWeight: 600,
+													display: "flex",
+												}}>{item.name}</span>
+											</div>
+										)}{/* TODO */}
+									</div>
+									<div className={"border-highlight"} />
 								</div>
-								<div className={"border-highlight"} />
 							</div>
 						</div>
-					</div>
-				);
-			})}
-			<Menu active={menuOpen} items={menu_content} onSubmit={menu_submit} onCancel={menu_cancel} />
+					);
+				})}
+				<Menu active={menuOpen} items={menu_content} onSubmit={menu_submit} onCancel={menu_cancel} />
+			</div>
 		</div>
-		// </div>
 	);
 }
