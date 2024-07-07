@@ -41,9 +41,13 @@ export function Timeline(props: TimelineProps) {
 		setElapsedSeconds(position);
 	}, [position]);
 
+	useEffect(() => {
+		setChapter(mpvState.position.chapter ?? 0);
+	}, [mpvState.position.chapter]);
+
 	useLayoutEffect(() => {
 		chapters.current = mpvState.chapters;
-	}, [mpvState.chapters]);
+	}, [mpvState]);
 
 	useLayoutEffect(() => {
 		play_state.current = playState;
