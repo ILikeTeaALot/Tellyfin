@@ -1,6 +1,6 @@
 import "./scene-search.css";
 import { InputProps } from "../Input";
-import { useCallback, useContext, useEffect, useMemo, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { useInput } from "../../hooks";
 import VideoState from "../../context/VideoContext";
 import { ContentPanel, PanelState } from "../Panel";
@@ -31,7 +31,7 @@ export type ChapterSelectProps = InputProps<number> & {
 	 * 
 	 * This might be changed to optional when MPV-based chapter/scene support works properly.
 	 */
-	data: BaseItemDto;
+	data?: BaseItemDto;
 	// chapters: Array<[ChapterInterval, Array<ChapterData>]>;
 };
 
@@ -48,9 +48,10 @@ const GAP = 40;
 export function SceneSearch(props: ChapterSelectProps) {
 	// Props
 	const { active, default: _default, onCancel: cancel, onSubmit: _submit } = props;
+	const wasActive = useRef(active);
 	// Context
 	const videoState = useContext(VideoState);
-	const chapters = useMemo(() => videoState.jellyfin_data?.Chapters ?? [], [videoState.jellyfin_data?.Chapters]);
+	const chapters = useMemo(() => videoState.jellyfin_data?.Chapters ?? videoState.chapters ?? [], [videoState.jellyfin_data?.Chapters, videoState.chapters]);
 	const position = videoState.position.time.position ?? 0;
 	const duration = videoState.position.time.duration ?? 0;
 	// Intervals
@@ -60,8 +61,10 @@ export function SceneSearch(props: ChapterSelectProps) {
 	const [selectedScene, setScene] = useState(_default);
 	const [selectedInterval, setInterval] = useState(0);
 	useEffect(() => setInterval(interval => Math.max(Math.min(interval, intervals.length - 1), 0)), [intervals]);
+	const [disableTransition, setTransitionDisabled] = useState(true);
 	// "Constants"
-	const currentStartPositionTicks = videoState.jellyfin_data?.Chapters?.[selectedScene]?.StartPositionTicks ?? 0;
+	const StartPositionTicks = videoState.jellyfin_data?.Chapters?.[selectedScene]?.StartPositionTicks;
+	const currentStartPosition = StartPositionTicks ? (StartPositionTicks / TICKS_PER_SECOND) : videoState.chapters?.[selectedScene]?.time ?? 0;
 	// if (!intervals[selectedInterval]) {
 	// 	return null;
 	// }
@@ -69,15 +72,27 @@ export function SceneSearch(props: ChapterSelectProps) {
 	// Time
 	const [timeValue, setTime] = useState(videoState.position.time.position ?? 0);
 	const [displayTime, setDisplayTime] = useState(timeValue);
+	useLayoutEffect(() => {
+		if ((active && !wasActive.current) || !active) {
+			setScene(_default);
+			setTransitionDisabled(true);
+		}
+	}, [active, _default]);
+	useEffect(() => {
+		wasActive.current = active;
+	}, [active]);
+	useEffect(() => {
+		if (disableTransition) setTransitionDisabled(false);
+	}, [disableTransition])
 	// Callbacks
 	const submit = useCallback(() => {
 		const seconds = interval == -1 ? (
-			(currentStartPositionTicks ?? -1) / TICKS_PER_SECOND
+			(currentStartPosition ?? -1)
 		) : timeValue;
 		if (seconds >= 0) _submit(seconds);
 		// if (chapters) {
 		// }
-	}, [_submit, currentStartPositionTicks, interval, timeValue]);
+	}, [_submit, currentStartPosition, interval, timeValue]);
 	// `position` changes every ~10 seconds when the video is player. We don't want `time` to ever be changed outside of user control.
 	useEffect(() => setTime(position), [active]); // eslint-disable-line react-hooks/exhaustive-deps
 	// useEffect(() => setDisplayTime(timeValue), [duration, position]);
@@ -92,14 +107,14 @@ export function SceneSearch(props: ChapterSelectProps) {
 	// Submit
 	useEffect(() => {
 		if (interval == -1) {
-			const time = currentStartPositionTicks;
+			const time = currentStartPosition;
 			if (time || time == 0) {
-				setDisplayTime(time / TICKS_PER_SECOND);
+				setDisplayTime(time);
 			}
 		} else {
 			setDisplayTime(timeValue);
 		}
-	}, [selectedScene, selectedInterval, interval, timeValue, currentStartPositionTicks]);
+	}, [selectedScene, selectedInterval, interval, timeValue, currentStartPosition]);
 	useInput(active, (button) => {
 		switch (button) {
 			case "PadLeft":
@@ -142,16 +157,16 @@ export function SceneSearch(props: ChapterSelectProps) {
 				cancel();
 		}
 	}, [submit, cancel]);
-	if (intervals.length == 0) {
-		cancel();
-		return null;
-	}
+	// if (intervals.length == 0) {
+	// 	cancel();
+	// 	return null;
+	// }
 	if (typeof interval == "undefined") {
 		return null;
 	}
-	if (!videoState.position.time.duration) return null;
-	if (!videoState.jellyfin_data && !videoState.chapters) return null;
-	if (videoState.jellyfin_data?.Chapters) return (
+	// if (!videoState.position.time.duration) return null;
+	// if (!videoState.jellyfin_data && !videoState.chapters) return null;
+	if (videoState.chapters) return (
 		<div class="scene-search" style={{ opacity: active ? 1 : 0, height: (interval == -1 ? (GAP * 3) + (40 + 20) + 180 : 40) + 80 }}>
 			<div class="interval">
 				{intervals.map((interval, index) => (
@@ -168,12 +183,15 @@ export function SceneSearch(props: ChapterSelectProps) {
 				transformOrigin: "top center",
 				position: "absolute",
 				top: 20 + 60 + GAP
-			}}>{videoState.jellyfin_data.Chapters.map((scene, index) => {
+			}}>{videoState.jellyfin_data?.Chapters ? videoState.jellyfin_data.Chapters.map((scene, index) => {
 				return (
 					<div class="scene" style={{
 						translate: `${index * (WIDTH + GAP) - (WIDTH / 2) - ((selectedScene) * (WIDTH + GAP)) + (index < selectedScene ? -20 : index > selectedScene ? 20 : 0)}px`,
+						transitionDuration: disableTransition ? "0ms" : undefined,
 					}}>
-						<ContentPanel key={scene.ImageTag ?? scene.StartPositionTicks ?? index} state={index == selectedScene ? PanelState.Active : PanelState.Inactive} width={WIDTH} height={/* videoState.jellyfin_data?.AspectRatio ? WIDTH / videoState.jellyfin_data.AspectRatio : */ HEIGHT}>
+						<ContentPanel key={scene.ImageTag ?? scene.StartPositionTicks ?? index} style={{
+							transitionDuration: disableTransition ? "0ms" : undefined,
+						}} state={index == selectedScene ? PanelState.Active : PanelState.Inactive} width={WIDTH} height={/* videoState.jellyfin_data?.AspectRatio ? WIDTH / videoState.jellyfin_data.AspectRatio : */ HEIGHT}>
 							<img
 								decoding="async"
 								src={`${api.basePath}/Items/${videoState.jellyfin_data?.Id}/Images/Chapter/${index}?fillWidth=${WIDTH * 2}&fillHeight=${HEIGHT * 2}&tag=${scene.ImageTag}`}
@@ -186,7 +204,20 @@ export function SceneSearch(props: ChapterSelectProps) {
 						</ContentPanel>
 					</div>
 				);
-			})}</div>
+			}) : videoState.chapters ? videoState.chapters.map((scene, index) => {
+				return (
+					<div class="scene" style={{
+						translate: `${index * (WIDTH + GAP) - (WIDTH / 2) - ((selectedScene) * (WIDTH + GAP)) + (index < selectedScene ? -20 : index > selectedScene ? 20 : 0)}px`,
+						transitionDuration: disableTransition ? "0ms" : undefined,
+					}}>
+						<ContentPanel key={scene.image ?? index} style={{
+							transitionDuration: disableTransition ? "0ms" : undefined,
+						}} state={index == selectedScene ? PanelState.Active : PanelState.Inactive} width={WIDTH} height={/* videoState.jellyfin_data?.AspectRatio ? WIDTH / videoState.jellyfin_data.AspectRatio : */ HEIGHT}>
+							
+						</ContentPanel>
+					</div>
+				);
+			}) : null}</div>
 			<span class="scene-title" style={{
 				display: "flex",
 				opacity: interval == -1 ? 1 : 0,
@@ -196,7 +227,7 @@ export function SceneSearch(props: ChapterSelectProps) {
 				// scale: interval == -1 ? "1 1" : "1 0",
 				transformOrigin: "bottom center",
 				// translate: interval == -1 ? "0px" : `0px -${GAP + 180 + GAP}px`,
-			}}>{videoState.jellyfin_data.Chapters[selectedScene]?.Name ?? `Scene ${selectedScene + 1}`}</span>
+			}}>{videoState.chapters[selectedScene]?.title || `Scene ${selectedScene + 1}`}</span>
 			<div style={{ display: "flex", right: 100, bottom: 80, marginLeft: "auto", position: "absolute" }}>
 				<Timeline mini position={displayTime} duration={videoState.position.time.duration} />
 			</div>
@@ -253,7 +284,7 @@ export function SceneSearch(props: ChapterSelectProps) {
 	// );
 }
 
-function getIntervals(chapters: ChapterInfo[], duration: number): ChapterInterval[] {
+function getIntervals(chapters: (ChapterInfo | ChapterData)[], duration: number): ChapterInterval[] {
 	if (!duration) return [];
 	let intervals: Array<ChapterInterval> = [];
 	if (chapters.length > 0) {

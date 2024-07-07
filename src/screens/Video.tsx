@@ -163,7 +163,7 @@ export function Video(props: ScreenProps) {
 		<div id="video-root">
 			{/* <div>Video Controls</div> */}
 			<VideoControlPanel active={controlPanelActive} onAction={handle_panel_action} options={
-				state.jellyfin_data?.Chapters ? withSceneSearch : withoutSceneSearch
+				(state.jellyfin_data?.Chapters || state.chapters) ? withSceneSearch : withoutSceneSearch
 			} />
 			{/* <button onClick={() => props.change_state(AppState.Home)}>Go To Home</button>
 			<div>Chapter Select</div>
@@ -176,7 +176,7 @@ export function Video(props: ScreenProps) {
 				<div style={{ flexGrow: 1 }} />
 				<Timeline realtime position={time.position} duration={time.duration} />
 			</div>
-			{state.jellyfin_data ? <SceneSearch active={sceneSearchActive} data={state.jellyfin_data} default={state.position.chapter || 0} onCancel={on_cancel} onSubmit={on_submit} /> : null}
+			{state.jellyfin_data || state.chapters ? <SceneSearch active={sceneSearchActive} data={state.jellyfin_data ?? undefined} default={state.position.chapter || 0} onCancel={on_cancel} onSubmit={on_submit} /> : null}
 			<div id="playback-status-indicator" className={PlaybackStatus[playback_status]} style={{
 				opacity: (displayVisible || playback_status != PlaybackStatus.Playing) && active ? 1 : 0,
 				transitionDelay: displayVisible ? "0s" : playback_status == PlaybackStatus.Playing ? "5s" : "0ms",
