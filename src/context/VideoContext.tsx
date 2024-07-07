@@ -3,11 +3,29 @@ import { ChapterData } from "../components/SceneSearch";
 import { type BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 
 export enum MediaType {
-	General,
-	Film,
-	TV,
-	BluRay,
-	DVD,
+	General = "General",
+	Film = "Film",
+	TV = "TV",
+	BluRay = "BluRay",
+	DVD = "DVD",
+	CD = "CD",
+}
+
+export type MediaInfo = /* {
+	type: "None";
+} | */{
+	type: "CD";
+	path: string;
+	track: number;
+} | {
+	type: "DVD" | "BluRay";
+	path: string;
+	name: string | null;
+	title: number;
+	chapter: number;
+} | {
+	type: "Jellyfin";
+	id: string;
 }
 
 export enum PlaybackStatus {
@@ -60,9 +78,10 @@ export type VideoContextType = {
 	};
 	filename: string | null;
 	path: string | null;
-	media_type: MediaType;
+	media_type: MediaInfo,
+	// media_type: MediaType;
 	jellyfin_data: BaseItemDto | null;
-	jellyfin_id: string | null;
+	// jellyfin_id: string | null;
 	// stateChanged: (file?: string, media_type?: MediaType) => void;
 	// setLocation: (location: string) => void;
 };
@@ -84,7 +103,10 @@ export const defaultVideoState: VideoContextType = {
 		channels: null,
 		format: null,
 	},
-	media_type: MediaType.General,
+	media_type: {
+		type: "Jellyfin",
+		id: "None",
+	},
 	video: {
 		codec: "Unknown",
 		format: "Unknown",
@@ -98,7 +120,6 @@ export const defaultVideoState: VideoContextType = {
 	filename: null,
 	path: null,
 	jellyfin_data: null,
-	jellyfin_id: null,
 	// stateChanged: (_, __) => { },
 };
 

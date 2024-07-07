@@ -62,7 +62,7 @@ export function FilmDetail(props: JellyfinScreenProps) {
 						// 		}
 						// 	});
 						// });
-						playFile(info.Path, info.Id);
+						playFile(info.Path, info.Id ? { type: "Jellyfin", id: info.Id } : undefined);
 					}
 				}
 				break;

@@ -5,7 +5,7 @@ import { ScreenProps } from "./common";
 import { invoke } from "@tauri-apps/api/core";
 import { refresh_mpv } from "../util/functions";
 import { Timeline } from "../components/Timeline";
-import VideoState, { PlaybackStatus, VideoContextType } from "../context/VideoContext";
+import VideoState, { PlaybackStatus, VideoContextType, type MediaInfo } from "../context/VideoContext";
 import { PauseIcon, PlayIcon, StopIcon } from "../Icons";
 import { useInput } from "../hooks";
 import { SceneSearch } from "../components/SceneSearch";
@@ -169,6 +169,7 @@ export function Video(props: ScreenProps) {
 			<div>Chapter Select</div>
 			<div>Timeline</div> */}
 			<div className="video-info" style={{ opacity: displayVisible || sceneSearchActive || seekActive ? 1 : 0 }}>
+				<DiscIcon {...state.media_type} />
 				{displayTitle(state)}
 				<StatusBar loading={playback_status == PlaybackStatus.Playing && displayVisible} show disable_mask />
 			</div>
@@ -210,59 +211,85 @@ function statusIcon(playback_status: PlaybackStatus) {
 }
 
 function displayTitle(state: VideoContextType) {
-	if (state.jellyfin_data) {
-		if (state.jellyfin_data.Type) {
-			switch (state.jellyfin_data.Type) {
-				// case "AggregateFolder":
-				// case "Audio":
-				// case "AudioBook":
-				// case "BasePluginFolder":
-				// case "Book":
-				// case "BoxSet":
-				// case "Channel":
-				// case "ChannelFolderItem":
-				// case "CollectionFolder":
-				case "Episode":
-					return <span>{state.jellyfin_data.SeriesName} {state.jellyfin_data.SeasonName}, Episode {state.jellyfin_data.IndexNumber}: {state.jellyfin_data.Name ?? state.title ?? state.filename ?? null}</span>;
-				// case "Folder":
-				// case "Genre":
-				// case "ManualPlaylistsFolder":
-				case "Movie":
-					return <span>{state.jellyfin_data.Name ?? state.title ?? state.filename ?? null}</span>;
-				// case "LiveTvChannel":
-				// case "LiveTvProgram":
-				// case "MusicAlbum":
-				// case "MusicArtist":
-				// case "MusicGenre":
-				case "MusicVideo":
-					break;
-				// case "Person":
-				case "Photo":
-				case "PhotoAlbum":
-					break;
-				// case "Playlist":
-				// case "PlaylistsFolder":
-				case "Program":
-				case "Recording":
-				case "Season":
-				case "Series":
-					break;
-				// case "Studio":
-				case "Trailer":
-					break;
-				// case "TvChannel":
-				case "TvProgram":
-					break;
-				// case "UserRootFolder":
-				// case "UserView":
-				case "Video":
-					break;
-				// case "Year":
-				default:
-					break;
-			}
+	if (state.media_type) {
+		switch (state.media_type.type) {
+			case "CD":
+				return <span>{state.title ?? "CD"}</span>;
+			case "DVD":
+				return <span>{`${state.media_type.name ?? state.media_type.path} DVD Video`}</span>;
+			case "BluRay":
+				return <span>{`${state.media_type.name ?? state.media_type.path} Blu-ray`}</span>;
+			case "Jellyfin":
+				if (state.jellyfin_data) {
+					if (state.jellyfin_data.Type) {
+						switch (state.jellyfin_data.Type) {
+							// case "AggregateFolder":
+							// case "Audio":
+							// case "AudioBook":
+							// case "BasePluginFolder":
+							// case "Book":
+							// case "BoxSet":
+							// case "Channel":
+							// case "ChannelFolderItem":
+							// case "CollectionFolder":
+							case "Episode":
+								return <span>{state.jellyfin_data.SeriesName} {state.jellyfin_data.SeasonName}, Episode {state.jellyfin_data.IndexNumber}: {state.jellyfin_data.Name ?? state.title ?? state.filename ?? null}</span>;
+							// case "Folder":
+							// case "Genre":
+							// case "ManualPlaylistsFolder":
+							case "Movie":
+								return <span>{state.jellyfin_data.Name ?? state.title ?? state.filename ?? null}</span>;
+							// case "LiveTvChannel":
+							// case "LiveTvProgram":
+							// case "MusicAlbum":
+							// case "MusicArtist":
+							// case "MusicGenre":
+							case "MusicVideo":
+								break;
+							// case "Person":
+							case "Photo":
+							case "PhotoAlbum":
+								break;
+							// case "Playlist":
+							// case "PlaylistsFolder":
+							case "Program":
+							case "Recording":
+							case "Season":
+							case "Series":
+								break;
+							// case "Studio":
+							case "Trailer":
+								break;
+							// case "TvChannel":
+							case "TvProgram":
+								break;
+							// case "UserRootFolder":
+							// case "UserView":
+							case "Video":
+								break;
+							// case "Year":
+							default:
+								break;
+						}
+					}
+					return <span>{state.jellyfin_data?.Name ?? state.title ?? state.filename ?? null}</span>;
+				}
+
 		}
-		return <span>{state.jellyfin_data?.Name ?? state.title ?? state.filename ?? null}</span>;
 	}
 	return <span>{state.title ?? state.filename ?? null}</span>;
+}
+
+function DiscIcon(props: MediaInfo) {
+	const style = { width: "1lh", height: "1lh" };
+	switch (props.type) {
+		case "CD":
+			return <img src="/xb-icons/tex/item_tex_disc_icon.png" style={style} />;
+		case "DVD":
+			return <img src="/xb-icons/tex/item_tex_disc_dvd.png" style={style} />;
+		case "BluRay":
+			return <img src="/xb-icons/tex/item_tex_disc_bd.png" style={style} />;
+		default:
+			return null;
+	}
 }

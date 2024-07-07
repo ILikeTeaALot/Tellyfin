@@ -30,9 +30,9 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 	useEffect(() => {
 		if (data) {
 			if (!data.jellyfin_data) {
-				if (data.jellyfin_id) {
+				if (data?.media_type?.type == "Jellyfin") {
 					jellyfin.getItemsApi(api).getItems({
-						ids: [data.jellyfin_id],
+						ids: [data.media_type.id],
 						userId: auth.User!.Id!,
 						fields: ["MediaSourceCount", "Overview", "Path", "SpecialEpisodeNumbers", "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
 					}).then(value => {
@@ -43,9 +43,9 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					});
 					if (data.status.playback_status == PlaybackStatus.Stopped) {
 						// reinitAudioSystem();
-						jellyfinStopped(data.jellyfin_id);
+						jellyfinStopped(data.media_type.id);
 					} else {
-						jellyfinUpdatePosition(data.jellyfin_id, data.position.time.position, data.status.playback_status == PlaybackStatus.Paused);
+						jellyfinUpdatePosition(data.media_type.id, data.position.time.position, data.status.playback_status == PlaybackStatus.Paused);
 					}
 				}
 			}
@@ -107,8 +107,8 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					reinitAudioSystem();
 					mutate(current => {
 						if (current) {
-							if (current.jellyfin_id) {
-								jellyfinStopped(current.jellyfin_id);
+							if (current.media_type?.type == "Jellyfin") {
+								jellyfinStopped(current.media_type.id);
 							}
 							return {
 								...current, status: { ...current.status, playback_status: PlaybackStatus.Stopped }

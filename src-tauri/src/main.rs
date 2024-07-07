@@ -13,9 +13,9 @@ pub mod util;
 mod window;
 use database::TellyfinDB;
 use libmpv2::Mpv;
-use mpv::{control::*, init::*, status::*};
+use mpv::{control::*, event::*, init::*, status::*};
 use query::{unsafe_query};
-use states::JellyfinId;
+use states::PlaybackId;
 use tauri::Manager;
 use theme::ThemeManager;
 use window::init_window;
@@ -29,7 +29,7 @@ use settings::{read_settings, save_settings};
 
 type MpvStateInner = Option<Mpv>;
 pub type MpvState = Arc<Mutex<MpvStateInner>>;
-pub type CurrentId = Arc<Mutex<Option<JellyfinId>>>;
+pub type CurrentId = Arc<Mutex<Option<PlaybackId>>>;
 
 fn main() {
 	tauri::Builder::default()
@@ -39,7 +39,8 @@ fn main() {
 		.setup(|app| -> Result<(), Box<dyn Error>> {
 			let base_config_path = app.path().app_config_dir()?;
 			let database_path = base_config_path.join("data.db");
-			init_mpv(app).inspect_err(|e| eprintln!("Error occurred in MPV initialisation: {}", e))?;
+			init_mpv(app, &base_config_path)
+				.inspect_err(|e| eprintln!("Error occurred in MPV initialisation: {}", e))?;
 			init_window(app)?;
 			setup_status_event(app)?;
 			println!("Setting up DB");

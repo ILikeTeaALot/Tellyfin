@@ -4,7 +4,7 @@ use libmpv2::Mpv;
 use tauri::State;
 
 use crate::get_chapters;
-use crate::states::JellyfinId;
+use crate::states::PlaybackId;
 use crate::Chapter;
 use crate::CurrentId;
 // use crate::MPV;
@@ -187,7 +187,7 @@ pub async fn set_track(track: String, id: String, mpv: State<'_, MpvState>) -> R
 }
 
 #[tauri::command]
-pub async fn play_file(file: String, jellyfin_id: Option<JellyfinId>, mpv: State<'_, MpvState>, id: State<'_, CurrentId>) -> Result<(), String> {
+pub async fn play_file(file: String, jellyfin_id: Option<PlaybackId>, mpv: State<'_, MpvState>, id: State<'_, CurrentId>) -> Result<(), String> {
 	if let Ok(mut id) = id.lock() {
 		*id = jellyfin_id;
 	}

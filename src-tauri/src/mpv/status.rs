@@ -1,22 +1,22 @@
-use std::{error::Error, fmt::Display, os::raw::c_uint, sync::Arc, thread};
+use std::{error::Error, fmt::Display, os::raw::c_uint, sync::Arc};
 
-use libmpv2::{Format, Mpv};
+use libmpv2::{Mpv};
 use serde::Serialize;
 use serde_repr::Serialize_repr;
-use tauri::{App, Manager, State};
+use tauri::{Manager, State};
 
-use crate::{states::JellyfinId, use_mpv_lock, CurrentId, MpvState};
+use crate::{states::PlaybackId, use_mpv_lock, CurrentId, MpvState};
 
-// #[derive(Debug, Default, Serialize)]
-// #[repr(u8)]
-// enum MediaType {
-// 	#[default]
-// 	General,
-// 	Film,
-// 	TV,
-// 	BluRay,
-// 	DVD,
-// }
+#[derive(Debug, Default, Serialize)]
+#[repr(u8)]
+enum MediaType {
+	#[default]
+	General,
+	// Film,
+	// TV,
+	BluRay = 3,
+	DVD,
+}
 
 #[derive(Clone, Debug, Default, Serialize_repr)]
 #[repr(u8)]
@@ -118,257 +118,9 @@ pub struct MpvStatus {
     chapters: Vec<Chapter>,
     // media_type: MediaType,
     #[serde(skip_serializing_if = "Option::is_none")]
-    jellyfin_id: Option<JellyfinId>,
+    media_type: Option<PlaybackId>,
     filename: Option<String>,
     path: Option<String>,
-}
-
-// #[allow(non_camel_case_types)]
-// #[derive(Clone, Debug, Serialize)]
-// #[serde(remote = "libmpv2::LogLevel")]
-// pub struct Mpv_LogLevel(pub libmpv2::LogLevel);
-// #[allow(non_camel_case_types)]
-// #[derive(Clone, Debug, Serialize)]
-// #[serde(remote = "libmpv2::EndFileReason")]
-// pub struct Mpv_EndFileReason(pub libmpv2::EndFileReason);
-// #[allow(non_camel_case_types)]
-// #[derive(Clone, Debug, Serialize)]
-// #[serde(remote = "libmpv2_sys::mpv_event")]
-// pub struct Mpv_mpv_event(pub libmpv2_sys::mpv_event);
-
-#[derive(Clone, Debug, Serialize)]
-#[serde(untagged)]
-pub enum PropertyData {
-    Unsupported,
-    String(String),
-    OsdString(String),
-    Flag(bool),
-    Int64(i64),
-    Double(f64),
-    // Node(&'a MpvNode),
-}
-
-impl From<libmpv2::events::PropertyData<'_>> for PropertyData {
-    fn from(value: libmpv2::events::PropertyData) -> Self {
-        match value {
-            libmpv2::events::PropertyData::Str(str) => PropertyData::String(str.to_owned()),
-            libmpv2::events::PropertyData::OsdStr(str) => PropertyData::OsdString(str.to_owned()),
-            libmpv2::events::PropertyData::Flag(value) => PropertyData::Flag(value),
-            libmpv2::events::PropertyData::Int64(value) => PropertyData::Int64(value),
-            libmpv2::events::PropertyData::Double(value) => PropertyData::Double(value),
-            libmpv2::events::PropertyData::Node(_) => PropertyData::Unsupported,
-        }
-    }
-}
-
-#[derive(Clone, Debug, Serialize)]
-pub enum MpvEvent {
-    /// Received when the player is shutting down
-    Shutdown,
-    /// *Has not been tested*, received when explicitly asked to MPV
-    LogMessage {
-        prefix: String,
-        level: String,
-        text: String,
-        log_level: c_uint,
-    },
-    /// Received when using get_property_async
-    GetPropertyReply {
-        name: String,
-        result: PropertyData,
-        reply_userdata: u64,
-    },
-    /// Received when using set_property_async
-    SetPropertyReply(u64),
-    /// Received when using command_async
-    CommandReply(u64),
-    /// Event received when a new file is playing
-    StartFile,
-    /// Event received when the file being played currently has stopped, for an error or not
-    EndFile(c_uint),
-    /// Event received when a file has been *loaded*, but has not been started
-    FileLoaded,
-    ClientMessage(Vec<String>),
-    VideoReconfig,
-    AudioReconfig,
-    /// The player changed current position
-    Seek,
-    PlaybackRestart,
-    /// Received when used with observe_property
-    PropertyChange {
-        name: String,
-        change: PropertyData,
-        reply_userdata: u64,
-    },
-    /// Received when the Event Queue is full
-    QueueOverflow,
-    /// A deprecated event
-    Deprecated(/* libmpv2_sys::mpv_event */),
-}
-
-impl From<libmpv2::events::Event<'_>> for MpvEvent {
-    fn from(value: libmpv2::events::Event) -> Self {
-        match value {
-            libmpv2::events::Event::Shutdown => MpvEvent::Shutdown,
-            libmpv2::events::Event::LogMessage {
-                prefix,
-                level,
-                text,
-                log_level,
-            } => MpvEvent::LogMessage {
-                prefix: prefix.to_owned(),
-                level: level.to_owned(),
-                text: text.to_owned(),
-                log_level,
-            },
-            libmpv2::events::Event::GetPropertyReply {
-                name,
-                result,
-                reply_userdata,
-            } => MpvEvent::GetPropertyReply {
-                name: name.to_owned(),
-                result: result.into(),
-                reply_userdata,
-            },
-            libmpv2::events::Event::SetPropertyReply(r) => MpvEvent::SetPropertyReply(r),
-            libmpv2::events::Event::CommandReply(r) => MpvEvent::CommandReply(r),
-            libmpv2::events::Event::StartFile => MpvEvent::StartFile,
-            libmpv2::events::Event::EndFile(r) => MpvEvent::EndFile(r),
-            libmpv2::events::Event::FileLoaded => MpvEvent::FileLoaded,
-            libmpv2::events::Event::ClientMessage(m) => {
-                MpvEvent::ClientMessage(m.clone().into_iter().map(|v| v.to_owned()).collect())
-            }
-            libmpv2::events::Event::VideoReconfig => MpvEvent::VideoReconfig,
-            libmpv2::events::Event::AudioReconfig => MpvEvent::AudioReconfig,
-            libmpv2::events::Event::Seek => MpvEvent::Seek,
-            libmpv2::events::Event::PlaybackRestart => MpvEvent::PlaybackRestart,
-            libmpv2::events::Event::PropertyChange {
-                name,
-                change,
-                reply_userdata,
-            } => MpvEvent::PropertyChange {
-                name: name.to_owned(),
-                change: change.into(),
-                reply_userdata,
-            },
-            libmpv2::events::Event::QueueOverflow => MpvEvent::QueueOverflow,
-            libmpv2::events::Event::Deprecated(_) => MpvEvent::Deprecated(),
-        }
-    }
-}
-
-// #[derive(Debug, Default, Serialize)]
-// #[serde(remote = "libmpv2::events::Event")]
-// pub struct MpvEvent<'a>(Option<libmpv2::events::Event<'a>>);
-
-// impl Clone for MpvEvent<'_> {
-// 	fn clone(&self) -> Self {
-// 		use libmpv2::events::Event::*;
-// 		Self(match &self.0 {
-// 			Some(ev) => match ev {
-// 				LogMessage { .. }
-// 				| GetPropertyReply { .. }
-// 				| SetPropertyReply(..)
-// 				| CommandReply(..)
-// 				| ClientMessage(..)
-// 				| PropertyChange { .. } => None,
-// 				Shutdown => Some(Shutdown),
-// 				StartFile => Some(StartFile),
-// 				EndFile(reason) => Some(EndFile(reason.clone())),
-// 				FileLoaded => Some(FileLoaded),
-// 				VideoReconfig => Some(VideoReconfig),
-// 				AudioReconfig => Some(AudioReconfig),
-// 				Seek => Some(Seek),
-// 				PlaybackRestart => Some(PlaybackRestart),
-// 				QueueOverflow => Some(QueueOverflow),
-// 				Deprecated(ev) => Some(Deprecated(ev.clone())),
-// 			},
-// 			None => None,
-// 		})
-// 	}
-// }
-
-pub fn setup_status_event(app: &App) -> Result<(), Box<dyn Error>> {
-    let mpv_arc = Arc::clone(&app.state::<MpvState>());
-    let mut mpv = mpv_arc.lock().unwrap();
-    let mpv = mpv.as_mut().unwrap();
-    // let id = app.state::<CurrentId>();
-    // app.emit("mpv-status", status(mpv, id)?);
-    let cx = mpv.event_context_mut();
-    cx.enable_all_events()?;
-    let mpv = mpv_arc.clone();
-    let handle = app.handle().clone();
-    match cx.observe_property("pause", Format::Flag, 1701) {
-        Err(e) => eprintln!("Error occurred observing property [pause]: {}", e),
-        _ => (),
-    }
-    cx.set_wakeup_callback(move || {
-        let mpv = mpv.clone();
-        let handle = handle.clone();
-        thread::spawn(move || match mpv.lock() {
-            Ok(mut mpv) => match mpv.as_mut() {
-                Some(mpv) => {
-                    let mut events_to_poll = true;
-                    while events_to_poll {
-                        let ev = mpv.event_context_mut().wait_event(0.);
-                        if let Some(Ok(ev)) = ev {
-                            use MpvEvent::*;
-                            let ev = MpvEvent::from(ev);
-                            // Do special stuff for a specific event.
-                            match &ev {
-								Shutdown => (),
-								LogMessage { prefix, level, text, log_level } => (),
-								GetPropertyReply { name, result, reply_userdata } => (),
-								SetPropertyReply(_) => (),
-								CommandReply(_) => (),
-								StartFile => (),
-								EndFile(_) => println!("End File event called!"),
-								FileLoaded => println!("File Loaded event called!"),
-								ClientMessage(_) => (),
-								VideoReconfig => (),
-								AudioReconfig => (),
-								Seek => println!("Seek event called!"),
-								PlaybackRestart => (),
-								PropertyChange { name, change, reply_userdata } => (),
-								QueueOverflow => (),
-								Deprecated(/* _ */) => (),
-							}
-                            match handle.emit("mpv-event", ev) {
-                                Ok(_) => (),
-                                Err(error) => {
-                                    eprintln!("Error occurred emitting mpv-event: {}", error)
-                                }
-                            }
-                            /* let id = handle.state::<CurrentId>();
-                            let id = Arc::clone(&id);
-                            let status_ok = handle.emit(
-                                "mpv-status",
-                                status(mpv, id)
-                                    .inspect_err(|e| {
-                                        eprintln!("Error occurred getting status: {}", e)
-                                    })
-                                    .map_err(|e| e.to_string()),
-                            );
-                            match status_ok {
-                                Ok(_) => (),
-                                Err(error) => {
-                                    eprintln!("Error occurred emitting mpv-status: {}", error)
-                                }
-                            } */
-                        } else if let None = ev {
-                            events_to_poll = false;
-                        }
-                    }
-                }
-                None => {}
-            },
-            Err(error) => {
-                eprintln!("Error occurred while locking: {}", error);
-            }
-        });
-        return;
-    });
-    Ok(())
 }
 
 #[tauri::command]
@@ -454,14 +206,14 @@ fn status(mpv: &mut Mpv, id: CurrentId) -> Result<MpvStatus, Box<dyn Error>> {
     }
     // Jellyfin ID
     {
-        if let Ok(jellyfin_id) = id.try_lock() {
-            status.jellyfin_id = jellyfin_id.as_ref().map(|v| v.clone());
+        if let Ok(media_id) = id.try_lock() {
+            status.media_type = media_id.as_ref().map(|v| v.clone());
         }
     }
     // Path/File
     // println!("Getting file path...");
     {
-        // status.jellyfin_id = (*(id.try_lock().ok().unwrap_or(None)).as_ref()).unwrap_or(None);
+        // status.media_type = (*(id.try_lock().ok().unwrap_or(None)).as_ref()).unwrap_or(None);
         status.filename = mpv.get_property::<String>("filename").ok();
         status.path = mpv.get_property::<String>("path").ok();
     }

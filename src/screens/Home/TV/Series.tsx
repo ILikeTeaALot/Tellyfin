@@ -166,7 +166,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 				// onNavigate(NavigateAction.Enter, selectedEpisode);
 				if (episodes && row == Row.Episodes) {
 					const data = episodes[selected.episode];
-					invoke("play_file", { file: data.Path, jellyfinId: data.Id }).then(() => {
+					invoke("play_file", { file: data.Path, jellyfinId: data.Id && { id: data.Id } }).then(() => {
 						invoke("transport_command", { function: "Play" });
 						mutate<VideoContextType>("mpv_state", (current) => {
 							if (current) {
