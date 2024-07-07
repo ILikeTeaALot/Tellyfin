@@ -3,7 +3,7 @@ import { Dispatch, StateUpdater } from "preact/hooks";
 import { ContentItem, ContentType } from "../../components/Content/types";
 import { NavigateAction } from "../../components/ContentList";
 import api, { auth } from "../../context/Jellyfin";
-import { BaseItemDtoQueryResult } from "@jellyfin/sdk/lib/generated-client/models";
+import type { BaseItemDtoQueryResult } from "@jellyfin/sdk/lib/generated-client/models";
 import { AxiosResponse } from "axios";
 import { ScreenContent } from "../common";
 

@@ -5,7 +5,7 @@ import { useInput } from "../../hooks";
 import VideoState from "../../context/VideoContext";
 import { ContentPanel, PanelState } from "../Panel";
 import api from "../../context/Jellyfin";
-import { BaseItemDto, type ChapterInfo } from "@jellyfin/sdk/lib/generated-client/models";
+import { type BaseItemDto, type ChapterInfo } from "@jellyfin/sdk/lib/generated-client/models";
 import { TICKS_PER_SECOND } from "../../util/functions";
 import { Timeline } from "../Timeline";
 

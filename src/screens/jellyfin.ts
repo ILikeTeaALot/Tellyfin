@@ -1,4 +1,4 @@
-import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
+import { type BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 import { NavigateAction } from "../components/ContentList";
 
 export type JellyfinScreenProps = {

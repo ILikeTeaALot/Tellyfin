@@ -1,6 +1,6 @@
 import { createContext } from "preact";
 import { ChapterData } from "../components/SceneSearch";
-import { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
+import { type BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 
 export enum MediaType {
 	General,
