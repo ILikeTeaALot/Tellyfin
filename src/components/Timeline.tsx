@@ -1,6 +1,6 @@
 import "./timeline.css";
 import { refresh_mpv, toHMS } from "../util/functions";
-import { useContext, useEffect, useRef, useState } from "preact/hooks";
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import VideoState, { PlaybackStatus } from "../context/VideoContext";
 
 export type TimelineProps = {
@@ -8,24 +8,28 @@ export type TimelineProps = {
 	duration: number | null;
 	mini?: boolean;
 	realtime?: boolean;
+	showChapter?: boolean;
 };
 
 // const UPDATE_FREQUENCY = 6; // 6Hz
 
 export function Timeline(props: TimelineProps) {
-	const { position, duration: duration_seconds, mini, realtime } = props;
+	const { position, duration: duration_seconds, mini, realtime, showChapter } = props;
 	
 	const mpvState = useContext(VideoState);
 	
 	const playState = mpvState.status.playback_status;
 	
 	const play_state = useRef<PlaybackStatus>(playState);
+
+	const chapters = useRef(mpvState.chapters);
 	
 	const frame = useRef<number>(-1);
 	const last_ms = useRef<number>(0);
 	const elapsed_ms = useRef<number>(position * 1000);
 	
 	const [elapsed_seconds, setElapsedSeconds] = useState(position ?? 0);
+	const [chapter, setChapter] = useState(mpvState.position?.chapter ?? 0);
 
 	const remaining_seconds = duration_seconds ? duration_seconds - elapsed_seconds : 0;
 
@@ -37,7 +41,11 @@ export function Timeline(props: TimelineProps) {
 		setElapsedSeconds(position);
 	}, [position]);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
+		chapters.current = mpvState.chapters;
+	}, [mpvState.chapters]);
+
+	useLayoutEffect(() => {
 		play_state.current = playState;
 	}, [playState]);
 
@@ -50,6 +58,9 @@ export function Timeline(props: TimelineProps) {
 				elapsed_ms.current += delta_ms;
 				if (duration_seconds) if (elapsed_ms.current > duration_seconds * 1000) {
 					refresh_mpv();
+				}
+				if (chapters.current.length > 0 && chapters.current.length < 10000) {
+					setChapter(Math.max(chapters.current.findIndex(value => value.time > elapsed_ms.current / 1000) - 1, 0));
 				}
 				setElapsedSeconds(elapsed_ms.current / 1000);
 				// setElapsedSeconds(Math.round((elapsed.current / 1000) /* * UPDATE_FREQUENCY */) /* / UPDATE_FREQUENCY */);
@@ -67,6 +78,8 @@ export function Timeline(props: TimelineProps) {
 
 	return (
 		<div className={mini ? "timeline small" : "timeline"}>
+			{showChapter && mpvState.media_type.type != "CD" && mpvState.chapters.length < 10000 && <span> Chapter {chapter + 1}</span>}
+			<div />
 			{/* {chapter ? <span>{mpvState.jellyfin_data?.Chapters?.[chapter ?? 0]?.Name ?? mpvState.chapters[chapter ?? 0].title ?? `Chapter ${chapter}`}</span> : null} */}
 			{/* <span>{`Chapter ${chapter}`}</span> */}
 			<span>T {toHMS(elapsed_seconds)}</span>

@@ -175,7 +175,7 @@ export function Video(props: ScreenProps) {
 			</div>
 			<div className="video-timeline" style={{ opacity: displayVisible ? 1 : 0 }}>
 				<div style={{ flexGrow: 1 }} />
-				<Timeline realtime position={time.position} duration={time.duration} />
+				<Timeline realtime showChapter position={time.position} duration={time.duration} />
 			</div>
 			{state.jellyfin_data || state.chapters ? <SceneSearch active={sceneSearchActive} data={state.jellyfin_data ?? undefined} default={state.position.chapter || 0} onCancel={on_cancel} onSubmit={on_submit} /> : null}
 			<div id="playback-status-indicator" className={PlaybackStatus[playback_status]} style={{
