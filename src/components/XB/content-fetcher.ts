@@ -74,8 +74,10 @@ export async function getXBarContent([_, category]: ["xb-category", string]): Pr
 	}
 }
 
+const libraryCatch = () => ({ data: { Items: [] } });
+
 async function getXBarVideoContent(): Promise<CategoryContent> {
-	const videoLibraries = await jellyfin.getLibraryApi(api).getMediaFolders().then(value => value.data.Items?.filter(item => {
+	const videoLibraries = await jellyfin.getLibraryApi(api).getMediaFolders().catch(libraryCatch).then(value => value.data.Items?.filter(item => {
 		switch (item.CollectionType) {
 			case "homevideos":
 			case "boxsets":
@@ -111,7 +113,7 @@ async function getXBarVideoContent(): Promise<CategoryContent> {
 }
 
 async function getXBarTVContent(): Promise<CategoryContent> {
-	const tvLibraries = await jellyfin.getLibraryApi(api).getMediaFolders().then(value => value.data.Items?.filter(item => {
+	const tvLibraries = await jellyfin.getLibraryApi(api).getMediaFolders().catch(libraryCatch).then(value => value.data.Items?.filter(item => {
 		// if (!item.CollectionType) return true;
 		switch (item.CollectionType) {
 			case "tvshows":
@@ -142,7 +144,7 @@ async function getXBarTVContent(): Promise<CategoryContent> {
 }
 
 async function getXBarMusicContent(): Promise<CategoryContent> {
-	const musicLibraries = await jellyfin.getLibraryApi(api).getMediaFolders().then(value => value.data.Items?.filter(item => {
+	const musicLibraries = await jellyfin.getLibraryApi(api).getMediaFolders().catch(libraryCatch).then(value => value.data.Items?.filter(item => {
 		switch (item.CollectionType) {
 			case "playlists":
 			case "music":
@@ -183,7 +185,7 @@ async function getXBarMusicContent(): Promise<CategoryContent> {
 }
 
 async function getXBarPhotoContent(): Promise<CategoryContent> {
-	const photoLibraries = await jellyfin.getLibraryApi(api).getMediaFolders().then(value => value.data.Items?.filter(item => {
+	const photoLibraries = await jellyfin.getLibraryApi(api).getMediaFolders().catch(libraryCatch).then(value => value.data.Items?.filter(item => {
 		switch (item.CollectionType) {
 			case "playlists":
 			case "photos":
@@ -209,7 +211,7 @@ async function getXBarPhotoContent(): Promise<CategoryContent> {
 }
 
 async function getXBarLiveTVContent(): Promise<CategoryContent> {
-	const liveTVSources = await jellyfin.getLibraryApi(api).getMediaFolders().then(value => value.data.Items?.filter(item => {
+	const liveTVSources = await jellyfin.getLibraryApi(api).getMediaFolders().catch(libraryCatch).then(value => value.data.Items?.filter(item => {
 		switch (item.CollectionType) {
 			case "livetv":
 				return true;
