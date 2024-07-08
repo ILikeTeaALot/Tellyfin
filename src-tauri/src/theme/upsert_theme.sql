@@ -1,10 +1,11 @@
 INSERT INTO THEMES
-(name, identifier, version_major, version_minor, version_patch, description, authors, sound, icons, music)
+(name, identifier, version_major, version_minor, version_patch, description, authors, sound, icons, music, path)
 VALUES
-(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
 ON CONFLICT(identifier) DO UPDATE
 SET
 name = ?1,
+path = ?11,
 identifier = ?2,
 version_major = ?3,
 version_minor = ?4,

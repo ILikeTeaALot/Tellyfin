@@ -48,16 +48,16 @@ export async function getXBarContent([_, category]: ["xb-category", string]): Pr
 			return {
 				default_item: 1,
 				content: [
-					{ id: "system.settings.update", name: "Check for Updates", Icon: "/xb-icons/setting/tex_update.png", desc: "Connect to the internet and check for Tellyfin software updates." },
-					{ id: "system.settings.home", name: "Customise Home", Icon: "/xb-icons/setting/tex_sett.png", desc: "Customise the order and visibility of XBar Categories." },
-					{ id: "system.settings.music", name: "Music Settings", Icon: "/xb-icons/setting/tex_music.png", desc: "Adjusts settings for music playback from Audio CD, Alto™, and Jellyfin." },
-					{ id: "system.settings.theme", name: "Theme Settings", Icon: "/xb-icons/setting/tex_theme.png", desc: "Adjusts theme settings for Tellyfin, including icons, background, and fonts." },
-					{ id: "system.settings.video", name: "Video Settings", desc: "Adjusts settings for the MPV video player.", Icon: "/xb-icons/setting/tex_bddvd.png" },
-					{ id: "system.settings.media_server", name: "Media Server Connection Settings", desc: "Adjust settings for existing media server connections or connect to additional media servers.", Icon: "/xb-icons/setting/tex_network.png" },
-					{ id: "system.settings.sound", name: "Sound Settings", Icon: "/xb-icons/setting/tex_sound.png", desc: "Adjusts settings for audio devices and output formats." },
-					{ id: "system.settings.display", name: "Display Settings", Icon: "/xb-icons/setting/tex_display.png", desc: "Adjusts settings for display resolution and frame rate." },
-					{ id: "system.settings.plugins", name: "Plug-in Settings", Icon: "/xb-icons/setting/tex_console.png", desc: "Adjusts settings for plug-ins." },
-					{ id: "system.settings.system", name: "System Settings", Icon: "/xb-icons/setting/tex_console.png", desc: "Adjusts settings for and displays information about the system." },
+					{ id: "system.update", name: "Check for Updates", Icon: "icon:system.update", desc: "Connect to the internet and check for Tellyfin software updates." },
+					{ id: "system.settings.home", name: "Customise Home", Icon: "icon:settings.item", desc: "Customise the order and visibility of XBar Categories." },
+					{ id: "system.settings.music", name: "Music Settings", Icon: "icon:settings.music", desc: "Adjusts settings for music playback from Audio CD, Alto™, and Jellyfin." },
+					{ id: "system.settings.theme", name: "Theme Settings", Icon: "icon:settings.theme", desc: "Adjusts theme settings for Tellyfin, including icons, background, and fonts." },
+					{ id: "system.settings.video", name: "Video Settings", desc: "Adjusts settings for the MPV video player.", Icon: "icon:settings.video" },
+					{ id: "system.settings.media_server", name: "Media Server Connection Settings", desc: "Adjust settings for existing media server connections or connect to additional media servers.", Icon: "icon:settings.media_server" },
+					{ id: "system.settings.sound", name: "Sound Settings", Icon: "icon:settings.sound", desc: "Adjusts settings for audio devices and output formats." },
+					{ id: "system.settings.display", name: "Display Settings", Icon: "icon:settings.display", desc: "Adjusts settings for display resolution and frame rate." },
+					{ id: "system.settings.plugins", name: "Plug-in Settings", Icon: "icon:settings.plugins", desc: "Adjusts settings for plug-ins." },
+					{ id: "system.settings.system", name: "System Settings", Icon: "icon:settings.system", desc: "Adjusts settings for and displays information about the system." },
 				]
 			};
 		case "system":
@@ -98,13 +98,13 @@ async function getXBarVideoContent(): Promise<CategoryContent> {
 			{
 				name: "Search",
 				id: "system.search",
-				Icon: "/xb-icons/tex/tex_kensaku.png",
+				Icon: "icon:general.search",
 			},
 			...videoLibraries.map(item => ({
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "/xb-icons/tex/video_tex_album_default.png" : undefined,
+				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "icon:video.folder" : undefined,
 				jellyfin: true,
 				jellyfin_data: item,
 			}))
@@ -129,13 +129,13 @@ async function getXBarTVContent(): Promise<CategoryContent> {
 			{
 				name: "Search",
 				id: "system.search",
-				Icon: "/xb-icons/tex/tex_kensaku.png",
+				Icon: "icon:general.search",
 			},
 			...tvLibraries.map(item => ({
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "/tv_tex_album_default.png" : undefined,
+				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "icon:tv.folder" : undefined,
 				jellyfin: true,
 				jellyfin_data: item,
 			}))
@@ -176,7 +176,7 @@ async function getXBarMusicContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "/xb-icons/tex/music_tex_album_default.png" : undefined,
+				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "icon:music.folder" : undefined,
 				jellyfin: true,
 				jellyfin_data: item,
 			}))
@@ -202,7 +202,7 @@ async function getXBarPhotoContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "/xb-icons/tex/photo_tex_album_default.png" : undefined,
+				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "icon:photos.folder" : undefined,
 				jellyfin: true,
 				jellyfin_data: item,
 			}))
@@ -227,7 +227,7 @@ async function getXBarLiveTVContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "/xb-icons/tex/photo_tex_album_default.png" : undefined,
+				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "/xb-icons/tex/tex_playlist.png" : "icon:tv.folder" : undefined,
 				jellyfin: true,
 				jellyfin_data: item,
 			}))

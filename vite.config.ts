@@ -26,5 +26,15 @@ export default defineConfig(async () => ({
 			// 3. tell vite to ignore watching `src-tauri`
 			ignored: ["**/src-tauri/**"],
 		},
+		cors: true,
+		// CSP
+		headers: {
+			"Access-Control-Allow-Origin": "*",
+			"Content-Security-Policy": `
+				connect-src * 'self' 'unsafe-eval' 'unsafe-inline' https: http: icon:;
+				default-src 'self' 'unsafe-inline' https: http: http://*.localhost https://*.localhost http://localhost https://localhost icon: xb:;
+				script-src 'self' 'unsafe-inline';
+			`.replace(/\r?\n|\r/g, "")
+		}
 	},
 }));

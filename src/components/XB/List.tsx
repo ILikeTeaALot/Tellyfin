@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "preact/hooks";
+import { useMemo, useState, useEffect, useContext } from "preact/hooks";
 import useSWR from "swr";
 import { useInput } from "../../hooks";
 import { type CategoryContent, type XBItem } from "./content-fetcher";
@@ -9,6 +9,8 @@ import back from "../../assets/arrow_l.svg";
 import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
 import { useDidUpdate } from "../../hooks/use-did-update";
 import { SELECTED_SCALE, UNSELECTED_SCALE } from "./shared";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { SettingsContext } from "../../context/Settings";
 
 const XB_ITEM_HEIGHT = 120;
 const GAP = 0;
@@ -31,6 +33,7 @@ export function XBList(props: XBListProps) {
 	/// @ts-expect-error Don't publicly expose props.override_active
 	const input_active = active && !props.override_active;
 	const swr_key = useMemo(() => ["xb-list", data_key, props.data] as const, [data_key, props.data]);
+	const { settings } = useContext(SettingsContext);
 	// Oh the joys of javascript... (I wish I had Rust's enums here...)
 	const { data } = useSWR(
 		swr_key,
@@ -103,7 +106,7 @@ export function XBList(props: XBListProps) {
 						<div class={item_selected ? "xb-item selected" : "xb-item"} style={{ translate: `0px ${y}px` }} key={item.id}>
 							<div class="xb-item-icon" style={{ scale: item_selected ? SELECTED_SCALE.toString() : UNSELECTED_SCALE.toString() }}>
 								{Icon ? typeof Icon == "string" ? <img
-									src={Icon}
+									src={Icon.startsWith("icon:") ? convertFileSrc(`${settings.theme.icons}/${Icon.substring(5)}`, "icon") : Icon}
 								/> : typeof Icon == "function" ? <Icon /> : <img src={Icon.src} style={{ ...Icon }} /> : <img
 									src="/xb-icons/icon_gamedata.png"
 								/>}

@@ -270,7 +270,7 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 				items: menu_items,
 				kind: SettingKind.List,
 			});
-			settingsList.push({ id: key, name: title.trim(), desc: desc?.trim(), Icon: "/xb-icons/setting/tex_sett.png", value: displayValue?.trim() ?? "Unknown" });
+			settingsList.push({ id: key, name: title.trim(), desc: desc?.trim(), Icon: "icon:settings.item", value: displayValue?.trim() ?? "Unknown" });
 		} else {
 			menus.push({
 				kind: SettingKind.Wizard,
@@ -278,7 +278,7 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 			if (display_format_string) {
 				displayValue = display_format_string.replace(templateReplaceRegExp, (match: string, p1: string) => lookupReplacementString(raw_value, match, p1));
 			}
-			settingsList.push({ id: key, name: title.trim(), desc: desc?.trim(), Icon: "/xb-icons/setting/tex_sett.png", value: displayValue?.trim() ?? "Object [TODO]" /* settings[root_key][key] */ });
+			settingsList.push({ id: key, name: title.trim(), desc: desc?.trim(), Icon: "icon:settings.item", value: displayValue?.trim() ?? "Object [TODO]" /* settings[root_key][key] */ });
 		}
 	}
 	return [{ content: settingsList, root_key }, menus];

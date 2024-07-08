@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS THEMES (
 	id INTEGER PRIMARY KEY,
 	identifier TEXT,
+	path TEXT,
 	name TEXT,
 	version_major INTEGER,
 	version_minor INTEGER,

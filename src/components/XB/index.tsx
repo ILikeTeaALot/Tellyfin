@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useMemo, useState } from "preact/hooks";
 import useSWR from "swr";
 import { getXBarContent, type XBItem } from "./content-fetcher";
 import { useInput } from "../../hooks";
@@ -7,6 +7,8 @@ import "./style.css";
 import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
 import { useDidUpdate } from "../../hooks/use-did-update";
 import { SELECTED_SCALE, UNSELECTED_SCALE } from "./shared";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { SettingsContext } from "../../context/Settings";
 
 const XB_CATEGORY_WIDTH = 128;
 const XB_CATEGORY_GAP = 80;
@@ -17,7 +19,7 @@ const OFFSET_SELECTED_CATEGORY = 80 - OFFSET_HAS_NAVIGATED;
 export type XBCategoryData = {
 	/** Unique identifer for this category (a name will suffice) */
 	key: string;
-	icon: string;
+	icon?: string;
 	name: string;
 };
 
@@ -81,6 +83,7 @@ function XBCategory(props: XBCategoryProps) {
 	const { active, first, last, selected: is_selected, icon, id, name, x, onNavigate } = props; // We can't access `props.key` because React consumes it.
 	const swr_key = useMemo(() => ["xb-category", id] as const, [id]);
 	const { data } = useSWR(swr_key, getXBarContent, { keepPreviousData: true });
+	const { settings } = useContext(SettingsContext);
 	const default_item = data?.default_item;
 	const data_length = data?.content.length ?? 0;
 	const [selected, setSelected] = useState(data?.default_item ?? 0);
@@ -125,7 +128,7 @@ function XBCategory(props: XBCategoryProps) {
 	return (
 		<div class={is_selected ? "xb-category selected" : "xb-category"} style={{ translate: `${x}px` }}>
 			<div class={first ? "xb-category-icon first" : last ? "xb-category-icon last" : "xb-category-icon"} style={{ translate: !active && is_selected ? OFFSET_SELECTED_CATEGORY : 0 }}>
-				<img src={icon} />
+				<img src={icon ? icon : convertFileSrc(`${settings.theme.icons}/root.${id}`, "icon")} />
 				<span class="xb-category-title">{name}</span>
 			</div>
 			<div class={"xb-category-content"}>
@@ -146,7 +149,7 @@ function XBCategory(props: XBCategoryProps) {
 						<div class={item_selected ? "xb-item selected" : "xb-item"} style={{ translate: `${!active && is_selected && item_selected ? OFFSET_SELECTED_CATEGORY : 0}px ${y}px` }} key={item.id || index}>
 							<div class="xb-item-icon" style={{ scale: item_selected ? SELECTED_SCALE.toString() : UNSELECTED_SCALE.toString() }}>
 								{Icon ? typeof Icon == "string" ? <img
-									src={Icon}
+									src={Icon.startsWith("icon:") ? convertFileSrc(`${settings.theme.icons}/${Icon.substring(5)}`, "icon") : Icon}
 								/> : typeof Icon == "function" ? <Icon /> : <img src={Icon.src} style={{ ...Icon }} /> : <img
 									src="/xb-icons/tex/item_tex_plain_folder.png"
 								/>}

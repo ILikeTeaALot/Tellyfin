@@ -33,6 +33,7 @@ pub type CurrentId = Arc<Mutex<Option<PlaybackId>>>;
 
 fn main() {
 	tauri::Builder::default()
+		.register_asynchronous_uri_scheme_protocol("icon", theme::icons::handler)
 		.manage(Arc::new(Mutex::<MpvStateInner>::new(None)))
 		.manage(CurrentId::default())
 		.manage(BassState::new().expect("Bass is required at this time."))
@@ -56,6 +57,7 @@ fn main() {
 			app.manage(theme_manager);
 			Ok(())
 		})
+		.plugin(tauri_plugin_http::init())
 		.plugin(tauri_plugin_shell::init())
 		.invoke_handler(tauri::generate_handler![
 			// MARK - MPV
