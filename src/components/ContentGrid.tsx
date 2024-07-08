@@ -113,7 +113,7 @@ export function ContentGrid(props: ContentGridProps) {
 				setSelected(current => {
 					if (current == data_length - 1 && (current + 1) % 6 != 0) {
 						if (data_length > columns) {
-							return current - 5;
+							return current - (columns - 1);
 						} else {
 							return current;
 						}
