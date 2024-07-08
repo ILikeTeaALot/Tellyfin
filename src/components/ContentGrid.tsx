@@ -25,11 +25,12 @@ const GAP = 60;
 const GRID_WIDTH = ((COLUMNS - 1) * GAP + (COLUMNS * ITEM_WIDTH)); // (5 * GAP + 6 * WIDTH) // 1740
 
 // const MARGIN_TOP = 120;
-const MARGIN_TOP = 160;
+const MARGIN_TOP = 128;
+// const MARGIN_TOP = 160;
 // const MARGIN_TOP = 200;
 const FADE = 40;
 
-const OFFSET_Y = 80;
+const OFFSET_Y = 64;
 
 // const MARGIN_LEFT = ((window.innerWidth - GRID_WIDTH) / 2);
 // const MARGIN_LEFT = 360;
@@ -184,7 +185,7 @@ export function ContentGrid(props: ContentGridProps) {
 		<div style={{
 			inset: 0,
 			position: "fixed",
-			mask: `linear-gradient(to bottom, transparent ${MARGIN_TOP}px, black ${MARGIN_TOP + FADE}px, black /* calc(100% - ${MARGIN_TOP + FADE}px), transparent */ 100%)`,
+			mask: `linear-gradient(to bottom, transparent ${MARGIN_TOP}px, black ${MARGIN_TOP + FADE}px, black calc(100% - ${FADE}px), transparent 100%)`,
 		}}>
 			<div className="content-grid" style={{
 				opacity: nav_position == 0 ? 1 : 0,
