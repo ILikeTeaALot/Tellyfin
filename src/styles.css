@@ -405,6 +405,7 @@ body {
 	transition-duration: var(--standard-duration);
 	background-color: rgba(0, 0, 0, 0.8);
 	display: flex;
+	gap: 0.5em;
 }
 
 #video-root .video-timeline {
