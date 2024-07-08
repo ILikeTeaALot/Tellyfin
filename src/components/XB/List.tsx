@@ -104,7 +104,7 @@ export function XBList(props: XBListProps) {
 							<div class="xb-item-icon" style={{ scale: item_selected ? SELECTED_SCALE.toString() : UNSELECTED_SCALE.toString() }}>
 								{Icon ? typeof Icon == "string" ? <img
 									src={Icon}
-								/> : <Icon /> : <img
+								/> : typeof Icon == "function" ? <Icon /> : <img src={Icon.src} style={{ ...Icon }} /> : <img
 									src="/xb-icons/icon_gamedata.png"
 								/>}
 							</div>

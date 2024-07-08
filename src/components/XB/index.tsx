@@ -147,7 +147,7 @@ function XBCategory(props: XBCategoryProps) {
 							<div class="xb-item-icon" style={{ scale: item_selected ? SELECTED_SCALE.toString() : UNSELECTED_SCALE.toString() }}>
 								{Icon ? typeof Icon == "string" ? <img
 									src={Icon}
-								/> : <Icon /> : <img
+								/> : typeof Icon == "function" ? <Icon /> : <img src={Icon.src} style={{ ...Icon }} /> : <img
 									src="/xb-icons/tex/item_tex_plain_folder.png"
 								/>}
 							</div>

@@ -5,7 +5,7 @@ import type { ContentItem } from "../Content/types";
 import api, { jellyfin } from "../../context/Jellyfin";
 
 export interface XBItem extends ContentItem {
-	Icon?: (() => JSX.Element) | string;
+	Icon?: (() => JSX.Element) | string | { width: number; height: number; src: string; };
 	desc?: string;
 	/** E.g. current setting/option value */
 	value?: string | number;
