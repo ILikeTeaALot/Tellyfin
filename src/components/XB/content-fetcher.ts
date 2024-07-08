@@ -36,7 +36,7 @@ export async function getXBarContent([_, category]: ["xb-category", string]): Pr
 			};
 		case "video":
 			return getXBarVideoContent();
-		case "livetv":
+		case "live_tv":
 			return getXBarLiveTVContent();
 		case "tv":
 			return getXBarTVContent();
