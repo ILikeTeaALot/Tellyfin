@@ -10,7 +10,7 @@ use rusqlite::Connection;
 use serde::Deserialize;
 use tauri::{App, AppHandle, Manager};
 
-use crate::{database::TellyfinDB, util::SafeLock};
+use crate::{database::TellyfinDB, settings::{UserSettings, UserSettingsManager}, util::SafeLock};
 
 // #[derive(sqlx::Encode, sqlx::Decode)]
 #[derive(Debug, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
@@ -50,7 +50,7 @@ pub struct ThemeManager {
 }
 
 impl ThemeManager {
-	pub fn new(path: impl AsRef<Path>) -> Self {
+	pub fn new(settings: &UserSettingsManager, path: impl AsRef<Path>) -> Self {
 		// Self { themes: HashMap::with_capacity(8) }
 		// let database =
 		// 	Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_CREATE).expect("Cannot run without database");

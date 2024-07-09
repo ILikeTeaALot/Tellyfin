@@ -14,7 +14,9 @@ mod window;
 use database::TellyfinDB;
 use libmpv2::Mpv;
 use mpv::{control::*, event::*, init::*, status::*};
-use query::{unsafe_query};
+use query::unsafe_query;
+use settings::settings_file_path;
+use settings::SettingsFile;
 use states::PlaybackId;
 use tauri::Manager;
 use theme::ThemeManager;
@@ -26,7 +28,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 
 use audio::{bass::BassState, play_background, play_feedback, reinit_bass, stop_background, AudioFeedbackManager};
-use settings::{read_settings, save_settings};
+use settings::{read_settings, save_settings, UserSettingsManager};
 
 type MpvStateInner = Option<Mpv>;
 pub type MpvState = Arc<Mutex<MpvStateInner>>;
@@ -42,6 +44,7 @@ fn main() {
 			let base_config_path = app.path().app_config_dir()?;
 			fs::create_dir_all(&base_config_path)?; // Create app config path
 			let database_path = base_config_path.join("data.db");
+			let settings_manager = UserSettingsManager::new(app.handle().clone(), settings_file_path(app.handle(), SettingsFile::User)?)?;
 			init_mpv(app, &base_config_path)
 				.inspect_err(|e| eprintln!("Error occurred in MPV initialisation: {}", e))?;
 			init_window(app)?;
@@ -50,11 +53,12 @@ fn main() {
 			println!("DB Path: {:?}", &database_path);
 			app.manage(TellyfinDB::new(&database_path)?);
 			println!("Setting up ThemeManager");
-			let theme_manager = ThemeManager::new(&database_path);
+			let theme_manager = ThemeManager::new(&settings_manager, &database_path);
 			println!("Register themes");
 			theme_manager.register_themes(app);
 			println!("Setup Audio Feedback");
-			app.manage(AudioFeedbackManager::new(&theme_manager));
+			app.manage(AudioFeedbackManager::new(&settings_manager, &theme_manager));
+			app.manage(settings_manager);
 			println!("Manager ThemeManager");
 			app.manage(theme_manager);
 			Ok(())

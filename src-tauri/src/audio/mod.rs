@@ -1,17 +1,31 @@
-use std::{os::raw::c_void, sync::{Arc, Mutex}};
+use std::{
+	os::raw::c_void,
+	sync::{Arc, Mutex},
+};
 
-use bass::BassState;
 use ::bass::{
 	bass_sys::{
-		BASS_ChannelFree, BASS_ChannelPlay, BASS_ChannelSetAttribute, BASS_ChannelSetPosition, BASS_ChannelSetSync, BASS_Mixer_ChannelRemove, BASS_Mixer_ChannelSetPosition, BASS_Mixer_ChannelSetSync, BASS_SampleLoad, BASS_StreamCreateFile, BASS_ATTRIB_BUFFER, BASS_ATTRIB_MIXER_THREADS, BASS_MIXER_BUFFER, BASS_MIXER_CHAN_DOWNMIX, BASS_MIXER_END, BASS_MIXER_NONSTOP, BASS_MIXER_RESUME, BASS_POS_BYTE, BASS_SAMCHAN_STREAM, BASS_SAMPLE_FLOAT, BASS_SAMPLE_LOOP, BASS_SAMPLE_OVER_POS, BASS_STREAM_AUTOFREE, BASS_STREAM_DECODE, BASS_SYNC_DEV_FAIL, BASS_SYNC_DEV_FORMAT, BASS_SYNC_END, BASS_SYNC_FREE, BASS_SYNC_MIXTIME, BASS_SYNC_ONETIME, BASS_SYNC_THREAD, DWORD, FALSE, HSTREAM, HSYNC, QWORD, TRUE
-	}, error::BassError, mixer::Mixer, null::NULL, sample::Sample, stream::Stream, types::channel::ChannelSetAttribute
-	// stream::Stream,
-	// types::channel::ChannelSetAttribute,
+		BASS_ChannelFree, BASS_ChannelPlay, BASS_ChannelSetAttribute, BASS_ChannelSetPosition, BASS_ChannelSetSync,
+		BASS_Mixer_ChannelRemove, BASS_Mixer_ChannelSetPosition, BASS_Mixer_ChannelSetSync, BASS_SampleLoad,
+		BASS_StreamCreateFile, BASS_ATTRIB_BUFFER, BASS_ATTRIB_MIXER_THREADS, BASS_MIXER_BUFFER,
+		BASS_MIXER_CHAN_DOWNMIX, BASS_MIXER_END, BASS_MIXER_NONSTOP, BASS_MIXER_RESUME, BASS_POS_BYTE,
+		BASS_SAMCHAN_STREAM, BASS_SAMPLE_FLOAT, BASS_SAMPLE_LOOP, BASS_SAMPLE_OVER_POS, BASS_STREAM_AUTOFREE,
+		BASS_STREAM_DECODE, BASS_SYNC_DEV_FAIL, BASS_SYNC_DEV_FORMAT, BASS_SYNC_END, BASS_SYNC_FREE, BASS_SYNC_MIXTIME,
+		BASS_SYNC_ONETIME, BASS_SYNC_THREAD, DWORD, FALSE, HSTREAM, HSYNC, QWORD, TRUE,
+	},
+	error::BassError,
+	mixer::Mixer,
+	null::NULL,
+	sample::Sample,
+	stream::Stream,
+	types::channel::ChannelSetAttribute, // stream::Stream,
+	                                     // types::channel::ChannelSetAttribute,
 };
+use bass::BassState;
 use serde::Deserialize;
-use tauri::State;
+use tauri::{AppHandle, Manager, State};
 
-use crate::{theme::ThemeManager, util::SafeLock};
+use crate::{settings::{UserSettings, UserSettingsManager}, theme::ThemeManager, util::SafeLock};
 
 pub mod bass;
 
@@ -86,7 +100,7 @@ extern "C" fn restart_background(_: HSYNC, handle: DWORD, data: DWORD, _: *mut c
 }
 
 impl AudioFeedbackManager {
-	pub fn new(theme_manager: &ThemeManager) -> Self {
+	pub fn new(settings: &UserSettingsManager, theme: &ThemeManager) -> Self {
 		let mixer = Mixer::new(48000, 8, Some(1.), BASS_MIXER_NONSTOP | BASS_SAMPLE_FLOAT | BASS_MIXER_RESUME);
 		mixer.play(TRUE).ok();
 		// mixer.set_attribute(ChannelSetAttribute::Buffer, 0.);
@@ -94,104 +108,130 @@ impl AudioFeedbackManager {
 		mixer.set_sync(device_failed, BASS_SYNC_DEV_FAIL, 0, ());
 		mixer.set_sync(format_changed, BASS_SYNC_DEV_FORMAT, 0, ());
 		let background = Stream::new(
-			"./themes/PS2/sound/ps2 ambience uncompressed.wav",
+			"./themes/PS2/music/ps2 ambience uncompressed.wav",
 			// "./themes/PS2/sound/SCPH-10000_00019.wav",
-			BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE /* | BASS_SAMPLE_LOOP */,
+			BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE,
 			None::<DWORD>,
 		)
 		.expect("Stream");
 		#[allow(unused_unsafe)]
-		unsafe { BASS_ChannelSetSync(background.handle(), BASS_SYNC_END | BASS_SYNC_MIXTIME, 0, Some(restart_background), NULL) };
+		unsafe {
+			BASS_ChannelSetSync(
+				background.handle(),
+				BASS_SYNC_END | BASS_SYNC_MIXTIME,
+				0,
+				Some(restart_background),
+				NULL,
+			)
+		};
 		BASS_ChannelSetPosition(background.handle(), BACKGROUND_START, BASS_POS_BYTE);
 		// mixer.add(background.handle(), 0).ok();
 		Self {
 			background: Mutex::new(background),
-			coldboot: Mutex::new(Stream::new(
-				"./themes/PS3/sound/coldboot_multi.ac3",
-				BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE,
-				// 0,
-				// None::<DWORD>,
-				// 65535,
-				None::<DWORD>,
-			)
-			.expect("Sample MUST work")),
+			coldboot: Mutex::new(
+				Stream::new(
+					"./themes/PS3/sound/coldboot_multi.ac3",
+					BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE,
+					// 0,
+					// None::<DWORD>,
+					// 65535,
+					None::<DWORD>,
+				)
+				.expect("Sample MUST work"),
+			),
 			// coldboot: Stream::new(
 			// 	"/Users/ghost/Downloads/ps2 ambience uncompressed.wav",
 			// 	BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE,
 			// 	None::<DWORD>,
 			// ).expect("Sample MUST work"),
-			gameboot: Mutex::new(Sample::new_file(
-				"./themes/PS3/sound/gameboot_multi.ac3",
-				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
-				0,
-				None::<DWORD>,
-				65535,
-				None::<DWORD>,
-			)
-			.expect("Sample MUST work")),
-			move_vertical: Mutex::new(Sample::new_file(
-				"./themes/PS3/sound/snd_cursor.wav",
-				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
-				0,
-				None,
-				65535,
-				None::<DWORD>,
-			)
-			.expect("Sample MUST work")),
-			enter: Mutex::new(Sample::new_file(
-				"./themes/PS3/sound/snd_decide.wav",
-				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
-				0,
-				None,
-				65535,
-				None::<DWORD>,
-			)
-			.expect("Sample MUST work")),
-			back: Mutex::new(Sample::new_file(
-				"./themes/PS3/sound/snd_cancel.wav",
-				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
-				0,
-				None,
-				65535,
-				None::<DWORD>,
-			)
-			.expect("Sample MUST work")),
-			cursor: Mutex::new(Sample::new_file(
-				"./themes/PS3/sound/snd_cursor.wav",
-				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
-				0,
-				None,
-				65535,
-				None::<DWORD>,
-			)
-			.expect("Sample MUST work")),
-			move_category: Mutex::new(Sample::new_file(
-				"./themes/PS3/sound/snd_category_decide.wav",
-				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
-				0,
-				None,
-				65535,
-				None::<DWORD>,
-			)
-			.expect("Sample MUST work")),
-			no: Mutex::new(Sample::new_file(
-				"./themes/PS3/sound/snd_system_ng.wav",
-				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
-				0,
-				None,
-				65535,
-				None::<DWORD>,
-			)
-			.expect("Sample MUST work")),
-			ok: Mutex::new(Sample::new_file(
-				"./themes/PS3/sound/snd_system_ok.wav",
-				BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
-				0,
-				None,
-				65535,
-				None::<DWORD>,
-			)
-			.expect("Sample MUST work")),
+			gameboot: Mutex::new(
+				Sample::new_file(
+					"./themes/PS3/sound/gameboot_multi.ac3",
+					BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
+					0,
+					None::<DWORD>,
+					65535,
+					None::<DWORD>,
+				)
+				.expect("Sample MUST work"),
+			),
+			move_vertical: Mutex::new(
+				Sample::new_file(
+					"./themes/PS3/sound/snd_cursor.wav",
+					BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
+					0,
+					None,
+					65535,
+					None::<DWORD>,
+				)
+				.expect("Sample MUST work"),
+			),
+			enter: Mutex::new(
+				Sample::new_file(
+					"./themes/PS3/sound/snd_decide.wav",
+					BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
+					0,
+					None,
+					65535,
+					None::<DWORD>,
+				)
+				.expect("Sample MUST work"),
+			),
+			back: Mutex::new(
+				Sample::new_file(
+					"./themes/PS3/sound/snd_cancel.wav",
+					BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
+					0,
+					None,
+					65535,
+					None::<DWORD>,
+				)
+				.expect("Sample MUST work"),
+			),
+			cursor: Mutex::new(
+				Sample::new_file(
+					"./themes/PS3/sound/snd_cursor.wav",
+					BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
+					0,
+					None,
+					65535,
+					None::<DWORD>,
+				)
+				.expect("Sample MUST work"),
+			),
+			move_category: Mutex::new(
+				Sample::new_file(
+					"./themes/PS3/sound/snd_category_decide.wav",
+					BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
+					0,
+					None,
+					65535,
+					None::<DWORD>,
+				)
+				.expect("Sample MUST work"),
+			),
+			no: Mutex::new(
+				Sample::new_file(
+					"./themes/PS3/sound/snd_system_ng.wav",
+					BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
+					0,
+					None,
+					65535,
+					None::<DWORD>,
+				)
+				.expect("Sample MUST work"),
+			),
+			ok: Mutex::new(
+				Sample::new_file(
+					"./themes/PS3/sound/snd_system_ok.wav",
+					BASS_SAMPLE_FLOAT | BASS_SAMPLE_OVER_POS,
+					0,
+					None,
+					65535,
+					None::<DWORD>,
+				)
+				.expect("Sample MUST work"),
+			),
 			mixer,
 		}
 	}
@@ -271,7 +311,11 @@ impl AudioFeedbackManager {
 				BASS_ChannelSetPosition(self.background.safe_lock().handle(), BACKGROUND_START, BASS_POS_BYTE);
 				// self.mixer.flush();
 			}
-			let flags = if sound == FeedbackSound::Coldboot { BASS_MIXER_CHAN_DOWNMIX } else { BASS_STREAM_AUTOFREE | BASS_MIXER_CHAN_DOWNMIX };
+			let flags = if sound == FeedbackSound::Coldboot {
+				BASS_MIXER_CHAN_DOWNMIX
+			} else {
+				BASS_STREAM_AUTOFREE | BASS_MIXER_CHAN_DOWNMIX
+			};
 			match self.mixer.add(chan, flags) {
 				Ok(_) => (),
 				Err(e) => eprintln!("Error adding to mixer! {}", e),
