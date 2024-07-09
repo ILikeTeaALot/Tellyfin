@@ -45,7 +45,7 @@ pub enum ImportFormat {
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct CDImportSettings {
 	pub format: ImportFormat,
-	pub bitrate: Option<String>, // i64
+	pub bitrate: Option<i64>,
 	pub vbr: Option<bool>,
 }
 
@@ -53,7 +53,7 @@ pub struct CDImportSettings {
 pub struct MusicSettings {
 	pub preferred_library: PreferredLibrary,
 	pub cd_import: CDImportSettings,
-	pub crossfade: String, // i64 - Parsing can be figured out later
+	pub crossfade: i64,
 	pub output_freq: OutputFreq,
 }
 

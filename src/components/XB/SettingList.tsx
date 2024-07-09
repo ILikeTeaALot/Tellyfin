@@ -184,6 +184,8 @@ type NewType = [CategoryContent & { root_key: string; }, Array<SettingOptionSet>
 
 export const templateReplaceRegExp = /{([\w.]*)}+/g;
 
+export const toIntMaybe = (str: string) => isNaN(Number(str)) ? str : Number(str);
+
 async function getFinalData([document, settings]: [XMLDocument | undefined, UserSettings]): Promise<NewType> {
 	if (!document || !settings) return [null, null];
 	const root = document.querySelector(`Items[class="SettingList"]`)!;
@@ -213,7 +215,7 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 				// menus[index].items.push()
 				if (option.tagName == "Option") {
 					menu_items.push({
-						value: option.getAttribute("value")!,
+						value: toIntMaybe(option.getAttribute("value")!),
 						label: option.textContent!,
 						id: `${key}.${option.getAttribute("value")!}`,
 					});

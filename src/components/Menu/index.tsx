@@ -58,7 +58,7 @@ export function Menu<T>(props: MenuProps<T>) {
 	// }, []);
 
 	const submit = useCallback((item: XBMenuItem<T>) => {
-		if (item.value) {
+		if (item.value != undefined || item.value != null) {
 			// onSubmit(action, value);
 			playFeedback(FeedbackSound.Enter);
 			onSubmit(item as any);
