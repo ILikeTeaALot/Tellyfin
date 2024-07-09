@@ -63,9 +63,9 @@ export async function getXBarContent([_, category]: ["xb-category", string]): Pr
 		case "system":
 			return {
 				content: [
-					{ id: "system.power.shutdown", name: "Power Off", Icon: "/xb-icons/icon_power_off.png", desc: "Close all applications and turn off the system. Select this before unplugging the AC power cord." },
-					{ id: "system.power.restart", name: "Restart", Icon: "/xb-icons/icon_update.png", desc: "Close all applications and restart the system." },
-					// { id: "system.power.sleep", name: "Enter Sleep Mode", Icon: "/xb-icons/icon_display_setting.png" },
+					{ id: "system.power.shutdown", name: "Power Off", Icon: "icon:system.power_off", desc: "Close all applications and turn off the system. Select this before unplugging the AC power cord." },
+					{ id: "system.power.restart", name: "Restart", Icon: "icon:system.restart", desc: "Close all applications and restart the system." },
+					// { id: "system.power.sleep", name: "Enter Sleep Mode", Icon: "icon:system.sleep" },
 				]
 			};
 		default:
