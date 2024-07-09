@@ -49,11 +49,24 @@ pub struct ThemeManager {
 	music_theme: AtomicI64,
 }
 
+fn update_theme(app: &AppHandle, settings: &UserSettings) {
+	match app.try_state::<ThemeManager>() {
+		Some(theme) => {
+			if *theme.theme_id.safe_lock() != settings.theme.theme {
+				// Update all theme items.
+				println!("All applicable theme items should be changed to: {}", settings.theme.theme);
+			}
+		}
+		None => (), // This should never happen but I'm playing it safe.
+	}
+}
+
 impl ThemeManager {
 	pub fn new(settings: &UserSettingsManager, path: impl AsRef<Path>) -> Self {
 		// Self { themes: HashMap::with_capacity(8) }
 		// let database =
 		// 	Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_CREATE).expect("Cannot run without database");
+		settings.add_listener(update_theme);
 		let database = Connection::open(path).expect("Cannot run without database");
 		database.execute(include_str!("create_table.sql"), []).expect("THEMES table required.");
 		Self {
@@ -94,7 +107,11 @@ impl ThemeManager {
 	}
 
 	pub fn set_theme(&self, identifier: &str) {
-		*self.theme_id.safe_lock() = identifier.to_owned();
+		if *self.theme_id.safe_lock() == identifier {
+
+		} else {
+			*self.theme_id.safe_lock() = identifier.to_owned();
+		}
 		// Broadcast this change?
 	}
 

@@ -93,6 +93,13 @@ fn format_changed(_: HSYNC, _: DWORD, _: DWORD, _: &()) {
 	eprintln!("Device Format Changed!");
 }
 
+fn update_audio_feedback(app: &AppHandle, new_settings: &UserSettings) {
+	println!("Here I should change audio feedback samples");
+	let theme = app.state::<ThemeManager>();
+	let path = theme.path_for_theme(&new_settings.theme.sound);
+	println!("Here's the path for the current theme: {}", path.unwrap_or(String::from("Couldn't get path for some reason")));
+}
+
 extern "C" fn restart_background(_: HSYNC, handle: DWORD, data: DWORD, _: *mut c_void) {
 	println!("Background ending... Restarting!");
 	println!("BASS_POS_END Data: {}", data);
@@ -101,6 +108,7 @@ extern "C" fn restart_background(_: HSYNC, handle: DWORD, data: DWORD, _: *mut c
 
 impl AudioFeedbackManager {
 	pub fn new(settings: &UserSettingsManager, theme: &ThemeManager) -> Self {
+		settings.add_listener(update_audio_feedback);
 		let mixer = Mixer::new(48000, 8, Some(1.), BASS_MIXER_NONSTOP | BASS_SAMPLE_FLOAT | BASS_MIXER_RESUME);
 		mixer.play(TRUE).ok();
 		// mixer.set_attribute(ChannelSetAttribute::Buffer, 0.);
