@@ -21,6 +21,7 @@ use theme::ThemeManager;
 use window::init_window;
 
 use std::error::Error;
+use std::fs;
 use std::sync::Arc;
 use std::sync::Mutex;
 
@@ -39,6 +40,7 @@ fn main() {
 		.manage(BassState::new().expect("Bass is required at this time."))
 		.setup(|app| -> Result<(), Box<dyn Error>> {
 			let base_config_path = app.path().app_config_dir()?;
+			fs::create_dir_all(&base_config_path)?; // Create app config path
 			let database_path = base_config_path.join("data.db");
 			init_mpv(app, &base_config_path)
 				.inspect_err(|e| eprintln!("Error occurred in MPV initialisation: {}", e))?;
