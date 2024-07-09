@@ -65,7 +65,12 @@
 				<Option value="1">1 Second</Option>
 				<Option value="2">2 Seconds</Option>
 				<Option value="3">3 Seconds</Option>
+				<Option value="4">4 Seconds</Option>
 				<Option value="5">5 Seconds</Option>
+				<Option value="6">6 Seconds</Option>
+				<Option value="7">7 Seconds</Option>
+				<Option value="8">8 Seconds</Option>
+				<Option value="9">9 Seconds</Option>
 				<Option value="10">10 Seconds</Option>
 			</Options>
 		</Item>
