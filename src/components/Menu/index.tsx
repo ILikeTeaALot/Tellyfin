@@ -168,7 +168,7 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 
 	const hasSubmenu = !!items[selected]?.submenu;
 
-	useInput(active && hasSubmenu, (button) => {
+	useInput(active && hasSubmenu && !submenuActive, (button) => {
 		switch (button) {
 			case "Enter":
 			case "PadRight":
@@ -179,7 +179,6 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 	}, []);
 
 	useInput(active && !hasSubmenu, (button) => {
-		// if (button == "Enter") onSubmit(items[selected].id, items[selected].value);
 		if (button == "Enter") onSubmit(items[selected]);
 	}, [items, selected]);
 
@@ -187,12 +186,10 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 		switch (button) {
 			case "PadUp":
 			case "ArrowUp":
-				// setSelected(value => [...value.slice(0, -1), value.slice(-1)[0] + 1]);
 				setSelected(current => Math.max(current - 1, 0));
 				break;
 			case "PadDown":
 			case "ArrowDown":
-				// setSelected(value => [...value.slice(0, -1), value.slice(-1)[0] + 1]);
 				setSelected(current => Math.min(current + 1, item_count - 1));
 				break;
 		}
@@ -205,7 +202,7 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 		} else {
 			setPlayMoveSound(true);
 		}
-	}, [selected]);
+	}, [selected]); // eslint-disable-line
 
 	const onSubmenuClose = useCallback(() => {
 		setSubmenuActive(false);
