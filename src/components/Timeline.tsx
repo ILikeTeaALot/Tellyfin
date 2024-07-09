@@ -16,20 +16,20 @@ export type TimelineProps = {
 export function Timeline(props: TimelineProps) {
 	const { position, duration: duration_seconds, mini, realtime, showChapter } = props;
 	
-	const mpvState = useContext(VideoState);
+	const videoState = useContext(VideoState);
 	
-	const playState = mpvState.status.playback_status;
+	const playState = videoState.status.playback_status;
 	
 	const play_state = useRef<PlaybackStatus>(playState);
 
-	const chapters = useRef(mpvState.chapters);
+	const chapters = useRef(videoState.chapters);
 	
 	const frame = useRef<number>(-1);
 	const last_ms = useRef<number>(0);
 	const elapsed_ms = useRef<number>(position * 1000);
 	
 	const [elapsed_seconds, setElapsedSeconds] = useState(position ?? 0);
-	const [chapter, setChapter] = useState(mpvState.position?.chapter ?? 0);
+	const [chapter, setChapter] = useState(videoState.position?.chapter ?? 0);
 
 	const remaining_seconds = duration_seconds ? duration_seconds - elapsed_seconds : 0;
 
@@ -42,12 +42,12 @@ export function Timeline(props: TimelineProps) {
 	}, [position]);
 
 	useEffect(() => {
-		setChapter(mpvState.position.chapter ?? 0);
-	}, [mpvState.position.chapter]);
+		setChapter(videoState.position.chapter ?? 0);
+	}, [videoState.position.chapter]);
 
 	useLayoutEffect(() => {
-		chapters.current = mpvState.chapters;
-	}, [mpvState]);
+		chapters.current = videoState.chapters;
+	}, [videoState]);
 
 	useLayoutEffect(() => {
 		play_state.current = playState;
@@ -82,7 +82,7 @@ export function Timeline(props: TimelineProps) {
 
 	return (
 		<div className={mini ? "timeline small" : "timeline"}>
-			{showChapter && mpvState.media_type.type != "CD" && mpvState.chapters.length < 10000 && <span> Chapter {chapter + 1}</span>}
+			{showChapter && videoState.media_type.type != "CD" && videoState.chapters.length < 10000 && <span> Chapter {chapter + 1}</span>}
 			<div />
 			{/* {chapter ? <span>{mpvState.jellyfin_data?.Chapters?.[chapter ?? 0]?.Name ?? mpvState.chapters[chapter ?? 0].title ?? `Chapter ${chapter}`}</span> : null} */}
 			{/* <span>{`Chapter ${chapter}`}</span> */}
