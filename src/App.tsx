@@ -1,7 +1,7 @@
 import "./App.css";
 import "./panel.css";
 import "./tab-row.css";
-import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useReducer, useRef, useState } from "preact/hooks";
 import { Home } from "./screens/Home";
 import { AppState } from "./AppStates";
 import { Video } from "./screens/Video";
@@ -19,18 +19,30 @@ import { Coldboot } from "./components/Coldboot";
 import { invoke } from "@tauri-apps/api/core";
 import { SettingsProvider } from "./components/SettingsProvider";
 
+function appStateReducer(state: AppState, action: AppState | ((current: AppState) => AppState) | "animation-complete") {
+	if (action == "animation-complete") return AppState.Home;
+	if (state == AppState.Coldboot) return AppState.Coldboot;
+	if (typeof action == "function") {
+		const newState = action(state);
+		return newState;
+	} else {
+		return action;
+	}
+}
+
 function AppInner() {
-	const [state, setState] = useState(AppState.Coldboot);
+	const [state, setState] = useReducer(appStateReducer, AppState.Coldboot);
 	const [spinOverride, setSpinOverride] = useState(false);
 	const [DEBUG_keyboard, DEBUG_showKeyboard] = useState(false);
 	const videoState = useContext(VideoState);
 	const previousStatus = useRef(videoState.status.playback_status);
-	const idRef = useRef(videoState.jellyfin_id);
+	const idRef = useRef(videoState.media_type?.type == "Jellyfin" ? videoState.media_type.id : videoState.media_type?.type);
+
 	////
 	// Boot
 	////
 	const onColdbootFinish = useCallback(() => {
-		setState(AppState.Home);
+		setState("animation-complete");
 	}, []);
 	////
 
@@ -90,11 +102,16 @@ function AppInner() {
 		if (playback_status != PlaybackStatus.Stopped && previousStatus.current == PlaybackStatus.Stopped) {
 			setState(AppState.Player);
 		}
-		if (idRef.current != null && idRef.current != videoState.jellyfin_id) {
+		if (idRef.current != null && idRef.current != (videoState.media_type?.type == "Jellyfin" ? videoState.media_type.id : videoState.media_type?.type)) {
 			setState(AppState.Player);
 		}
 		previousStatus.current = playback_status;
-	}, [playback_status, videoState.jellyfin_id]);
+	}, [
+		playback_status,
+		videoState.media_type?.type,
+		/// @ts-expect-error
+		videoState.media_type?.id,
+	]);
 
 	useEffect(() => {
 		function handler(e: KeyboardEvent) {
@@ -124,7 +141,7 @@ function AppInner() {
 
 	const change_state = useCallback((state: AppState) => {
 		setState(_state => {
-			if (_state == AppState.Coldboot) return _state;
+			if (_state == AppState.Coldboot) return AppState.Coldboot;
 			if (_state != state) {
 				refresh_mpv();
 			}
