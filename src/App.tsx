@@ -19,10 +19,6 @@ import { Coldboot } from "./components/Coldboot";
 import { invoke } from "@tauri-apps/api/core";
 import { SettingsProvider } from "./components/SettingsProvider";
 
-// function errorProcessor(state: string[], newError: string) {
-// 	state.push(newError);
-// 	return state;
-// }
 
 function appStateReducer(state: AppState, action: AppState | ((current: AppState) => AppState) | "animation-complete") {
 	if (action == "animation-complete") return AppState.Home;
@@ -43,19 +39,7 @@ function AppInner() {
 	const previousStatus = useRef(videoState.status.playback_status);
 	const idRef = useRef(videoState.media_type?.type == "Jellyfin" ? videoState.media_type.id : videoState.media_type?.type);
 
-	// const [errorLog, updateErrorLog] = useReducer(errorProcessor, []);
-	// useLayoutEffect(() => {
-	// 	const handler = (error: ErrorEvent): void => {
-	// 		updateErrorLog(error.message);
-	// 	};
-	// 	const onerror = (error: string | Event) => {
-	// 		updateErrorLog(error as string);
-	// 	}
-	// 	window.onerror = onerror;
-	// 	window.addEventListener("error", handler);
-	// 	return () => window.removeEventListener("error", handler);
-	// }, []);
-
+	
 	////
 	// Boot
 	////
@@ -205,10 +189,6 @@ function AppInner() {
 						{/* <div style={{ opacity: overlayVisible ? "1" : "0", transitionDuration: "600ms" }}>
 						</div> */}
 						<Coldboot run={state == AppState.Coldboot} onComplete={onColdbootFinish} />
-						{/* <div style={{ position: "absolute", top: 0, }}>
-						{JSON.stringify(errorLog)}
-						{errorLog.slice(-6).map(message => <span>{message}</span>)}
-						</div> */}
 					</SettingsProvider>
 				</SwitchMode.Provider>
 			</AppMode.Provider>
