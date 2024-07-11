@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo, useCallback } from "preact/hooks";
+import { useState, useContext, useMemo, useCallback, useEffect, useRef, useLayoutEffect } from "preact/hooks";
 import { NavigateAction } from "./ContentList";
 import { ContentItem } from "./Content/types";
 import api, { auth, jellyfin } from "../context/Jellyfin";
@@ -12,10 +12,10 @@ import { useDidUpdate } from "../hooks/use-did-update";
 export type ContentGridProps = {
 	nav_position: number;
 	data: Array<ContentItem>;
-	onNavigate: (action: NavigateAction, index?: number) => void;
+	onNavigate: (action: NavigateAction, item?: ContentItem) => void;
 };
 
-const COLUMNS = 5;
+const COLUMNS = 4;
 
 const ITEM_WIDTH = 280;
 const ITEM_HEIGHT = 420;
@@ -48,6 +48,9 @@ export function ContentGrid(props: ContentGridProps) {
 	const [menuOpen, setMenuOpen] = useState(false);
 	// Makes useEffect easier.
 	const data_length = data.length;
+	useLayoutEffect(() => {
+		setSelected(0);
+	}, [data]);
 	useDidUpdate(() => {
 		playFeedback(FeedbackSound.SelectionMove);
 	}, [selected]);
@@ -62,7 +65,7 @@ export function ContentGrid(props: ContentGridProps) {
 	useInput(active && !menuOpen, (button) => {
 		switch (button) {
 			case "Enter":
-				onNavigate(NavigateAction.Enter, selected);
+				onNavigate(NavigateAction.Enter, data[selected]);
 				break;
 		}
 	}, [onNavigate, selected]);
@@ -161,7 +164,7 @@ export function ContentGrid(props: ContentGridProps) {
 	}, []);
 	const menu_cancel = useCallback(() => setMenuOpen(false), []);
 	const menu_content = useMemo(() => {
-		const jellyfin_data = data[selected].jellyfin_data;
+		const jellyfin_data = data[selected]?.jellyfin_data;
 		if (jellyfin_data) {
 			const item = jellyfin_data;
 			const id = item.Id!;
@@ -181,19 +184,22 @@ export function ContentGrid(props: ContentGridProps) {
 	const endIndex = Math.min(selected + (columns * 3) + (columns - (selected % columns)), data.length);
 	const selected_row = Math.floor(selected / columns);
 	const last_row = Math.floor((data.length - 1) / columns);
+	const mask_top_adjust = nav_position > 0 ? 0 : 0;
 	return (
 		<div style={{
 			inset: 0,
 			position: "fixed",
-			mask: `linear-gradient(to bottom, transparent ${MARGIN_TOP}px, black ${MARGIN_TOP + FADE}px, black calc(100% - ${FADE}px), transparent 100%)`,
+			mask: `linear-gradient(to bottom, transparent ${MARGIN_TOP + mask_top_adjust}px, black ${MARGIN_TOP + FADE + mask_top_adjust}px, black calc(100% - ${FADE * 3}px), transparent 100%)`,
 		}}>
-			<div className="content-grid" style={{
-				opacity: nav_position == 0 ? 1 : 0,
+			<div className="content-grid" ref={content} style={{
+				opacity: overrideOpacity ? 0 : nav_position >= 0 && nav_position < 2 ? nav_position == 0 ? 1 : 0.7 : 0,
 				// translate: `${position * 240}px`,
-				scale: `${1 + (Math.max(Math.min(nav_position, 1), -1) * -0.2)}`,
+				scale: `${1 + (Math.max(Math.min(nav_position, 1), 0) * -0.2)}`,
+				transformOrigin: "right bottom",
 				// filter: nav_position == 0 ? undefined : "blur(40px) saturate(180%)",
-				transitionTimingFunction: nav_position == 0 ? "var(--timing-function-decelerate)" : "var(--timing-function-accelerate)",
-				transitionDelay: nav_position == 0 ? "var(--transition-standard)" : "0ms"
+				// transitionTimingFunction: nav_position == 0 ? "var(--timing-function-decelerate)" : "var(--timing-function-accelerate)",
+				transitionDelay: nav_position < 0 ? "var(--transition-standard)" : "0ms",
+				transitionTimingFunction: "var(--timing-function-ease)",
 			}}>
 				{data.slice(startIndex, endIndex).map((item, _index) => {
 					const index = startIndex + _index;
@@ -208,6 +214,7 @@ export function ContentGrid(props: ContentGridProps) {
 					if (selected_row == last_row) {
 						// yPosition += (ITEM_HEIGHT + GAP) / 2;
 					}
+					// if (nav_position > 0) yPosition += 120;
 					return (
 						<div key={item.id} class="grid-item" style={{
 							// opacity: selected_row > row ? 0.2 : 1,
@@ -215,7 +222,7 @@ export function ContentGrid(props: ContentGridProps) {
 							// translate: `0px ${(window.innerHeight / 2) - (HEIGHT / 2) - ((HEIGHT + GAP) * Math.floor(selected / columns))}px`,
 							translate: `${MARGIN_LEFT + ((index % columns) * (ITEM_WIDTH + GAP))}px ${yPosition}px`,
 						}}>
-							<div className={selected == index ? "panel active" : props.nav_position <= 0 ? "panel inactive" : "panel"} style={{
+							<div className={selected == index && nav_position <= 0 ? "panel active" : props.nav_position <= 0 ? "panel inactive" : "panel"} style={{
 								width: ITEM_WIDTH,
 								height: ITEM_HEIGHT,
 								borderRadius: 16,

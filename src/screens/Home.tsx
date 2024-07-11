@@ -36,16 +36,16 @@ export function Home(props: ScreenProps) {
 	// const { data, trigger } = useSWRMutation<[screen: number, screens: ScreenContent[]], never, "navigation-stack", SelectScreenParams>("navigation-stack", (_, {arg: options}) => newSelectScreen(options));
 	const [currScreen, setCurrentScreen] = useState(0);
 	// TODO: Convert to SWR
-	const handleNavigate = useCallback(async (action: NavigateAction, index?: number) => {
+	const handleNavigate = useCallback((action: NavigateAction, item?: ContentItem) => {
 		if (!active || state != AppState.Home) return;
-		console.log("action:", action, "id:", index);
+		console.log("action:", action, "id:", item);
 		if (action == NavigateAction.Back) {
 			setCurrentScreen(current => Math.max(current - 1, 0));
 			playFeedback(FeedbackSound.Back);
 			return;
 		}
-		if (typeof index == "number") {
-			await selectScreen(updateScreens, setCurrentScreen, action, currScreen, screens[currScreen].id, screens[currScreen].content[index]);
+		if (item) {
+			selectScreen(updateScreens, setCurrentScreen, action, currScreen, screens[currScreen].id, item);
 			playFeedback(FeedbackSound.Enter);
 			return;
 		}
