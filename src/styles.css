@@ -94,6 +94,28 @@
 	transition-timing-function: var(--timing-function-ease);
 }
 
+@keyframes rotate-forever {
+	from {
+		rotate: 0deg;
+	}
+
+	to {
+		rotate: 360deg;
+	}
+}
+
+.spin-baby-spin {
+	animation: rotate-forever 1s infinite linear;
+}
+
+.fade-in-later {
+	animation-name: fade-in;
+	animation-fill-mode: backwards;
+	animation-delay: 1s;
+	animation-duration: var(--transition-standard);
+	animation-timing-function: var(--timing-function-decelerate);
+}
+
 body {
 	margin: 0;
 	cursor: none;
