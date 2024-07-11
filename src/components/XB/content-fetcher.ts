@@ -3,6 +3,7 @@
 import type { JSX } from "preact";
 import type { ContentItem } from "../Content/types";
 import api, { jellyfin } from "../../context/Jellyfin";
+import type { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 
 export interface XBItem extends ContentItem {
 	Icon?: (() => JSX.Element) | string | { width: number; height: number; src: string; };
@@ -76,6 +77,8 @@ export async function getXBarContent([_, category]: ["xb-category", string]): Pr
 
 const libraryCatch = () => ({ data: { Items: [] } });
 
+const librarySort = (a: BaseItemDto, b: BaseItemDto) => a.CollectionType == "playlists" ? -1 : 0;
+
 async function getXBarVideoContent(): Promise<CategoryContent> {
 	const videoLibraries = await jellyfin.getLibraryApi(api).getMediaFolders().catch(libraryCatch).then(value => value.data.Items?.filter(item => {
 		switch (item.CollectionType) {
@@ -90,7 +93,7 @@ async function getXBarVideoContent(): Promise<CategoryContent> {
 				return false;
 		}
 	})) ?? [];
-	videoLibraries.sort((a, b) => a.CollectionType == "playlists" ? -1 : 0);
+	videoLibraries.sort(librarySort);
 	const default_item = videoLibraries.findIndex(item => item.CollectionType != "playlists");
 	return {
 		default_item: default_item > 0 ? default_item + 1 : 1,
@@ -104,7 +107,7 @@ async function getXBarVideoContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "icon:general.playlist" : "icon:video.folder" : undefined,
+				Icon: item.CollectionType == "playlists" ? "icon:general.playlist" : "icon:video.folder",
 				jellyfin: true,
 				jellyfin_data: item,
 			}))
@@ -122,6 +125,7 @@ async function getXBarTVContent(): Promise<CategoryContent> {
 				return false;
 		}
 	})) ?? [];
+	tvLibraries.sort(librarySort);
 	const default_item = tvLibraries.findIndex(item => item.CollectionType != "playlists");
 	return {
 		default_item: default_item > 0 ? default_item + 1 : 1,
@@ -135,7 +139,7 @@ async function getXBarTVContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "icon:general.playlist" : "icon:tv.folder" : undefined,
+				Icon: item.CollectionType == "playlists" ? "icon:general.playlist" : "icon:tv.folder",
 				jellyfin: true,
 				jellyfin_data: item,
 			}))
@@ -153,10 +157,11 @@ async function getXBarMusicContent(): Promise<CategoryContent> {
 				return false;
 		}
 	})) ?? [];
-	// const default_item = musicLibraries.findIndex(item => item.CollectionType != "playlists");
+	musicLibraries.sort(librarySort);
+	const default_item = musicLibraries.findIndex(item => item.CollectionType != "playlists");
 	return {
-		// default_item: default_item > 0 ? default_item : 0,
-		default_item: 1,
+		default_item: default_item > 0 ? default_item + 1 : 0,
+		// default_item: 1,
 		content: [
 			{
 				name: "Playlists (Alto)",
@@ -176,7 +181,7 @@ async function getXBarMusicContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "icon:general.playlist" : "icon:music.folder" : undefined,
+				Icon: item.CollectionType == "playlists" ? "icon:general.playlist" : "icon:music.folder",
 				jellyfin: true,
 				jellyfin_data: item,
 			}))
@@ -194,6 +199,7 @@ async function getXBarPhotoContent(): Promise<CategoryContent> {
 				return false;
 		}
 	})) ?? [];
+	photoLibraries.sort(librarySort);
 	const default_item = photoLibraries.findIndex(item => item.CollectionType != "playlists");
 	return {
 		default_item: default_item > 0 ? default_item : 0,
@@ -202,7 +208,7 @@ async function getXBarPhotoContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "icon:general.playlist" : "icon:photos.folder" : undefined,
+				Icon: item.CollectionType == "playlists" ? "icon:general.playlist" : "icon:photos.folder",
 				jellyfin: true,
 				jellyfin_data: item,
 			}))
@@ -219,6 +225,7 @@ async function getXBarLiveTVContent(): Promise<CategoryContent> {
 				return false;
 		}
 	})) ?? [];
+	liveTVSources.sort(librarySort);
 	const default_item = liveTVSources.findIndex(item => item.CollectionType != "playlists");
 	return {
 		default_item: default_item > 0 ? default_item : 0,
@@ -227,7 +234,7 @@ async function getXBarLiveTVContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon: item.CollectionType ? item.CollectionType == "playlists" ? "icon:general.playlist" : "icon:tv.folder" : undefined,
+				Icon: item.CollectionType == "playlists" ? "icon:general.playlist" : "icon:tv.folder",
 				jellyfin: true,
 				jellyfin_data: item,
 			}))
