@@ -32,28 +32,38 @@ pub enum PreferredLibrary {
 	Other(String),
 }
 
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+// #[serde(untagged)]
+pub enum Bitrate {
+	#[serde(rename(serialize = "variable", deserialize = "variable"))]
+	Variable(bool),
+	#[serde(rename(serialize = "bitrate", deserialize = "bitrate"))]
+	Mbps(i64)
+}
+
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+#[serde(tag = "format")]
 pub enum ImportFormat {
 	#[default]
 	FLAC,
-	AAC,
 	WAV,
 	ALAC,
-	MP3,
+	AAC(Bitrate),
+	MP3(Bitrate),
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
-pub struct CDImportSettings {
-	pub format: ImportFormat,
-	pub bitrate: Option<i64>,
-	pub vbr: Option<bool>,
-}
+// #[derive(Clone, Debug, Default, Deserialize, Serialize)]
+// pub struct CDImportSettings {
+// 	pub format: ImportFormat,
+// 	pub bitrate: Option<i32>,
+// 	pub vbr: Option<bool>,
+// }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct MusicSettings {
 	pub preferred_library: PreferredLibrary,
-	pub cd_import: CDImportSettings,
-	pub crossfade: i64,
+	pub cd_import: ImportFormat,
+	pub crossfade: i16,
 	pub output_freq: OutputFreq,
 }
 
