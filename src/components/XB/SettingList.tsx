@@ -163,7 +163,7 @@ export function SettingList(props: XBSettingListProps) {
 				/// @ts-expect-error
 				override_active={menuOpen}
 				nav_position={nav_position} data={data.content} onGoBack={handleListGoBack} onNavigate={handleListNavigate} />
-			<Menu key={1} active={menuOpen} {...menu} rootMinWidth={600} onSubmit={menu_submit} onCancel={menu_cancel} />
+			<Menu key={1} active={menuOpen} {...menu} rootMinWidth={560} onSubmit={menu_submit} onCancel={menu_cancel} />
 			{error && <span style={{ position: "fixed", top: 0, left: 0 }}>{JSON.stringify(error)}</span>}
 		</>
 	);

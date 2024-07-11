@@ -1,7 +1,8 @@
 #x-bar-root {
-	--transition-standard: calc(var(var(--transition-standard)) - 125ms);
+	/* --transition-standard: calc(var(var(--transition-standard)) - 125ms); */
 	position: fixed;
 	transition-duration: var(--transition-standard);
+	transition-duration: 300ms;
 	transition-timing-function: var(--timing-function-ease);
 	z-index: -5;
 	width: 100vw;
@@ -13,7 +14,7 @@
 }
 
 #x-bar-root:not(.active) {
-	backdrop-filter: blur(30px);
+	/* backdrop-filter: blur(30px); */
 }
 
 #x-bar-root .categories {
@@ -22,6 +23,7 @@
 
 .xb-category {
 	position: absolute;
+	top: 0;
 	transition-duration: var(--transition-standard);
 }
 
@@ -192,9 +194,10 @@
 	/* width: 1000px; */
 	position: absolute;
 	top: 0;
-	left: 800px;
+	left: 720px;
 	white-space: pre-line;
-	font-size: 0.9375rem;
+	/* font-size: 0.9375rem; */
+	font-size: 0.875rem;
 	transition-duration: var(--transition-short);
 }
 
@@ -240,7 +243,7 @@
 .xb-category .xb-list-back-arrow {
 	position: absolute;
 	top: calc(50vh - 15px);
-	left: -60px;
+	/* left: -80px; */
 	width: 30px;
 	height: 30px;
 	opacity: 0;

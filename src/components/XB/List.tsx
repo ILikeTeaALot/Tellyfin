@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useContext } from "preact/hooks";
+import { useMemo, useState, useEffect, useContext, useLayoutEffect } from "preact/hooks";
 import useSWR from "swr";
 import { useInput } from "../../hooks";
 import { type CategoryContent, type XBItem } from "./content-fetcher";
@@ -8,7 +8,7 @@ import type { ContentItem } from "../Content/types";
 import back from "../../assets/arrow_l.svg";
 import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
 import { useDidUpdate } from "../../hooks/use-did-update";
-import { SELECTED_SCALE, UNSELECTED_SCALE } from "./shared";
+import { SELECTED_SCALE, UNSELECTED_SCALE, XB_CATEGORY_GAP, XB_CATEGORY_WIDTH } from "./shared";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { SettingsContext } from "../../context/Settings";
 
@@ -30,6 +30,16 @@ export type XBListProps = {
 export function XBList(props: XBListProps) {
 	const { data_key, nav_position, onGoBack, onNavigate } = props; // We can't access `props.key` because React consumes it.
 	const active = nav_position == 0;
+	const [navPosition, setNavPosition] = useState(nav_position + 1);
+	// useLayoutEffect(() => {
+	// 	setNavPosition(nav_position + 1);
+	// }, [nav_position]);
+	useLayoutEffect(() => {
+		setNavPosition(nav_position + 1);
+		requestAnimationFrame(() => (
+			requestAnimationFrame(() => setNavPosition(nav_position))
+		));
+	}, [nav_position]);
 	/// @ts-expect-error Don't publicly expose props.override_active
 	const input_active = active && !props.override_active;
 	const swr_key = useMemo(() => ["xb-list", data_key, props.data] as const, [data_key, props.data]);
@@ -85,11 +95,14 @@ export function XBList(props: XBListProps) {
 		}
 	}, [onGoBack]);
 	if (!data) return null;
+	const startIndex = Math.max(selected - 10, 0);
+	const endIndex = Math.min(selected + 10, data.content.length);
 	return (
-		<div class={active ? "xb-category selected" : "xb-category"} style={{ translate: `${Math.min(nav_position + 1, 1) * 360}px` }}>
-			<img class="xb-list-back-arrow" src={back} />
-			<div class={"xb-category-content"}>
-				{data.content.map((item, index) => {
+		<div class={active ? "xb-category selected" : "xb-category"} style={{ translate: `${480 + ((navPosition) * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP))}px` }}>
+			<img class="xb-list-back-arrow" src={back} style={{ left: 0 - XB_CATEGORY_GAP }} />
+			<div class={"xb-category-content"} style={{ /* opacity: 1 */ }}>
+				{data.content.slice(startIndex, endIndex).map((item, _index) => {
+					const index = _index + startIndex;
 					const { Icon } = item;
 					const item_selected = selected == index;
 					let y: number;
@@ -102,13 +115,14 @@ export function XBList(props: XBListProps) {
 						// y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) + 80;
 						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP) * UNSELECTED_SCALE) - ((XB_ITEM_HEIGHT + GAP) * selected * UNSELECTED_SCALE) + 80;
 					}
+					// y += 4;
 					return (
 						<div class={item_selected ? "xb-item selected" : "xb-item"} style={{ translate: `0px ${y}px` }} key={item.id}>
 							<div class="xb-item-icon" style={{ scale: item_selected ? SELECTED_SCALE.toString() : UNSELECTED_SCALE.toString() }}>
 								{Icon ? typeof Icon == "string" ? <img
 									src={Icon.startsWith("icon:") ? convertFileSrc(`${settings.theme.icons}/${Icon.substring(5)}`, "icon") : Icon}
-								/> : typeof Icon == "function" ? <Icon /> : <img src={Icon.src} style={{ ...Icon }} /> : <img
-									src="/xb-icons/icon_gamedata.png"
+								/> : typeof Icon == "function" ? <Icon /> : <img src={Icon.src.startsWith("icon:") ? convertFileSrc(`${settings.theme.icons}/${Icon.src.substring(5)}`, "icon") : Icon.src} style={{ ...Icon }} /> : <img
+									src={convertFileSrc(`${settings.theme.icons}/general.folder`, "icon")}
 								/>}
 							</div>
 							<div class="xb-item-info">
