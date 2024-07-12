@@ -8,12 +8,10 @@ import type { ContentItem } from "../Content/types";
 import back from "../../assets/arrow_l.svg";
 import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
 import { useDidUpdate } from "../../hooks/use-did-update";
-import { SELECTED_SCALE, UNSELECTED_SCALE, XB_CATEGORY_GAP, XB_CATEGORY_WIDTH } from "./shared";
+import { GAP, SELECTED_SCALE, UNSELECTED_SCALE, XB_CATEGORY_GAP, XB_CATEGORY_WIDTH, XB_ITEM_HEIGHT } from "./shared";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { SettingsContext } from "../../context/Settings";
-
-const XB_ITEM_HEIGHT = 120;
-const GAP = 0;
+import { OverflowTextScroll } from "../TextScroll";
 
 /**
  * Either `data` OR `data_key` must be specified. If not you will just get an empty list
@@ -126,9 +124,9 @@ export function XBList(props: XBListProps) {
 								/>}
 							</div>
 							<div class="xb-item-info">
-								<span class="xb-item-name">
+								<OverflowTextScroll active={active && item_selected} className="xb-item-name" speed={5000} delay={1500}>
 									{item.name}
-								</span>
+								</OverflowTextScroll>
 								{item.desc ? <span class="xb-item-desc">{item.desc}</span> : null}
 								{item.value ? <span class="xb-item-value">{item.value}</span> : null}
 							</div>

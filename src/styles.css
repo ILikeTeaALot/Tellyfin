@@ -164,6 +164,29 @@ body {
 	/* backdrop-filter: blur(60px); */
 }
 
+/* Text Scroll(er) */
+
+.text-scroll-container {
+	padding: 0 1em;
+	margin: 0 -1em;
+	mask: linear-gradient(to right, #0000 0, #000F 1em, #000F calc(100% - 1em), #0000 100%) center;
+}
+
+.text-scroll-container > span {
+	display: inline-flex;
+	white-space: nowrap;
+}
+
+.text-scroll-container span {
+	/* max-width: calc(100% + 1em); */
+	/* overflow: hidden; */
+	/* text-overflow: ellipsis; */
+}
+
+.active > .text-scroll-container * {
+	max-width: unset;
+}
+
 /* List */
 
 .content-list {

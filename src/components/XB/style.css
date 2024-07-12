@@ -171,6 +171,7 @@
 
 .xb-item .xb-item-info .xb-item-name {
 	font-weight: 400;
+	width: 660px;
 	white-space: nowrap;
 	transition-duration: var(--transition-standard);
 }

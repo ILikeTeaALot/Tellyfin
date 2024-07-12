@@ -6,9 +6,10 @@ import { useInput } from "../../hooks";
 import "./style.css";
 import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
 import { useDidUpdate } from "../../hooks/use-did-update";
-import { SELECTED_SCALE, UNSELECTED_SCALE, XB_CATEGORY_GAP, XB_CATEGORY_WIDTH } from "./shared";
+import { GAP, SELECTED_SCALE, UNSELECTED_SCALE, XB_CATEGORY_GAP, XB_CATEGORY_WIDTH, XB_ITEM_HEIGHT } from "./shared";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { SettingsContext } from "../../context/Settings";
+import { OverflowTextScroll } from "../TextScroll";
 
 const OFFSET_HAS_NAVIGATED = 480 - (XB_CATEGORY_WIDTH / 2 + XB_CATEGORY_GAP);
 const OFFSET_SELECTED_CATEGORY = (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP) - OFFSET_HAS_NAVIGATED;
@@ -77,9 +78,6 @@ export function XBar(props: XBProps) {
 		</div>
 	);
 }
-
-const XB_ITEM_HEIGHT = 120;
-const GAP = 0;
 
 interface XBCategoryProps extends XBCategoryData {
 	active: boolean;
@@ -180,9 +178,9 @@ function XBCategory(props: XBCategoryProps) {
 								transitionTimingFunction: "var(--timing-function-accelerate)",
 								opacity: showUnselectedTitles || selected == index ? 1 : 0,
 							}}>
-								<span class="xb-item-name">
+								<OverflowTextScroll active={active && item_selected} className="xb-item-name" speed={5000} delay={1500}>
 									{item.name}
-								</span>
+								</OverflowTextScroll>
 								{item.desc ? <span class="xb-item-desc">{item.desc}</span> : null}
 							</div>
 						</div>
