@@ -180,6 +180,8 @@ export function ContentGrid(props: ContentGridProps) {
 			return [];
 		}
 	}, [data, selected]);
+	const [overrideOpacity, /* setOpacityOverride */] = useState(false);
+	const content = useRef<HTMLDivElement>(null);
 	const startIndex = Math.max((selected - (columns * 3)) - (selected % columns), 0);
 	const endIndex = Math.min(selected + (columns * 3) + (columns - (selected % columns)), data.length);
 	const selected_row = Math.floor(selected / columns);
