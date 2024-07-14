@@ -11,7 +11,7 @@ edition = "2021"
 tauri-build = { version = "2.0.0-beta", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0-beta", features = [] }
+tauri = { version = "2.0.0-beta", features = ["unstable"] }
 tauri-plugin-http = { version = "2.0.0-beta", features = ["rustls-tls","unsafe-headers"] }
 tauri-plugin-shell = "2.0.0-beta"
 serde = { version = "1", features = ["derive"] }
@@ -38,6 +38,7 @@ rusqlite = { version = "0.31", features = [
 	# "csvtab",
 	# "uuid",
 ] }
+windows-sys = { version = "0.52.0", features = ["Win32_Foundation"] }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
