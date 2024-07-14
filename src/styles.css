@@ -118,13 +118,13 @@
 
 body {
 	margin: 0;
-	cursor: none;
+	/* cursor: none; */
 }
 
 :root, body, html {
 	overflow: hidden;
 	background: transparent;
-	cursor: none;
+	/* cursor: none; */
 }
 
 #home-root, #video-root {
@@ -291,8 +291,8 @@ body {
 	/* justify-content: center; */
 	position: fixed;
 	inset: 0;
-	/* transition-duration: var(--transition-standard); */
-	transition-duration: var(--transition-long);
+	transition-duration: var(--transition-standard);
+	/* transition-duration: var(--transition-long); */
 	animation: var(--scale-fade-in);
 	will-change: opacity scale;
 }

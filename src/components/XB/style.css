@@ -2,7 +2,8 @@
 	/* --transition-standard: calc(var(var(--transition-standard)) - 125ms); */
 	position: fixed;
 	transition-duration: var(--transition-standard);
-	transition-duration: 300ms;
+	/* transition-duration: 300ms; */
+	/* transition-duration: var(--transition-long); */
 	transition-timing-function: var(--timing-function-ease);
 	z-index: -5;
 	width: 100vw;
