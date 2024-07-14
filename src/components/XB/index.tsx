@@ -12,7 +12,8 @@ import { SettingsContext } from "../../context/Settings";
 import { OverflowTextScroll } from "../TextScroll";
 
 const OFFSET_HAS_NAVIGATED = 480 - (XB_CATEGORY_WIDTH / 2 + XB_CATEGORY_GAP);
-const OFFSET_SELECTED_CATEGORY = (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP) - OFFSET_HAS_NAVIGATED;
+// const OFFSET_SELECTED_CATEGORY = (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP) - OFFSET_HAS_NAVIGATED;
+const OFFSET_SELECTED_CATEGORY = -(XB_CATEGORY_WIDTH / 2 + XB_CATEGORY_GAP);
 
 export type XBCategoryData = {
 	/** Unique identifer for this category (a name will suffice) */
@@ -142,7 +143,7 @@ function XBCategory(props: XBCategoryProps) {
 		}
 	}, [data, selected]);
 	if (!data) return null;
-	const finalOffset = OFFSET_SELECTED_CATEGORY + ((nav_position + 1) * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP));
+	const finalOffset = OFFSET_SELECTED_CATEGORY + ((nav_position + 1) * (XB_CATEGORY_WIDTH / 2 + XB_CATEGORY_GAP)) + ((nav_position) * XB_CATEGORY_GAP) + (nav_position == -1 ? XB_CATEGORY_WIDTH / 2 : 0);
 	return (
 		<div class={is_selected ? "xb-category selected" : "xb-category"} style={{ translate: `${x}px` }}>
 			<div class={first ? "xb-category-icon first" : last ? "xb-category-icon last" : "xb-category-icon"} style={{ translate: !active && is_selected ? finalOffset : 0, opacity: nav_position >= -1 ? 1 : 0 }}>

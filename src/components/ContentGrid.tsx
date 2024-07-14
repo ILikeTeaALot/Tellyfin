@@ -197,10 +197,12 @@ export function ContentGrid(props: ContentGridProps) {
 				opacity: overrideOpacity ? 0 : nav_position >= 0 && nav_position < 2 ? nav_position == 0 ? 1 : 0.7 : 0,
 				// translate: `${position * 240}px`,
 				scale: `${1 + (Math.max(Math.min(nav_position, 1), 0) * -0.2)}`,
-				transformOrigin: "right bottom",
+				// translate: nav_position > 0 ? "0px 120px" : "0px 0px",
+				// transformOrigin: "right bottom",
+				transformOrigin: "right center",
 				// filter: nav_position == 0 ? undefined : "blur(40px) saturate(180%)",
 				// transitionTimingFunction: nav_position == 0 ? "var(--timing-function-decelerate)" : "var(--timing-function-accelerate)",
-				transitionDelay: nav_position < 0 ? "var(--transition-standard)" : "0ms",
+				// transitionDelay: nav_position < 0 ? "var(--transition-standard)" : "0ms",
 				transitionTimingFunction: "var(--timing-function-ease)",
 			}}>
 				{data.slice(startIndex, endIndex).map((item, _index) => {

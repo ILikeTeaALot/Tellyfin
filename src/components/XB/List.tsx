@@ -27,7 +27,6 @@ export type XBListProps = {
 
 export function XBList(props: XBListProps) {
 	const { data_key, nav_position, onGoBack, onNavigate } = props; // We can't access `props.key` because React consumes it.
-	const active = nav_position == 0;
 	const [navPosition, setNavPosition] = useState(nav_position + 1);
 	// useLayoutEffect(() => {
 	// 	setNavPosition(nav_position + 1);
@@ -38,6 +37,7 @@ export function XBList(props: XBListProps) {
 			requestAnimationFrame(() => setNavPosition(nav_position))
 		));
 	}, [nav_position]);
+	const active = navPosition == 0;
 	/// @ts-expect-error Don't publicly expose props.override_active
 	const input_active = active && !props.override_active;
 	const swr_key = useMemo(() => ["xb-list", data_key, props.data] as const, [data_key, props.data]);
@@ -95,10 +95,12 @@ export function XBList(props: XBListProps) {
 	if (!data) return null;
 	const startIndex = Math.max(selected - 10, 0);
 	const endIndex = Math.min(selected + 10, data.content.length);
+	// const categoryTranslate = 480 + ((navPosition) * (XB_CATEGORY_WIDTH * 1.5 + XB_CATEGORY_GAP));
+	const categoryTranslate = (480 - (XB_CATEGORY_WIDTH / 2 + XB_CATEGORY_GAP)) + ((navPosition + 1) * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP)) + ((navPosition - 1) * XB_CATEGORY_GAP);
 	return (
-		<div class={active ? "xb-category selected" : "xb-category"} style={{ translate: `${480 + ((navPosition) * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP))}px` }}>
+		<div class={active ? "xb-category selected" : "xb-category"} style={{ translate: `${categoryTranslate}px` }}>
 			<img class="xb-list-back-arrow" src={back} style={{ left: 0 - XB_CATEGORY_GAP }} />
-			<div class={"xb-category-content"} style={{ /* opacity: 1 */ }}>
+			<div class={"xb-category-content"} style={{ opacity: 1 }}>
 				{data.content.slice(startIndex, endIndex).map((item, _index) => {
 					const index = _index + startIndex;
 					const { Icon } = item;
@@ -113,9 +115,10 @@ export function XBList(props: XBListProps) {
 						// y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP)) - ((XB_ITEM_HEIGHT + GAP) * selected) + 80;
 						y = (window.innerHeight / 2) - (XB_ITEM_HEIGHT / 2) + (index * (XB_ITEM_HEIGHT + GAP) * UNSELECTED_SCALE) - ((XB_ITEM_HEIGHT + GAP) * selected * UNSELECTED_SCALE) + 80;
 					}
+					const x = navPosition >= 0 || item_selected ? 0 : (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP) / 2;
 					// y += 4;
 					return (
-						<div class={item_selected ? "xb-item selected" : "xb-item"} style={{ translate: `0px ${y}px` }} key={item.id}>
+						<div class={item_selected ? "xb-item selected" : "xb-item"} style={{ opacity: navPosition <= 0 ? active || item_selected ? 1 : navPosition == -1 ? 0.5 : 0 : 0, translate: `${x}px ${y}px` }} key={item.id}>
 							<div class="xb-item-icon" style={{ scale: item_selected ? SELECTED_SCALE.toString() : UNSELECTED_SCALE.toString() }}>
 								{Icon ? typeof Icon == "string" ? <img
 									src={Icon.startsWith("icon:") ? convertFileSrc(`${settings.theme.icons}/${Icon.substring(5)}`, "icon") : Icon}
@@ -123,7 +126,7 @@ export function XBList(props: XBListProps) {
 									src={convertFileSrc(`${settings.theme.icons}/general.folder`, "icon")}
 								/>}
 							</div>
-							<div class="xb-item-info">
+							<div class="xb-item-info" style={{ opacity: active ? 1 : 0 }}>
 								<OverflowTextScroll active={active && item_selected} className="xb-item-name" speed={5000} delay={1500}>
 									{item.name}
 								</OverflowTextScroll>
