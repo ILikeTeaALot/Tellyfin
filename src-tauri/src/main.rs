@@ -3,9 +3,11 @@
 
 mod audio;
 mod database;
+mod gamepad;
 mod mpv;
 mod plugins;
 mod query;
+mod schemes;
 mod settings;
 mod states;
 mod theme;
@@ -36,7 +38,9 @@ pub type CurrentId = Arc<Mutex<Option<PlaybackId>>>;
 
 fn main() {
 	tauri::Builder::default()
+		.register_asynchronous_uri_scheme_protocol("xb", schemes::xb::handler)
 		.register_asynchronous_uri_scheme_protocol("icon", theme::icons::handler)
+		.register_uri_scheme_protocol("mpv", |app, req| tauri::http::Response::builder().body(Vec::new()).unwrap())
 		.manage(Arc::new(Mutex::<MpvStateInner>::new(None)))
 		.manage(CurrentId::default())
 		.manage(BassState::new().expect("Bass is required at this time."))
@@ -83,7 +87,6 @@ fn main() {
 			// MARK - Database Querying
 			unsafe_query,
 		])
-		.register_uri_scheme_protocol("mpv", |app, req| tauri::http::Response::builder().body(Vec::new()).unwrap())
 		// .build(tauri::generate_context!())
 		.run(tauri::generate_context!())
 		.expect("error while running tauri application");
