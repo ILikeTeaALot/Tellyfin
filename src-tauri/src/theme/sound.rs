@@ -4,8 +4,9 @@ pub struct ThemeMultiChannelSound {
 }
 
 pub struct ThemeMenuSounds {
-	_move: String,
-	close: String,
+	cancel: String,
+	cursor: String,
+	enter: String,
 }
 
 pub struct ThemeSoundTable {
@@ -14,6 +15,8 @@ pub struct ThemeSoundTable {
 	/// General Movement
 	cursor: String,
 	enter: String,
+	system_ok: String,
+	system_negative: String,
 	menu: ThemeMenuSounds,
 	coldboot: ThemeMultiChannelSound,
 	gameboot: ThemeMultiChannelSound,
