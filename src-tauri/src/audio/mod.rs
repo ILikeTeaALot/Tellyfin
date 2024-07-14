@@ -62,6 +62,8 @@ pub enum FeedbackSound {
 // static SFX_NO: &[u8] = include_bytes!("./data/PS3/SE13_System_NG.flac");
 // static SFX_OK: &[u8] = include_bytes!("./data/PS3/SE12_System_OK.flac");
 
+static SFX_NO_FILE: &[u8] = include_bytes!("./data/snd_error.wav");
+
 //                            bits   sample rate
 static BACKGROUND_START: u64 = 24 * 4 * 48000 * 11;
 // static BACKGROUND_START: u64 = 0;
@@ -138,7 +140,7 @@ impl AudioFeedbackManager {
 			background: Mutex::new(background),
 			coldboot: Mutex::new(
 				Stream::new(
-					"./themes/PS3/sound/coldboot_multi.ac3",
+					"./themes/PS3/sound/coldboot2_multi.ac3",
 					BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE,
 					// 0,
 					// None::<DWORD>,
