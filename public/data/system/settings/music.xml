@@ -28,7 +28,8 @@
 						<Option value="MP3">MP3</Option>
 					</Select>
 				</Screen>
-				<Condition>
+				<!-- Experimenal and Unstable :: Not used yet. -->
+				<Condition cond="cd_import.format:AAC+OR+cd_import.format:MP3">
 					<If value="cd_import.format" eq="AAC|MP3">
 						<Screen id="setup.cd_import.bitrate.type" key="Bitrate-Type">
 							<Select key="cd_import.vbr">
@@ -60,6 +61,7 @@
 			<Description>
 				Sets the amount of time that is crossfaded (overlapped) between music tracks. This Setting is used when playing content other than CD Audio.
 			</Description>
+			<!-- Numerical values are automatically parsed appropriately. -->
 			<Options>
 				<Option value="0">Off</Option>
 				<Option value="1">1 Second</Option>
