@@ -72,10 +72,6 @@ console.log('Libraries =>', libraries.data);
 
 export default api;
 
-// window.addEventListener("unload", () => {
-// 	api.logout();
-// });
-
 export const JellyfinContext = createContext<Api | null>(null);
 
 export function JellyfinApiProvider(props: { children: ComponentChildren; }) {
