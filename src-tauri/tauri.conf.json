@@ -31,9 +31,7 @@
 				"height": 600,
 				"fullscreen": true,
 				"transparent": true,
-				"resizable": false,
-				"decorations": false,
-				"shadow": false
+				"resizable": false
 			}
 		]
 	}
