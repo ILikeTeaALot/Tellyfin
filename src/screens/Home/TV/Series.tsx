@@ -15,6 +15,7 @@ import { useInput, useInputRelease } from "../../../hooks";
 import { Menu, type XBMenuItem } from "../../../components/Menu";
 import type { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 import { FeedbackSound, playFeedback } from "../../../context/AudioFeedback";
+import { Loading } from "../../../components/Loading";
 
 // const WIDTH = 320;
 const WIDTH = 400;
@@ -60,10 +61,11 @@ export function TvSeries(props: JellyfinScreenProps) {
 	// Props
 	const { active: _active, nav_position, onNavigate } = props;
 	const [nextUpSelected, setNextUpSelected] = useState(false);
-	const { data: nextUp, isLoading: loadingNextUp } = useSWR(`next-up-${props.data.Id}`, () => getNextUp(props.data.Id!), { revalidateOnMount: true });
-	const { data: episodes, /* isLoading: episodesLoading, */ mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!), { keepPreviousData: true });
+	const { data: nextUp, isLoading: nextUpIsLoading, isValidating: nextUpIsValidating } = useSWR(`next-up-${props.data.Id}`, () => getNextUp(props.data.Id!), { revalidateOnMount: true });
+	const { data: episodes, isLoading: episodesLoading, isValidating: episodesValidating, mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!), { keepPreviousData: true, revalidateOnMount: true });
 	// const { data: seasons, /* isLoading: seasonsLoading */ } = useSWR(`seasons-${props.data.Id}`, () => getSeasons(props.data.Id!), { keepPreviousData: true });
-	const { data: seasons, isLoading: loadingSeasons } = useSWR(() => episodes ? `seasons-${props.data.Id}` : null, () => seasonsFromEpisodes(episodes), { keepPreviousData: true });
+	const { data: seasons, isLoading: seasonsLoading, isValidating: seasonsValidating } = useSWR(() => episodes && !episodesLoading && !episodesValidating ? `seasons-${props.data.Id}` : null, () => seasonsFromEpisodes(episodes), { keepPreviousData: true, revalidateOnMount: true });
+	const anyValidating = nextUpIsLoading || nextUpIsValidating || episodesLoading || episodesValidating || seasonsLoading || seasonsValidating;
 	const season_count = seasons?.length ?? 0;
 	const [tabRowX, setTabRowX] = useState(0);
 	const [selected, setSelected] = useReducer(selectionReducer, { season: 0, episode: 0, previous: { season: 0, episode: 0 } });
@@ -102,8 +104,12 @@ export function TvSeries(props: JellyfinScreenProps) {
 		setMenuOpen(false);
 	}, [updateEpisodes]);
 	const menu_cancel = useCallback(() => setMenuOpen(false), []);
+	useLayoutEffect(() => {
+		setNextUpSelected(false);
+		setSelected({ episode: 0, season: 0 });
+	}, [props.data]);
 	useEffect(() => {
-		if (loadingNextUp || loadingSeasons) return;
+		if (nextUpIsLoading || seasonsLoading) return;
 		if (!nextUpSelected && nextUp) {
 			if (nextUp.length == 1) {
 				setSelected(({ season, episode }) => {
@@ -120,7 +126,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 				setNextUpSelected(true);
 			}
 		}
-	}, [nextUpSelected, nextUp, loadingNextUp, episodes, seasons, loadingSeasons]);
+	}, [nextUpSelected, nextUp, nextUpIsLoading, episodes, seasons, seasonsLoading]);
 	// // Cheeky useRefs to avoid re-creating the callback several times.
 	// const selectedRef = useRef(selected);
 	// selectedRef.current = selected;
@@ -379,7 +385,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 			const max_offset = tab_row_width - scrollWidth;
 			setTabRowX((offsetLeft + (width / 2)) > screen_centre - HORIZONTAL_MARGIN ? Math.min(centre, max_offset) : 0);
 		}
-	}, [selected.season]);
+	}, [seasons, selected.season, anyValidating]);
 	const menu = useMemo((): XBMenuItem<Id>[] => {
 		if (episodes) {
 			const episode = episodes[selected.episode];
@@ -439,11 +445,14 @@ export function TvSeries(props: JellyfinScreenProps) {
 			return [];
 		}
 	}, [episodes, selected]);
-	if (!episodes || !seasons || !nextUpSelected || loadingNextUp) return null;
+	if (anyValidating) return (
+		<Loading />
+	);
+	if (!episodes || !seasons || !nextUpSelected || nextUpIsLoading) return null;
 	if (episodes.length == 0) return (
 		<h1>No episodes</h1>
 	);
-	const runTimeTicks = episodes[selected.episode].RunTimeTicks;
+	const runTimeTicks = episodes[selected.episode]?.RunTimeTicks ?? 0;
 	const duration = runTimeTicks ? displayRunningTime(runTimeTicks) : null;
 	const startIndex = Math.max(0, selected.episode - (0 + OVERDRAW)); //   sel - (on-screen + overdraw)
 	const endIndex = Math.min(episodes.length, selected.episode + (4 + OVERDRAW)); // sel + (on-screen + overdraw)
@@ -481,8 +490,8 @@ export function TvSeries(props: JellyfinScreenProps) {
 						</div>
 					</div>
 					<div className="episode-info">
-						<h1>{episodes[selected.episode].Name ?? "Title Unknown"}</h1>
-						<h5>{episodes[selected.episode].SeasonName ?? "Unknown Season"} Episode {episodes[selected.episode].IndexNumber ?? "Unknown"}</h5>
+						<h1>{episodes[selected.episode]?.Name ?? "Title Unknown"}</h1>
+						<h5>{episodes[selected.episode]?.SeasonName ?? "Unknown Season"} Episode {episodes[selected.episode]?.IndexNumber ?? "Unknown"}</h5>
 					</div>
 					<div className="episode-list" /* ref={animationParent} */ style={{
 						opacity: row != Row.Overview ? 1 : 0,
@@ -507,19 +516,19 @@ export function TvSeries(props: JellyfinScreenProps) {
 						})}
 					</div>
 					<div ref={episode_overview} className={row == Row.Overview ? "episode-overview focused" : "episode-overview"}>
-						{duration || typeof episodes[selected.episode].PremiereDate == "string" ? (
+						{duration || typeof episodes[selected.episode]?.PremiereDate == "string" ? (
 							<span>
 								{duration ? duration : null}
-								{duration && episodes[selected.episode].PremiereDate ? " – " : null}
-								{typeof episodes[selected.episode].PremiereDate == "string" ? `${new Date(episodes[selected.episode].PremiereDate!)
+								{duration && episodes[selected.episode]?.PremiereDate ? " – " : null}
+								{typeof episodes[selected.episode]?.PremiereDate == "string" ? `${new Date(episodes[selected.episode]?.PremiereDate!)
 									.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}` : null}
 
 							</span>
 						) : null}
-						{episodes[selected.episode].UserData?.Played ? <span>{(episodes[selected.episode].UserData?.Played ?? false) ? "Watched" : "Unwatched"}</span> : null}
-						<p style={{ maxWidth: 1200 }}>{episodes[selected.episode].Overview ?? "No overview available"}</p>
-						<span style={{ /* whiteSpace: "nowrap", */ lineBreak: "loose", wordBreak: "break-all" }}>{episodes[selected.episode].Path}</span>
-						{episodes[selected.episode].MediaStreams ? episodes[selected.episode].MediaStreams!.map(_info => {
+						{episodes[selected.episode]?.UserData?.Played ? <span>{(episodes[selected.episode]?.UserData?.Played ?? false) ? "Watched" : "Unwatched"}</span> : null}
+						<p style={{ maxWidth: 1200 }}>{episodes[selected.episode]?.Overview ?? "No overview available"}</p>
+						<span style={{ /* whiteSpace: "nowrap", */ lineBreak: "loose", wordBreak: "break-all" }}>{episodes[selected.episode]?.Path}</span>
+						{episodes[selected.episode]?.MediaStreams ? episodes[selected.episode]?.MediaStreams!.map(_info => {
 							return null;
 							// switch (info.Type) {
 							// 	case "Audio":
@@ -541,7 +550,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 							// 		return null;
 							// }
 						}) : null}
-						{episodes[selected.episode].MediaStreams ? episodes[selected.episode].MediaStreams!.map(info => <MediaStreamInfo info={info} />) : null}
+						{episodes[selected.episode]?.MediaStreams ? episodes[selected.episode]?.MediaStreams!.map(info => <MediaStreamInfo info={info} />) : null}
 					</div>
 				</div>
 			</div>

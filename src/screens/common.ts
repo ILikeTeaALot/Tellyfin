@@ -1,6 +1,7 @@
 import { type BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 import { AppState } from "../AppStates";
 import { Id, ContentType, ContentItem } from "../components/Content/types";
+import type { XBItem } from "../components/XB/content-fetcher";
 
 export type ScreenProps = {
 	active: boolean;
@@ -9,7 +10,7 @@ export type ScreenProps = {
 
 export type ScreenContent = {
 	id: Id;
-	type: ContentType;
-	content: Array<ContentItem>;
+	type: ContentType | XBItem;
+	content: Array<ContentItem | XBItem>;
 	jellyfin_data?: BaseItemDto;
 };

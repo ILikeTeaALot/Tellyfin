@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
 import * as jf from "@jellyfin/sdk/lib/utils/api";
 import { ScreenContent, ScreenProps } from "./common";
 import { ContentList, NavigateAction } from "../components/ContentList";
@@ -15,6 +15,8 @@ import { XBList } from "../components/XB/List";
 import type { XBItem } from "../components/XB/content-fetcher";
 import { FeedbackSound, playFeedback } from "../context/AudioFeedback";
 import { SettingList } from "../components/XB/SettingList";
+import { playFile } from "../functions/play";
+import { ViewScreen } from "./Screen";
 // import useSWR from "swr";
 // import { newSelectScreen, type SelectScreenParams } from "./Home/new-select-screen";
 // import useSWRMutation from "swr/mutation";
@@ -32,6 +34,8 @@ const content: ScreenContent = {
 export function Home(props: ScreenProps) {
 	const { active, change_state } = props;
 	const state = useContext(AppMode);
+	const timeout = useRef<number | null>(null);
+	const [selectedRootItem, setSelectedRootItem] = useState<XBItem | null>(null);
 	const [screens, updateScreens] = useState<Array<ScreenContent>>([content]);
 	// const { data, trigger } = useSWRMutation<[screen: number, screens: ScreenContent[]], never, "navigation-stack", SelectScreenParams>("navigation-stack", (_, {arg: options}) => newSelectScreen(options));
 	const [currScreen, setCurrentScreen] = useState(0);
@@ -43,26 +47,51 @@ export function Home(props: ScreenProps) {
 			setCurrentScreen(current => Math.max(current - 1, 0));
 			playFeedback(FeedbackSound.Back);
 			return;
-		}
-		if (item) {
-			selectScreen(updateScreens, setCurrentScreen, action, currScreen, screens[currScreen].id, item);
+		} else if (item) {
+			selectScreen(updateScreens, setCurrentScreen, action, screens[currScreen].id, item);
 			playFeedback(FeedbackSound.Enter);
 			return;
 		}
 	}, [currScreen, screens, active, state]);
 	const handleListNavigate = useCallback((item: XBItem) => {
-
-	}, []);
+		if (!active || state != AppState.Home) return;
+		selectScreen(updateScreens, setCurrentScreen, NavigateAction.Enter, screens[currScreen].id, item);
+		playFeedback(FeedbackSound.Enter);
+		return;
+	}, [currScreen, screens, active, state]);
 	const handleListGoBack = useCallback(() => {
-		setCurrentScreen(current => Math.max(0, current - 1));
+		setCurrentScreen(current => {
+			if (current > 1) updateScreens((screens) => [...screens.slice(0, screens.length - 2)]);
+			return Math.max(0, current - 1);
+		});
 		playFeedback(FeedbackSound.Back);
 	}, []);
-	const handleRootNavigate = useCallback(async (item: ContentItem) => {
-		selectScreen(updateScreens, setCurrentScreen, NavigateAction.Enter, currScreen, "Home", item);
+	const handleRootNavigate = useCallback((item: ContentItem) => {
+		selectScreen(updateScreens, setCurrentScreen, NavigateAction.Enter, "Home", item);
+		
 		playFeedback(FeedbackSound.Enter);
-	}, [currScreen]);
+	}, []);
+	const handleRootSelectionChange = useCallback((item: XBItem) => {
+		// if (!didChangeScreen.current) {
+		// 	if (timeout.current != null) clearTimeout(timeout.current);
+		// 	updateScreens((screens) => [...screens.slice(0, currScreen + 1)]);
+		// 	timeout.current = setTimeout(() => selectScreen(updateScreens, (_) => {}, NavigateAction.Enter, "Home", item), 2000);
+		// } else {
+		// 	didChangeScreen.current = false;
+		// }
+		if (timeout.current != null) clearTimeout(timeout.current);
+		setSelectedRootItem(item);
+		updateScreens((screens) => [...screens.slice(0, 1)]);
+	}, [/* currScreen */]);
+	useEffect(() => {
+		if (timeout.current != null) clearTimeout(timeout.current);
+		if (selectedRootItem) {
+			timeout.current = setTimeout(() => selectScreen(updateScreens, (f) => {if (typeof f == "function") f(currScreen)}, NavigateAction.Enter, "Home", selectedRootItem), 2000);
+		}
+	}, [selectedRootItem]);
 	return (
 		<div id="home-root" style={{ opacity: active ? 1 : 0 }}>
+			<XBar active={active} nav_position={0 - currScreen} categories={categories} first_selected={2} onNavigate={handleRootNavigate} onSelectionChange={handleRootSelectionChange} />
 			{screens.map((screen, index) => {
 				// const position = active ? _index - currScreen : -1;
 				let nav_position = index - currScreen;
@@ -70,6 +99,18 @@ export function Home(props: ScreenProps) {
 					nav_position = -1;
 				}
 				const zIndex = currScreen - index;
+				// Why doesn't this work?
+				// return (
+				// 	<ViewScreen
+				// 		key={screen.id}
+				// 		jellyfin_data={screen.jellyfin_data}
+				// 		nav_position={nav_position}
+				// 		zIndex={zIndex}
+				// 		handleNavigate={handleNavigate}
+				// 		handleListNavigate={handleListNavigate}
+				// 		handleListGoBack={handleListGoBack}
+				// 	/>
+				// );
 				switch (screen.type) {
 					case ContentType.Ignore:
 						return null;
@@ -104,7 +145,6 @@ export function Home(props: ScreenProps) {
 						return null;
 				}
 			})}
-			<XBar active={active} nav_position={0 - currScreen} categories={categories} first_selected={2} onNavigate={handleRootNavigate} />
 			{/* <button onClick={() => change_state(AppState.VideoPlaying)}>Go To Video Player</button> */}
 		</div>
 	);

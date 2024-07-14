@@ -6,5 +6,5 @@ export type JellyfinScreenProps = {
 	active: boolean;
 	data: BaseItemDto;
 	nav_position: number;
-	onNavigate: (action: NavigateAction, index?: number) => void;
+	onNavigate: (action: NavigateAction.Back) => void;
 }

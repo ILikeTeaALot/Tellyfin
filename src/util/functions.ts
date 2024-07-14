@@ -76,6 +76,8 @@ export function refresh_mpv() {
 
 export const toHMS = (seconds: number) => `${Math.floor(seconds / 3600).toString().padStart(2, "0")}:${(Math.floor(seconds / 60) % 60).toString().padStart(2, "0")}:${Math.floor(seconds % 60).toString().padStart(2, "0")}`;
 
+export const musicHMS = (seconds: number) => `${Math.floor(seconds / 3600) || ""} ${(Math.floor(seconds / 60) % 60).toString().padStart(2, "0")}' ${Math.floor(seconds % 60).toString().padStart(2, "0")}"`;
+
 /* function csvJSON(csv: string) {
 
 	var lines = csv.split("\n");
