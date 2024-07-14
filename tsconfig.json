@@ -6,6 +6,12 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
 
+	/* To deal with "fetch-parse" required by "fetchify-axios" */
+	// "allowJs": true,
+	// "moduleDetection": "force",
+	// "verbatimModuleSyntax": true,
+	// "declaration": true,
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -22,6 +28,6 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
+  "include": ["src", "node_modules/fetchify-axios/fetch-parse.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
