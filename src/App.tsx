@@ -16,9 +16,10 @@ import { useInput } from "./hooks";
 import { Keyboard } from "./components/TextInput/Keyboard";
 import { DynamicBackground } from "./components/DynamicBackground";
 import { Coldboot } from "./components/Coldboot";
-import { invoke } from "@tauri-apps/api/core";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { SettingsProvider } from "./components/SettingsProvider";
-
+import { DB } from "./database";
 
 function appStateReducer(state: AppState, action: AppState | ((current: AppState) => AppState) | "animation-complete") {
 	if (action == "animation-complete") return AppState.Home;
@@ -39,7 +40,13 @@ function AppInner() {
 	const previousStatus = useRef(videoState.status.playback_status);
 	const idRef = useRef(videoState.media_type?.type == "Jellyfin" ? videoState.media_type.id : videoState.media_type?.type);
 
-	
+	useEffect(() => {
+		DB.processQuery("THEMES", "music=true");
+		const uri = convertFileSrc("root.settings", "icon");
+		tauriFetch(uri, /* { mode: "no-cors" } */).then(console.warn).catch();
+		fetch(uri, /* { mode: "no-cors" } */).then(console.warn).catch();
+	}, []);
+
 	////
 	// Boot
 	////
