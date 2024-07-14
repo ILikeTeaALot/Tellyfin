@@ -1,0 +1,9 @@
+[package]
+name = "list-dvd"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eject = "0.1.1"
+serde = { version = "1.0.203", features = ["derive"] }
+wmi = "0.13.3"
