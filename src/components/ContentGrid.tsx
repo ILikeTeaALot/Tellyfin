@@ -8,6 +8,7 @@ import { useInput, useInputRelease } from "../hooks";
 import { Menu, type XBMenuItem } from "./Menu";
 import { FeedbackSound, playFeedback } from "../context/AudioFeedback";
 import { useDidUpdate } from "../hooks/use-did-update";
+// import { useAnimationFrame } from "../hooks/use-animation-frame";
 
 export type ContentGridProps = {
 	nav_position: number;
@@ -182,6 +183,42 @@ export function ContentGrid(props: ContentGridProps) {
 	}, [data, selected]);
 	const [overrideOpacity, /* setOpacityOverride */] = useState(false);
 	const content = useRef<HTMLDivElement>(null);
+	/* const waitTime = useRef(0);
+	const prevTranslate = useRef(0);
+	useAnimationFrame((last, now) => {
+		const delta = now - last;
+		if (content.current) {
+			if (waitTime.current < 2000) {
+				if (waitTime.current == 0) {
+					content.current.style.translate = "0px 0px";
+				} else {
+					setOpacityOverride(false);
+					content.current.style.transitionDuration = "";
+				}
+				waitTime.current += delta;
+				return;
+			} else {
+				// content.current.style.opacity = "";
+			}
+			const newTranslate = prevTranslate.current + ((delta / 1000) * 80);
+			if (newTranslate >= (ITEM_HEIGHT + GAP) * 4) {
+				prevTranslate.current = 0;
+				waitTime.current = 0;
+				content.current.style.transitionDuration = "0ms";
+				setOpacityOverride(true);
+			} else {
+				content.current.style.translate = `0px ${0 - newTranslate}px`;
+				prevTranslate.current = newTranslate;
+			}
+		}
+	}, !active, []);
+	useEffect(() => {
+		if (active && content.current) content.current.style.translate = "0px";
+		if (active) {
+			prevTranslate.current = 0;
+			setOpacityOverride(false);
+		}
+	}, [active]); */
 	const startIndex = Math.max((selected - (columns * 3)) - (selected % columns), 0);
 	const endIndex = Math.min(selected + (columns * 3) + (columns - (selected % columns)), data.length);
 	const selected_row = Math.floor(selected / columns);
