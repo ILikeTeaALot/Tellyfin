@@ -1,9 +1,30 @@
-import { Jellyfin } from "@jellyfin/sdk";
+import { Api, Jellyfin } from "@jellyfin/sdk";
 import * as jf from "@jellyfin/sdk/lib/utils/api";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 
 import { deviceInfo, server_address, user } from "./jellyfin-settings.json";
+import axios from "axios";
+
+import axiosAdapter from "axios-tauri-http-adapter";
+import fetchAdapter from "@shiroyasha9/axios-fetch-adapter";
+import { createContext, type ComponentChildren } from "preact";
+import { useContext, useEffect, useMemo, useState } from "preact/hooks";
+import { SettingsContext } from "./Settings";
+
+// import createFetchAdapter from "fetchify-axios";
 
 export * as jellyfin from "@jellyfin/sdk/lib/utils/api";
+
+// window.fetch = tauriFetch;
+// globalThis.fetch = tauriFetch;
+
+// axios.defaults.adapter = (config) => axios.getAdapter("fetch")(config).then(value => tauriFetch(value.request));
+
+// axios.defaults.adapter = "fetch"; // NEVER EVER ENABLE THIS. IT BREAKS THINGS FOR REASONS I DO NOT YET UNDERSTAND
+
+// axios.interceptors.request.use(async (req) => {
+// 	return tauriFetch(new URL(req.url!, req.baseURL), req.fetchOptions);
+// })
 
 const jellyfin = new Jellyfin({
 	clientInfo: {
@@ -13,7 +34,17 @@ const jellyfin = new Jellyfin({
 	deviceInfo,
 });
 
-const api = jellyfin.createApi(server_address);
+const axiosInst = axios.create({
+	// adapter: axiosAdapter()
+	// adapter: createFetchAdapter(tauriFetch),
+	// adapter: fetchAdapter,
+});
+
+const api = jellyfin.createApi(server_address, undefined, /* TODO: AccessToken */ axiosInst);
+
+// api.configuration.baseOptions = {...api.configuration.baseOptions}
+
+// api.axiosInstance.options(api.axiosInstance.defaults.baseURL)
 
 // Fetch the public system info
 const info = await jf.getSystemApi(api).getPublicSystemInfo();
@@ -28,7 +59,9 @@ console.log('Users =>', users.data);
 // cumbersome to use.
 const auth = await api.authenticateUserByName(user.username, user.password);
 console.log('Auth =>', auth.data);
+console.log('AccessToken =>', api.accessToken);
 // const auth_data = new AuthData(auth.data);
+// api.accessToken = auth.data.AccessToken!;
 const auth_data = auth.data;
 export { auth_data as auth };
 
@@ -39,6 +72,9 @@ console.log('Libraries =>', libraries.data);
 
 export default api;
 
+// window.addEventListener("unload", () => {
+// 	api.logout();
+// });
 window.addEventListener("unload", () => {
 	api.logout();
 });
