@@ -26,7 +26,49 @@ yarn install
 > - [Terminal 1] Run `yarn`/`yarn install` if you have not already, and then run `yarn dev`.
 > - [Terminal 2] Run `cargo run`.
 
-## Current Status
+# Current Status
+
+## TLDR
+
+### Done
+
+- [x] Local file playback
+- [x] DVD (and theoretically Blu-ray) playback
+- [x] Jellyfin Library discovery
+	- [x] Some Jellyfin library browsing (see below)
+- [x] Some parts of Themes (see below)
+
+### Still To-do
+
+- [ ] Music Playback
+	- [ ] CD
+	- [ ] Jellyfin
+- [ ] Photo viewing
+- [ ] Live TV
+- [ ] Themes
+	- [x] Indexing themes
+	- [x] Reading icons from themes
+	- [ ] Loading audio feedback samples from themes
+- [ ] Photos
+- [ ] Jellyfin
+	- [ ] Content browsing
+		- [x] TV Shows and Series
+		- [x] Films
+		- [x] Music
+		- [ ] Photos
+		- [ ] Live TV
+	- [ ] Login flow
+	- [ ] Server management
+- [ ] Steam
+	- [ ] Library detection
+	- [ ] Game launching
+- [ ] Emulators
+- [ ] Plug-in architecture(s)
+	- [ ] Daemon/IPC
+	- [ ] DLL
+	- [ ] Lua/Scheme
+
+## Details
 
 At present, playback and playback-control of media on the local filesystem works, selected by browsing through a local Jellyfin server.
 
@@ -49,8 +91,7 @@ The User Interface design is a top-level interface based on the [XMB](https://en
 > [!TIP]
 > ### XMB Icons
 >
-> You can download the icons referenced in code from Sony [here](http://e1.dl.playstation.net/e1/downloads/ps3/themes/370/PS3_Custom_Theme_v200.zip) (regrettably not https.) Just extract the zip folder and copy all the `sample/simple/icon_*.png` files to `vsh/public/xb-icons/`
-
+> The example themes (PS3 icons and sounds + PS2 background audio) will be available soon™.
 
 ## Requirements
 
