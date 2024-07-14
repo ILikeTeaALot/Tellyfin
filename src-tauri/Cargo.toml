@@ -39,6 +39,7 @@ rusqlite = { version = "0.31", features = [
 	# "uuid",
 ] }
 windows-sys = { version = "0.52.0", features = ["Win32_Foundation"] }
+gilrs = { version = "0.10.8", features = ["serde", "serde-serialize"] }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
