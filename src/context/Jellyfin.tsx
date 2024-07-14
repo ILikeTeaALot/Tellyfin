@@ -1,9 +1,8 @@
 import { Api, Jellyfin } from "@jellyfin/sdk";
 import * as jf from "@jellyfin/sdk/lib/utils/api";
-import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
+import axios from "axios";
 
 import { deviceInfo, server_address, user } from "./jellyfin-settings.json";
-import axios from "axios";
 
 import axiosAdapter from "axios-tauri-http-adapter";
 import fetchAdapter from "@shiroyasha9/axios-fetch-adapter";
@@ -11,20 +10,9 @@ import { createContext, type ComponentChildren } from "preact";
 import { useContext, useEffect, useMemo, useState } from "preact/hooks";
 import { SettingsContext } from "./Settings";
 
-// import createFetchAdapter from "fetchify-axios";
-
 export * as jellyfin from "@jellyfin/sdk/lib/utils/api";
 
-// window.fetch = tauriFetch;
-// globalThis.fetch = tauriFetch;
-
-// axios.defaults.adapter = (config) => axios.getAdapter("fetch")(config).then(value => tauriFetch(value.request));
-
 // axios.defaults.adapter = "fetch"; // NEVER EVER ENABLE THIS. IT BREAKS THINGS FOR REASONS I DO NOT YET UNDERSTAND
-
-// axios.interceptors.request.use(async (req) => {
-// 	return tauriFetch(new URL(req.url!, req.baseURL), req.fetchOptions);
-// })
 
 const jellyfin = new Jellyfin({
 	clientInfo: {
