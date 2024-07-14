@@ -96,12 +96,21 @@ async function getXBarVideoContent(): Promise<CategoryContent> {
 	videoLibraries.sort(librarySort);
 	const default_item = videoLibraries.findIndex(item => item.CollectionType != "playlists");
 	return {
-		default_item: default_item > 0 ? default_item + 1 : 1,
+		default_item: default_item > 0 ? default_item + 2 : 1,
 		content: [
 			{
 				name: "Search",
 				id: "system.search",
 				Icon: "icon:general.search",
+			},
+			{
+				name: "DVD Video - A really long title to test how the scrolly thingamy works!",
+				id: "system.dvd",
+				Icon: {
+					src: "icon:video.dvd",
+					width: 108,
+					height: 108,
+				},
 			},
 			...videoLibraries.map(item => ({
 				name: item.Name ?? "Unknown",
