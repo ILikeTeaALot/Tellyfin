@@ -6,6 +6,44 @@ use tauri::{AppHandle, State};
 
 use crate::{database::TellyfinDB, util::SafeLock};
 
+#[tauri::command]
+pub async fn query(
+	app: AppHandle,
+	database: State<'_, TellyfinDB>,
+	table: String,
+	cond: Option<String>,
+	scond: Option<String>,
+	sort: Option<String>,
+	ssort: Option<String>,
+	genre: Option<String>,
+) -> Result<(), String> {
+	let table = table
+		.chars()
+		.all(|c| c.is_alphanumeric() || c == '_')
+		.then_some(table)
+		.ok_or(String::from("Invalid table name"))?;
+	// Past this point, table is definitely safe
+	let query_string = format!("SELECT * FROM {table} WHERE");
+	// let res = sqlx::query("").fetch_all(&**database).await.map_err(|e| e.to_string())?;
+	let res = (**database).safe_lock();
+	Ok(())
+}
+
+fn operand(op: &str) -> Result<&str, &'static str> {
+	match op {
+		"=" | // Equal to
+		"<" | // x<y
+		">" | // x>y
+		"<=" | // x<=y
+		">=" | // x>=y
+		"!=" => Ok(op),
+		"?" => Ok(""), // Exists
+		// "@" => Ok(""), // Indexed
+		// "!" => Ok(""), // Present
+		_ => Err("Invalid operand"),
+	}
+}
+
 // UNSAFE QUERIES
 
 pub fn unsafe_query_internal(database: &TellyfinDB, q: &str, params: &[serde_json::Value]) -> Result<Vec<serde_json::Map<String, serde_json::Value>>, Box<dyn Error>> {
