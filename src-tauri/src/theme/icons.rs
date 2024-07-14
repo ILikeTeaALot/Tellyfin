@@ -1,6 +1,5 @@
 use std::{fs, path::PathBuf, thread};
 
-use rusqlite::types::FromSql;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]

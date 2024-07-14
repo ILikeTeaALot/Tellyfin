@@ -2,10 +2,9 @@ pub mod icons;
 pub mod sound;
 
 use std::{
-	error::Error, ffi::OsStr, fs::{self, ReadDir}, path::{self, Path}, sync::{atomic::{AtomicI64, Ordering}, Mutex}
+	error::Error, ffi::OsStr, fs::{self, ReadDir}, path::Path, sync::{atomic::{AtomicI64, Ordering}, Mutex}
 };
 
-use icons::IconTable;
 use rusqlite::Connection;
 use serde::Deserialize;
 use tauri::{App, AppHandle, Manager};
@@ -106,6 +105,7 @@ impl ThemeManager {
 		}
 	}
 
+	#[allow(unused)]
 	pub fn set_theme(&self, identifier: &str) {
 		if *self.theme_id.safe_lock() == identifier {
 
