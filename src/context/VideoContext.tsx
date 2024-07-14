@@ -11,9 +11,7 @@ export enum MediaType {
 	CD = "CD",
 }
 
-export type MediaInfo = /* {
-	type: "None";
-} | */{
+export type MediaInfo = {
 	type: "CD";
 	path: string;
 	track: number;
