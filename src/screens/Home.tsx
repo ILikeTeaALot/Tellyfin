@@ -68,7 +68,13 @@ export function Home(props: ScreenProps) {
 	}, []);
 	const handleRootNavigate = useCallback((item: ContentItem) => {
 		selectScreen(updateScreens, setCurrentScreen, NavigateAction.Enter, "Home", item);
-		
+		if (item.id == "system.dvd") {
+			// invoke("play_file", { file: "dvd://1/J:\\" });
+			// invoke("play_file", { file: "dvd:\\\\" });
+			// invoke("play_file", { file: "dvd://" });
+			// invoke("play_file", { file: "J:\\", jellyfinId: { type: "DVD" } }); // Apparently specifying just the drive letter works. At least on Windows.
+			playFile("J:\\", { type: "DVD", path: "J:\\", title: 1, chapter: 1, name: "Unknown" });
+		}
 		playFeedback(FeedbackSound.Enter);
 	}, []);
 	const handleRootSelectionChange = useCallback((item: XBItem) => {
