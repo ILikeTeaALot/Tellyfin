@@ -13,14 +13,14 @@ export const default_user_settings: UserSettings = {
 		key_tone: Bool.On
 	},
 	theme: {
-		theme: "PS3",
-		sound: "PS3",
-		icons: "PS3",
+		theme: "iliketeaalot.ps3",
+		sound: "iliketeaalot.ps3",
+		icons: "iliketeaalot.ps3",
 		background: {
 			type: BackgroundType.Dynamic,
 			name: "PS3"
 		},
-		music: "PS2 ambience uncompressed.wav",
+		music: "iliketeaalot.ps2",
 	},
 	video: {
 		"24hz": Bool.On,
