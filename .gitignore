@@ -56,3 +56,8 @@ target/
 *.lib
 # Technically unused
 *.exe
+
+# Themes
+themes/**/*/
+themes/*.tft
+themes/*.zip
