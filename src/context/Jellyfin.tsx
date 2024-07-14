@@ -75,6 +75,26 @@ export default api;
 // window.addEventListener("unload", () => {
 // 	api.logout();
 // });
-window.addEventListener("unload", () => {
-	api.logout();
-});
+
+export const JellyfinContext = createContext<Api | null>(null);
+
+export function JellyfinApiProvider(props: { children: ComponentChildren; }) {
+	const jfn = useMemo(() => new Jellyfin({
+		clientInfo: {
+			name: "Tellyfin",
+			version: "0.0.0",
+		},
+		deviceInfo,
+	}), []);
+	const { settings } = useContext(SettingsContext);
+	const [api, resetApi] = useState(jfn.createApi(server_address));
+	useEffect(() => {
+		resetApi(jfn.createApi(server_address));
+	}, [jfn]);
+	if (!api) return null;
+	return (
+		<JellyfinContext.Provider value={api}>
+
+		</JellyfinContext.Provider>
+	)
+}
