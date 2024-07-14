@@ -26,7 +26,9 @@ libmpv2-sys = "*"
 libtellyfin = { workspace = true }
 tellyfin-plugin = { workspace = true }
 bass = { workspace = true }
+steamlocate = { workspace = true }
 toml = "0.8"
+zip = "2"
 
 # RuSQLite
 serde_rusqlite = "0.35.0"
