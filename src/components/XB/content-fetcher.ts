@@ -163,11 +163,11 @@ async function getXBarMusicContent(): Promise<CategoryContent> {
 		default_item: default_item > 0 ? default_item + 1 : 0,
 		// default_item: 1,
 		content: [
-			{
-				name: "Playlists (Alto)",
-				id: "music.alto.playlists",
-				Icon: "icon:general.playlist",
-			},
+			// {
+			// 	name: "Playlists (Alto)",
+			// 	id: "music.alto.playlists",
+			// 	Icon: "icon:general.playlist",
+			// },
 			{
 				name: "Alto",
 				desc: `Play music from your own collection with Alto™
