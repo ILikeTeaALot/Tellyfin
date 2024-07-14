@@ -1,6 +1,5 @@
 use std::{
-	os::raw::c_void,
-	sync::{Arc, Mutex},
+	mem::size_of, os::raw::c_void, sync::{Arc, Mutex}, thread, time::Duration
 };
 
 use ::bass::{
@@ -24,6 +23,7 @@ use ::bass::{
 use bass::BassState;
 use serde::Deserialize;
 use tauri::{AppHandle, Manager, State};
+use windows_sys::Win32::{Foundation::GetLastError, UI::Input::KeyboardAndMouse::{SendInput, INPUT, INPUT_0, MOUSEEVENTF_ABSOLUTE, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP, MOUSEEVENTF_RIGHTDOWN, MOUSEEVENTF_RIGHTUP, MOUSEINPUT}};
 
 use crate::{settings::{UserSettings, UserSettingsManager}, theme::ThemeManager, util::SafeLock};
 
@@ -319,6 +319,7 @@ impl AudioFeedbackManager {
 				self.mixer.pause().ok();
 				self.mixer.dump().ok();
 				BASS_ChannelSetPosition(self.background.safe_lock().handle(), BACKGROUND_START, BASS_POS_BYTE);
+				coldboot_actions();
 				// self.mixer.flush();
 			}
 			let flags = if sound == FeedbackSound::Coldboot {
@@ -379,4 +380,47 @@ pub fn reinit_bass(manager: State<'_, BassState>) {
 		Ok(_) => (),
 		Err(e) => eprintln!("BASS Restart Failed! {}", e),
 	}
+}
+
+/// It may not be in this location forever, but this is where as many startup actions as can be done after window-creation should happen.
+fn coldboot_actions() {
+	#[cfg(all(target_os = "windows"))]
+	thread::spawn(move || {
+		thread::sleep(Duration::from_millis(60));
+		/* let pos = MAKELONG(WORD(10), WORD(10));
+		// unsafe { PostMessageW(hwnd.0, WM_LBUTTONDOWN, MK_LBUTTON as usize, pos.0 as isize) };
+		// unsafe { PostMessageW(hwnd.0, WM_LBUTTONUP, MK_LBUTTON as usize, pos.0 as isize) };
+		unsafe { PostMessageW(hwnd.0, WM_RBUTTONDOWN, MK_RBUTTON as usize, pos.0 as isize) };
+		unsafe { PostMessageW(hwnd.0, WM_RBUTTONUP, MK_RBUTTON as usize, pos.0 as isize) }; */
+		println!("Sending fake input!");
+		let input_down = INPUT_0 {
+			mi: MOUSEINPUT {
+				dx: 10,
+				dy: 10,
+				mouseData: 0,
+				dwFlags: MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_ABSOLUTE,
+				time: 0,
+				dwExtraInfo: 0,
+			},
+		};
+		let input_up = INPUT_0 {
+			mi: MOUSEINPUT {
+				dx: 10,
+				dy: 10,
+				mouseData: 0,
+				dwFlags: MOUSEEVENTF_LEFTUP | MOUSEEVENTF_ABSOLUTE,
+				time: 100,
+				dwExtraInfo: 0,
+			},
+		};
+		let pinputs =
+			vec![INPUT { r#type: 0, Anonymous: input_down }, INPUT { r#type: 0, Anonymous: input_up }];
+		// let result = unsafe { SendInput(2, pinputs.as_ptr(), size_of::<MOUSEINPUT>() as i32) };
+		let result = unsafe { SendInput(2, pinputs.as_ptr(), size_of::<INPUT>() as i32) };
+		println!("fake input (size 40) sent!");
+		if result != 2 {
+			let error = unsafe { GetLastError() };
+			println!("Error sending inputs: {error}. Actual input count sent: {result}");
+		}
+	});
 }
