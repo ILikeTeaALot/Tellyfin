@@ -1,10 +1,10 @@
 [workspace]
 members = [
 	# "bootstrap",
-	"crates/libtellyfin",
-	"crates/tellyfin-plugin",
 	"crates/bass",
-	"list-dvd",
+	"crates/libtellyfin",
+	"crates/list-dvd",
+	"crates/tellyfin-plugin",
 	"src-tauri",
 ]
 exclude = ["bootstrap"]
