@@ -7,14 +7,15 @@ import { Id } from "../../../components/Content/types";
 import api, { auth } from "../../../context/Jellyfin";
 import { ContentPanel, PanelState } from "../../../components/Panel";
 import { NavigateAction } from "../../../components/ContentList";
-import { displayRunningTime, languageString, type LangKey } from "../../../util/functions";
+import { displayRunningTime, languageString, TICKS_PER_SECOND, toHMS, type LangKey } from "../../../util/functions";
 import { MediaStreamInfo, mapCodecToDisplayName } from "../../../components/Jellyfin/MediaStreamInfo";
 import { VideoContextType } from "../../../context/VideoContext";
 import { useInput, useInputRelease } from "../../../hooks";
 import { Menu, type XBMenuItem } from "../../../components/Menu";
-import type { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
+import type { BaseItemDto, ItemFields } from "@jellyfin/sdk/lib/generated-client/models";
 import { FeedbackSound, playFeedback } from "../../../context/AudioFeedback";
 import { Loading } from "../../../components/Loading";
+import type { ScopedMutator } from "swr/dist/_internal";
 
 // const WIDTH = 320;
 const WIDTH = 400;
@@ -28,6 +29,8 @@ const SCREEN_WIDTH = 1920;
 const HORIZONTAL_MARGIN = 80;
 
 const OVERDRAW = 1;
+
+const GET_ITEMS_FIELDS: ItemFields[] = ["ItemCounts", "PrimaryImageAspectRatio", "MediaSourceCount", "Overview", "Path", "SpecialEpisodeNumbers", "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"];
 
 enum Row {
 	Seasons,
@@ -63,8 +66,13 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const { data: nextUp, isLoading: nextUpIsLoading, isValidating: nextUpIsValidating } = useSWR(`next-up-${props.data.Id}`, () => getNextUp(props.data.Id!), { revalidateOnMount: true });
 	const { data: episodes, isLoading: episodesLoading, isValidating: episodesValidating, mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!), { keepPreviousData: true, revalidateOnMount: true });
 	// const { data: seasons, /* isLoading: seasonsLoading */ } = useSWR(`seasons-${props.data.Id}`, () => getSeasons(props.data.Id!), { keepPreviousData: true });
-	const { data: seasons, isLoading: seasonsLoading, isValidating: seasonsValidating } = useSWR(() => episodes && !episodesLoading && !episodesValidating ? `seasons-${props.data.Id}` : null, () => seasonsFromEpisodes(episodes), { keepPreviousData: true, revalidateOnMount: true });
-	const anyValidating = nextUpIsLoading || nextUpIsValidating || episodesLoading || episodesValidating || seasonsLoading || seasonsValidating;
+	// const { data: seasons, isLoading: seasonsLoading, isValidating: seasonsValidating } = useSWR(() => episodes && !episodesLoading && !episodesValidating ? `seasons-${props.data.Id}` : null, () => seasonsFromEpisodes(episodes), { keepPreviousData: true, revalidateOnMount: true });
+	const seasons = useMemo(() => seasonsFromEpisodes(episodes), [episodes]);
+	const seasonsLoading = false;
+	const seasonsValidating = false;
+	const anyValidating = nextUpIsValidating || episodesValidating || seasonsValidating;
+	const anyLoading = nextUpIsLoading || episodesLoading || seasonsLoading;
+	const anythingHappening = anyValidating || anyLoading;
 	const season_count = seasons?.length ?? 0;
 	const [tabRowX, setTabRowX] = useState(0);
 	const [selected, setSelected] = useReducer(selectionReducer, { season: 0, episode: 0, previous: { season: 0, episode: 0 } });
@@ -388,27 +396,51 @@ export function TvSeries(props: JellyfinScreenProps) {
 	}, [season_count]);
 	useLayoutEffect(() => {
 		if (tab_row_content.current) {
-			const element = tab_row_content.current.childNodes[selected.season]! as HTMLDivElement;
-			const tab_row_width = tab_row_content.current.clientWidth;
-			const scrollWidth = SCREEN_WIDTH - HORIZONTAL_MARGIN * 2;
-			if (tab_row_width < scrollWidth) {
-				setTabRowX(0);
-				return;
+			const element = tab_row_content.current.childNodes[selected.season] as HTMLDivElement | null;
+			if (element) {
+				const tab_row_width = tab_row_content.current.clientWidth;
+				const scrollWidth = SCREEN_WIDTH - HORIZONTAL_MARGIN * 2;
+				if (tab_row_width < scrollWidth) {
+					setTabRowX(0);
+					return;
+				}
+				const width = element.clientWidth;
+				const offsetLeft = element.offsetLeft;
+				const screen_centre = SCREEN_WIDTH / 2;
+				const centre = HORIZONTAL_MARGIN - screen_centre + (width / 2) + offsetLeft;
+				const max_offset = tab_row_width - scrollWidth;
+				setTabRowX((offsetLeft + (width / 2)) > screen_centre - HORIZONTAL_MARGIN ? Math.min(centre, max_offset) : 0);
 			}
-			const width = element.clientWidth;
-			const offsetLeft = element.offsetLeft;
-			const screen_centre = SCREEN_WIDTH / 2;
-			const centre = HORIZONTAL_MARGIN - screen_centre + (width / 2) + offsetLeft;
-			const max_offset = tab_row_width - scrollWidth;
-			setTabRowX((offsetLeft + (width / 2)) > screen_centre - HORIZONTAL_MARGIN ? Math.min(centre, max_offset) : 0);
 		}
 	}, [seasons, selected.season, anyValidating]);
 	useLayoutEffect(() => {
-		if (episodes && seasons) setSelected(prev => ({
-			...prev,
-			season: seasons.findIndex(season => season.Id == episodes[selected.episode].SeasonId),
-		}));
+		if (episodes && seasons) {
+			const seasonIndex = seasons.findIndex(season => season.Id == episodes[selected.episode]?.SeasonId);
+			setSelected(prev => ({
+				...prev,
+				season: seasonIndex == -1 ? 0 : seasonIndex,
+			}));
+		}
 	}, [seasons, episodes]);
+	const [, setBackgroundHoldIndexState] = useState(true);
+	const [backgroundHoldIndex, setBackgroundHoldIndex] = useState(selected.episode);
+	useInput(active, () => {
+		setBackgroundHoldIndexState(state => {
+			if (state) {
+				return state;
+			} else {
+				setBackgroundHoldIndex(selected.episode);
+				return true;
+			}
+		})
+	}, [selected.episode]);
+	useInputRelease(() => {
+		const timeout = window.setTimeout(() => {
+			setBackgroundHoldIndexState(false);
+			setBackgroundHoldIndex(selected.episode);
+		}, 400);
+		return () => window.clearTimeout(timeout);
+	}, active, [selected.episode]);
 	const menu = useMemo((): XBMenuItem<Id>[] => {
 		if (episodes) {
 			const episode = episodes[selected.episode];
@@ -468,7 +500,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 			return [];
 		}
 	}, [episodes, selected]);
-	if (anyValidating) return (
+	if (anyLoading) return (
 		<Loading />
 	);
 	if (!episodes || !seasons || !nextUpSelected || nextUpIsLoading) return null;
@@ -485,10 +517,23 @@ export function TvSeries(props: JellyfinScreenProps) {
 				<div class="series-info" style={{
 					// filter: nav_position == 0 ? undefined : "blur(60px) saturate(180%)",
 					opacity: nav_position == 0 ? 1 : 0,
-					scale: `${1 + (Math.max(Math.min(nav_position, 1), -1) * -0.2)}`,
+					// scale: `${1 + (Math.max(Math.min(nav_position, 1), -1) * -0.2)}`,
 					transitionTimingFunction: nav_position == 0 ? "var(--timing-function-decelerate)" : "var(--timing-function-accelerate)",
 					transitionDelay: nav_position == 0 ? "var(--transition-standard)" : "0ms",
 				}}>
+					{episodes[backgroundHoldIndex] && <BackdropImage
+						selected={selected.episode}
+						index={backgroundHoldIndex}
+						item={episodes[backgroundHoldIndex]}
+						previous
+						show
+					/>}
+					{/* {episodes[selected.episode] && <BackdropImage
+						selected={selected.episode}
+						index={selected.episode}
+						episode={episodes[selected.episode]}
+						show={row == Row.Overview}
+					/>} */}
 					<h1 style={{ marginLeft: 80, marginTop: 80 }}>{props.data.Name}</h1>
 					<div className={row == Row.Seasons ? "tab-row active" : "tab-row"}>
 						<div ref={tab_row_content} className="tab-row-content" style={{ translate: `${-tabRowX}px` }}>
@@ -518,6 +563,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 					</div>
 					<div className="episode-list" /* ref={animationParent} */ style={{
 						opacity: row != Row.Overview ? 1 : 0,
+						zIndex: -5,
 						// "--transition-standard": "2s", // DEBUG
 						// "--standard-duration": "2s"//     DEBUG
 					}}>
@@ -545,10 +591,10 @@ export function TvSeries(props: JellyfinScreenProps) {
 								{duration && episodes[selected.episode]?.PremiereDate ? " – " : null}
 								{typeof episodes[selected.episode]?.PremiereDate == "string" ? `${new Date(episodes[selected.episode]?.PremiereDate!)
 									.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}` : null}
-
 							</span>
 						) : null}
 						{episodes[selected.episode]?.UserData?.Played ? <span>{(episodes[selected.episode]?.UserData?.Played ?? false) ? "Watched" : "Unwatched"}</span> : null}
+						{episodes[selected.episode]?.UserData && <span>Position: {toHMS((episodes[selected.episode].UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND)}</span>}
 						<p style={{ maxWidth: 1200 }}>{episodes[selected.episode]?.Overview ?? "No overview available"}</p>
 						<span style={{ /* whiteSpace: "nowrap", */ lineBreak: "loose", wordBreak: "break-all" }}>{episodes[selected.episode]?.Path}</span>
 						{episodes[selected.episode]?.MediaStreams ? episodes[selected.episode]?.MediaStreams!.map(_info => {
@@ -627,6 +673,13 @@ function EpisodePanel(props: EpisodePanelProps) {
 	// useLayoutEffect(() => {
 	// 	setHighlightSelected(_highlight_selected);
 	// }, [_highlight_selected]);
+	const [showBackdrop, setBackdropVis] = useState(true);
+	useInput(true, () => {
+		setBackdropVis(false);
+	}, []);
+	useInputRelease(() => {
+		setBackdropVis(true);
+	}, true, []);
 	const [shouldHighlight, setShouldHighlight] = useState(false);
 	// const [translate, setTranslate] = useState(() => initialEpisodeTranslate(selected, prevSelected, _highlight_selected, index));
 	// const animationSpeed = useContext(MovementSpeed);
@@ -689,28 +742,33 @@ function EpisodePanel(props: EpisodePanelProps) {
 	// 	/*  */
 	// 	// setHighlightSelected(_highlight_selected);
 	// }, [_highlight_selected, index, selected, prevSelected]);
+	// const backgroundTransitionDelay = selected == index ? "0ms" : "2000ms";
 	return (
-		<div className="episode-container" ref={ref} style={{
-			/* Attempt 2 */
-			// translate: `${translate}px`,
-			/*  */
-			/* display: index > startIndex && index < endIndex ? undefined : "none", */
-		}}>
-			{/* {menuOpen && index == selected ? <div style={{ position: "fixed", inset: 0, backdropFilter: "blur(60px)" }} /> : null} */}
-			<ContentPanel scaleDownInactive state={highlightSelected /* && !(enter_pressed && selected == index) */ ? (selected == index ? PanelState.Active : PanelState.Inactive) : PanelState.None} width={WIDTH} height={HEIGHT}>
-				<img
-					decoding="async"
-					src={`${api.basePath}/Items/${episode.Id}/Images/Primary?fillWidth=${WIDTH}&fillHeight=${HEIGHT}`}
-					style={{
-						objectFit: "cover",
-						width: "100%",
-						height: "100%",
-					}} />
-				{/* Selected: {selected}
-				Previous: {prevSelected} */}
-			</ContentPanel>
-			{/* <span style={{ fontSize: 40, fontWeight: 600, whiteSpace: "nowrap" }}>{episode.Name}</span> */}
-		</div>
+		<>
+			<BackdropImage {...props} item={props.episode} show={index == selected && showBackdrop} />
+			<div className="episode-container" ref={ref} style={{
+				zIndex: 5,
+				/* Attempt 2 */
+				// translate: `${translate}px`,
+				/*  */
+				/* display: index > startIndex && index < endIndex ? undefined : "none", */
+			}}>
+				{/* {menuOpen && index == selected ? <div style={{ position: "fixed", inset: 0, backdropFilter: "blur(60px)" }} /> : null} */}
+				<ContentPanel scaleDownInactive state={highlightSelected /* && !(enter_pressed && selected == index) */ ? (selected == index ? PanelState.Active : PanelState.Inactive) : PanelState.None} width={WIDTH} height={HEIGHT}>
+					<img
+						decoding="async"
+						src={`${api.basePath}/Items/${episode.Id}/Images/Primary?fillWidth=${WIDTH}&fillHeight=${HEIGHT}`}
+						style={{
+							objectFit: "cover",
+							width: "100%",
+							height: "100%",
+						}} />
+					{/* Selected: {selected}
+					Previous: {prevSelected} */}
+				</ContentPanel>
+				{/* <span style={{ fontSize: 40, fontWeight: 600, whiteSpace: "nowrap" }}>{episode.Name}</span> */}
+			</div>
+		</>
 	);
 }
 
@@ -756,7 +814,7 @@ async function getSeasons(seriesId: Id) {
 
 const STEP = 25;
 
-async function seasonsFromEpisodes(episodes?: BaseItemDto[]) {
+function seasonsFromEpisodes(episodes?: BaseItemDto[]) {
 	if (episodes) {
 		////// This *would* work if the highlight-selected-season/jump-to-episode-of-season code worked with it.
 		// return [...episodes]
@@ -843,4 +901,58 @@ async function getEpisodes(seriesId: Id) {
 		}, 0));
 	}
 	return all;
+}
+
+export function BackdropImage(props: { selected: number, index: number, item: BaseItemDto; previous?: boolean; show: boolean; }) {
+	const { selected, index, item, previous, show } = props;
+	const imgRef = useRef<HTMLImageElement>(null);
+	const [isLoaded, setLoaded] = useState(imgRef.current?.complete ?? false);
+	const onLoaded = useCallback(() => {
+		setLoaded(true);
+	}, []);
+	return (
+		<div style={{
+			position: "fixed",
+			inset: 0,
+			top: 0,
+			left: 0,
+			right: 0,
+			bottom: 0,
+			width: "100vw",
+			height: "100vh",
+			zIndex: index == selected ? -10 : -15,
+			opacity: (show || previous) && isLoaded ? 1 : 0,
+			transitionDuration: "var(--transition-long)",
+			// transitionDelay: backgroundTransitionDelay,
+			// transitionDelay: previous ? "10s" : "var(--transition-standard)",
+		}}>
+			<img ref={imgRef} src={`${api.basePath}/Items/${item.Id}/Images/Primary?fillWidth=${SCREEN_WIDTH * 1.2}&blur=800`} style={{
+				position: "fixed",
+				top: "-10vh",
+				left: "-10vw",
+				width: "120vw",
+				height: "120vh",
+				objectFit: "cover",
+				// backgroundImage: 
+				// backgroundSize: "100%",
+				// backgroundPosition: selected == index ? "center" : selected > index ? "40%" : "60%",
+				translate: selected == index ? "0px" : selected > index ? "-10vw" : "10vw",
+				// transitionProperty: "translate, z-index",
+				transitionDuration: "var(--transition-long)",
+				// transitionDelay: "var(--transition-standard)",
+				zIndex: index == selected ? -10 : -15,
+			}} onLoad={onLoaded} />
+			<div style={{
+				position: "fixed",
+				// inset: 0,
+				top: "-10vh",
+				left: "-10vw",
+				width: "120vw",
+				height: "120vh",
+				zIndex: -10,
+				// backdropFilter: "blur(200px)",
+				background: "rgba(0, 0, 0, 0.6)",
+			}} />
+		</div>
+	)
 }
