@@ -11,6 +11,7 @@ import { displayRunningTime } from "../../../util/functions";
 import { MediaStreamInfo } from "../../../components/Jellyfin/MediaStreamInfo";
 import { useInput } from "../../../hooks";
 import { playFile } from "../../../functions/play";
+import { Loading } from "~/renderer/vsh/components/Loading";
 
 const WIDTH = 400;
 // const HEIGHT = 225;
@@ -54,7 +55,7 @@ export function FilmDetail(props: JellyfinScreenProps) {
 			case "Enter":
 				if (info && row == Row.Episodes) {
 					if (info.Path) {
-						// window.electronAPI.invoke("play_file", { file: info.Path, jellyfinId: info.Id }).then(() => {
+						// window.electronAPI.invoke("play_file", { file: info.Path, infoId: info.Id }).then(() => {
 						// 	window.electronAPI.invoke("transport_command", { command: "Play" });
 						// 	mutate<VideoContextType>("mpv_state", (current) => {
 						// 		if (current) {
@@ -79,7 +80,9 @@ export function FilmDetail(props: JellyfinScreenProps) {
 				break;
 		}
 	}, [mutate, info, row]);
-	if (!info) return null; // TODO: Loader?
+	if (!info) return (
+		<Loading />
+	);
 	const runTimeTicks = info.RunTimeTicks;
 	const duration = runTimeTicks ? displayRunningTime(runTimeTicks) : null;
 	return (
