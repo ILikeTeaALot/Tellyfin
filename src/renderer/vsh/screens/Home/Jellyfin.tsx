@@ -1,4 +1,4 @@
-import { useCallback, useContext } from "preact/hooks";
+import { useCallback, useContext, useEffect } from "preact/hooks";
 import { NavigateAction } from "../../components/ContentList";
 import { ScreenContent } from "../common";
 import { TvSeries } from "./TV/Series";
@@ -39,7 +39,7 @@ export function JellyfinContent(props: JellyfinContentProps) {
 	}
 	if (isValidating) return (
 		<Loading />
-	)
+	);
 	switch (props.data.jellyfin_data.Type) {
 		case "Series": return (
 			<TvSeries active={state == AppState.Home && nav_position == 0} nav_position={nav_position} data={props.data.jellyfin_data} onNavigate={props.onNavigate} />
@@ -63,12 +63,12 @@ export function JellyfinContent(props: JellyfinContentProps) {
 					);
 			}
 		}
-			// if (!data || !data.content) return (
-			// 	<Loading />
-			// );
-			// return (
-			// 	<ContentGrid data={data.content} nav_position={nav_position} onNavigate={props.onNavigate} />
-			// );
+		// if (!data || !data.content) return (
+		// 	<Loading />
+		// );
+		// return (
+		// 	<ContentGrid data={data.content} nav_position={nav_position} onNavigate={props.onNavigate} />
+		// );
 		case "MusicArtist":
 		case "ManualPlaylistsFolder":
 		case "MusicAlbum":
@@ -82,7 +82,20 @@ export function JellyfinContent(props: JellyfinContentProps) {
 				<XBList data={data?.content ?? []} nav_position={nav_position} onNavigate={handleListNavigate} onGoBack={handleListGoBack} />
 			);
 		default: return (
-			<div>Unrecognised content type {props.data.jellyfin_data.Type}</div>
+			<Unrecognised active={nav_position == 0} goBack={handleListGoBack} Type={props.data?.jellyfin_data?.Type ?? "None"} />
 		);
 	}
+}
+
+function Unrecognised(props: { active: boolean; Type: string; goBack: () => void; }) {
+	const { active, Type, goBack } = props;
+	useEffect(() => {
+		if (active) {
+			goBack();
+		}
+	}, [active, goBack]);
+	return (
+		<div>Unrecognised content type {Type}</div>
+
+	);
 }
