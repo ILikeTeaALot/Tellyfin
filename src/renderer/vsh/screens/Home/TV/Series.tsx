@@ -169,16 +169,16 @@ export function TvSeries(props: JellyfinScreenProps) {
 		switch (button) {
 			case "Enter":
 				// onNavigate(NavigateAction.Enter, selectedEpisode);
-				if (episodes && row == Row.Episodes) {
-					const data = episodes[selected.episode];
-					window.electronAPI.invoke("play_file", { file: data.Path, jellyfinId: data.Id && { id: data.Id, type: "Jellyfin" } }).then(() => {
-						window.electronAPI.invoke("transport_command", { command: "Play" });
-						mutate<VideoContextType>("mpv_state", (current) => {
-							if (current) {
-								return { ...current, jellyfinData: data };
-							}
-						});
-					});
+				if (episodes && episodes[selected.episode] && row == Row.Episodes) {
+					const episode = episodes[selected.episode];
+					// playEpisode(data, mutate, true);
+					jellyfin.getItemsApi(api).getItems({
+						ids: [episode.Id!],
+						fields: GET_ITEMS_FIELDS,
+						limit: 1,
+					}).then(({ data: { Items } }) => {
+						if (Items?.[0]) playEpisode(Items[0], mutate, true);
+					}).catch();
 				}
 				break;
 		}
@@ -571,6 +571,17 @@ type EpisodePanelProps = {
 	selected: number;
 	prevSelected: number;
 };
+
+function playEpisode(data: BaseItemDto, mutate: ScopedMutator, continue_playback: boolean) {
+	window.electronAPI.invoke("play_file", { file: data.Path, start: continue_playback ? (data.UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND : undefined, infoId: data.Id && { id: data.Id, type: "Jellyfin" } }).then(() => {
+		window.electronAPI.invoke("transport_command", { command: "Play" });
+		mutate<VideoContextType>("mpv_state", (current) => {
+			if (current) {
+				return { ...current, jellyfinData: data };
+			}
+		});
+	});
+}
 
 function calculateEpisodeTranslate(highlight_selected: boolean, index: number, selected: number) {
 	// let translate;

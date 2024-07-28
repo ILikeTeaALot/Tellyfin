@@ -1,5 +1,7 @@
 import { ipcMain } from "electron";
 import { playFile, seek, transportCommand } from "mpv";
+import type { MediaInfo } from "~/shared/types/video";
+import { current_playing_id } from "../globals";
 
 export function setupVideoControlHandlers() {
 	ipcMain.handle("transport_command", (_, { command }: { command: string; }) => {
@@ -10,7 +12,8 @@ export function setupVideoControlHandlers() {
 		seek(mode, seconds);
 	});
 
-	ipcMain.handle("play_file", (_, { file }: { file: string; }) => {
-		playFile(file);
+	ipcMain.handle("play_file", (_, { file, infoId, start }: { file: string; infoId: MediaInfo; start: number; }) => {
+		playFile(file, start);
+		current_playing_id.inner = infoId ?? { type: "None" };
 	});
 }
