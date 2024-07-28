@@ -4,14 +4,16 @@ import { VideoControlPanel, type VideoFunction } from "../components/ControlPane
 import { ScreenProps } from "./common";
 import { refresh_mpv } from "../util/functions";
 import { Timeline } from "../components/Timeline";
-import VideoState, { PlaybackStatus, VideoContextType, type MediaInfo } from "../context/VideoContext";
+import VideoState, { PlaybackStatus, VideoContextType } from "../context/VideoContext";
 import { PauseIcon, PlayIcon, StopIcon } from "../Icons";
 import { useInput } from "../hooks";
 import { SceneSearch } from "../components/SceneSearch";
 import { Dialog, DialogType } from "../components/Dialog";
 import { StatusBar } from "../components/StatusBar";
+import type { MediaInfo } from "~/shared/types/video";
+import { jellyfinStopped } from "../functions/stopped";
 
-const withoutSceneSearch: VideoFunction[] = ["SubtitleOptions", "Display"];
+const withoutSceneSearch: VideoFunction[] = ["AudioOptions", "SubtitleOptions", "Display"];
 
 const withSceneSearch: VideoFunction[] = ["SceneSearch", ...withoutSceneSearch];
 
@@ -127,12 +129,13 @@ export function Video(props: ScreenProps) {
 	}, [closeAllPanels]);
 	const on_dialog_submit = useCallback((confirmed: boolean) => {
 		if (confirmed) {
+			if (state.mediaType.type == "Jellyfin") jellyfinStopped(state.mediaType.id, state.position.time.position);
 			window.electronAPI.invoke("transport_command", { command: "Stop" });
 			changeState(AppState.Home);
 		} else {
 			setExitConfirmActive(false);
 		}
-	}, [changeState]);
+	}, [changeState, state.mediaType, state.position.time.position]);
 	const on_cancel = useCallback(() => {
 		closeAllPanels();
 	}, [closeAllPanels]);
@@ -151,13 +154,17 @@ export function Video(props: ScreenProps) {
 				// setPanelActive(false);
 				return;
 			case "AudioOptions":
+				window.electronAPI.invoke("transport_command", { command: "AudioOptions" });
 				// setPanelActive(false);
 				return;
 			case "Display":
 				setDisplayVisible(v => !v);
 				return;
+			case "Stop":
+				if (state.mediaType.type == "Jellyfin") jellyfinStopped(state.mediaType.id, state.position.time.position);
+				return;
 		}
-	}, [closeAllPanels]);
+	}, [closeAllPanels, state.mediaType, state.position.time.position]);
 	return (
 		<div id="video-root">
 			{/* <div>Video Controls</div> */}

@@ -7,6 +7,6 @@ export function jellyfinUpdatePosition(itemId: string, position: number, isPause
 		itemId,
 		playMethod: "DirectPlay",
 		isPaused,
-		positionTicks: position * TICKS_PER_SECOND,
-	})
+		positionTicks: Math.round(position * TICKS_PER_SECOND),
+	}).catch(console.error)
 }

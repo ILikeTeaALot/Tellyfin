@@ -6,8 +6,9 @@ import api, { auth, jellyfin } from "../context/Jellyfin";
 import { jellyfinUpdatePosition } from "../functions/update";
 import { jellyfinStopped } from "../functions/stopped";
 import { reinitAudioSystem } from "../context/AudioFeedback";
-import type { MpvEvent } from "~/shared/events/mpv";
+import { mpv_end_file_reason, type MpvEvent } from "~/shared/events/mpv";
 import type { IpcRendererEvent } from "electron";
+import { toHMS } from "../util/functions";
 
 export const MutateContext = createContext<KeyedMutator<VideoContextType>>(async () => undefined);
 
@@ -22,6 +23,7 @@ function refreshInterval(latest?: VideoContextType) {
 }
 
 export function MpvStateProvider(props: { children?: ComponentChildren; }) {
+	const [DEBUG_TIME, setDebugTime] = useState(0);
 	const [videoState, setVideoState] = useState(defaultVideoState);
 	const mpvState = useSWR("mpv_state", () => (window.electronAPI.invoke<VideoContextType>("mpv_status")), { fallbackData: defaultVideoState, refreshInterval });
 	const { data, mutate } = mpvState;
@@ -38,15 +40,22 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 							let jellyfin_data = value.data.Items[0];
 							setVideoState(current => ({ ...current, jellyfinData: jellyfin_data }));
 						}
-					});
+					}).catch(console.error);
 					if (data.status.playbackStatus == PlaybackStatus.Stopped) {
 						// reinitAudioSystem();
-						jellyfinStopped(data.mediaType.id);
+						// jellyfinStopped(data.mediaType.id);
 					} else {
 						jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 					}
 				}
 			}
+			if (data.jellyfinData && data.mediaType.type == "Jellyfin") {
+				jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
+				if (data.status.playbackStatus == PlaybackStatus.Stopped) {
+					// jellyfinStopped(data.mediaType.id);
+				}
+			}
+			setDebugTime(data.position.time.position);
 			setVideoState(current => ({
 				...current,
 				...data,
@@ -99,11 +108,15 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 				case "Deprecated":
 					break;
 				case "EndFile":
-					reinitAudioSystem();
+					window.setTimeout(() => reinitAudioSystem(), 1000);
 					mutate(current => {
 						if (current) {
-							if (current.mediaType?.type == "Jellyfin") {
-								jellyfinStopped(current.mediaType.id);
+							if (current.mediaType?.type == "Jellyfin" && payload.endFile == mpv_end_file_reason.MPV_END_FILE_REASON_EOF) {
+								const position = current.position.time.position;
+								const id = current.mediaType.id;
+								setDebugTime(current.position.time.position);
+								setTimeout(() => jellyfinStopped(id, position), 1000);
+								// throw new Error(`Time: ${current.position.time.position}`);
 							}
 							return {
 								...current, status: { ...current.status, playbackStatus: PlaybackStatus.Stopped }
@@ -140,7 +153,14 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 			</MutateContext.Provider>
 			<div style={{ position: "fixed", bottom: 0, right: 0, width: "100vw", lineBreak: "anywhere" }}>
 				{/* <div>
-					{JSON.stringify(mpvState?.data.status ?? {})}
+					{toHMS(DEBUG_TIME)}
+				</div> */}
+				{/* <div>
+					{JSON.stringify(mpvState?.data?.audio ?? {})}
+					{JSON.stringify(mpvState?.data?.tracks ?? {})}
+				</div> */}
+				{/* <div>
+					{JSON.stringify(mpvState?.data?.mediaType ?? {})}
 				</div> */}
 				{/* <div>
 					{JSON.stringify(videoState ?? {})}
