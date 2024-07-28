@@ -131,6 +131,8 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 	const [submenuActive, setSubmenuActive] = useState(false);
 	// Don't play move sound if `selected` was changed by props
 	const [playMoveSound, setPlayMoveSound] = useState(false);
+	// // Lock movement once a submenu is selected.
+	// const [locked, setLockState] = useState(false);
 
 	const submenu = items[selected]?.submenu;
 
@@ -147,6 +149,19 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 	useEffect(() => {
 		if (!active) setSubmenuActive(false);
 	}, [active]);
+
+	useInput(active && !submenuActive, (button) => {
+		switch (button) {
+			case "PadUp":
+			case "ArrowUp":
+				setSelected(current => Math.max(current - 1, 0));
+				break;
+			case "PadDown":
+			case "ArrowDown":
+				setSelected(current => Math.min(current + 1, item_count - 1));
+				break;
+		}
+	}, [item_count, selected]);
 
 	useInput(active && !submenuActive, (button) => {
 		switch (button) {
@@ -181,19 +196,6 @@ function InnerMenu<T>(props: InnerMenuProps<T>) {
 	useInput(active && !hasSubmenu, (button) => {
 		if (button == "Enter") onSubmit(items[selected]);
 	}, [items, selected]);
-
-	useInput(active && !submenuActive, (button) => {
-		switch (button) {
-			case "PadUp":
-			case "ArrowUp":
-				setSelected(current => Math.max(current - 1, 0));
-				break;
-			case "PadDown":
-			case "ArrowDown":
-				setSelected(current => Math.min(current + 1, item_count - 1));
-				break;
-		}
-	}, [item_count, selected]);
 
 	useEffect(() => {
 		// Don't play move sound if `selected` was changed by props
