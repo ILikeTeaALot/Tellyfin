@@ -99,9 +99,27 @@ export function TvSeries(props: JellyfinScreenProps) {
 					updateEpisodes(undefined, { revalidate: true });
 				});
 				break;
+			case "play_from_start":
+				jellyfin.getItemsApi(api).getItems({
+					ids: [id],
+					fields: GET_ITEMS_FIELDS,
+					limit: 1,
+				}).then(({ data: { Items } }) => {
+					if (Items?.[0]) playEpisode(Items[0], mutate, false);
+				}).catch();
+				break;
+			case "just_play":
+				jellyfin.getItemsApi(api).getItems({
+					ids: [id],
+					fields: GET_ITEMS_FIELDS,
+					limit: 1,
+				}).then(({ data: { Items } }) => {
+					if (Items?.[0]) playEpisode(Items[0], mutate, true);
+				}).catch();
+				break;
 		}
 		setMenuOpen(false);
-	}, [updateEpisodes]);
+	}, [updateEpisodes, mutate]);
 	const menu_cancel = useCallback(() => setMenuOpen(false), []);
 	useLayoutEffect(() => {
 		setNextUpSelected(false);
