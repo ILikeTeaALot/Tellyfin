@@ -1,0 +1,15 @@
+{
+  "name": "bass-darwin-universal",
+  "version": "0.0.0",
+  "os": [
+    "darwin"
+  ],
+  "main": "bass.darwin-universal.node",
+  "files": [
+    "bass.darwin-universal.node"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  }
+}

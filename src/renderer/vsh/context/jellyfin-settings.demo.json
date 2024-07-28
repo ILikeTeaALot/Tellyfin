@@ -1,0 +1,11 @@
+{
+	"deviceInfo": {
+		"name": "PC-NAME",
+		"id": "1258345-13453264375-34562346-35235"
+	},
+	"server_address": "https://demo.jellyfin.org/stable",
+	"user": {
+		"username": "demo",
+		"password": ""
+	}
+}

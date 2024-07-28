@@ -1,0 +1,37 @@
+{
+	"name": "node-bass",
+	"version": "0.0.0",
+	"main": "index.js",
+	"types": "index.d.ts",
+	"napi": {
+		"name": "node-bass",
+		"triples": {
+			"additional": [
+				"aarch64-apple-darwin",
+				"i686-pc-windows-msvc",
+				"universal-apple-darwin"
+			]
+		}
+	},
+	"license": "MIT",
+	"devDependencies": {
+		"@napi-rs/cli": "^2.18.4",
+		"ava": "^6.0.1"
+	},
+	"ava": {
+		"timeout": "3m"
+	},
+	"engines": {
+		"node": ">= 10"
+	},
+	"scripts": {
+		"artifacts": "napi artifacts",
+		"build": "napi build --platform --release",
+		"build:debug": "napi build --platform",
+		"prepublishOnly": "napi prepublish -t npm",
+		"test": "ava",
+		"universal": "napi universal",
+		"version": "napi version"
+	},
+	"packageManager": "pnpm@9.5.0+sha512.140036830124618d624a2187b50d04289d5a087f326c9edfc0ccd733d76c4f52c3a313d4fc148794a2a9d81553016004e6742e8cf850670268a7387fc220c903"
+}

@@ -7,7 +7,14 @@ members = [
 	"crates/tellyfin-plugin",
 	"src-tauri",
 ]
-exclude = ["bootstrap"]
+exclude = [
+	"bootstrap",
+	"packages/mpv",
+	"packages/node-bass",
+	"packages/settings",
+	"packages/theme",
+	"packages/toml",
+]
 resolver = "2"
 
 [workspace.dependencies]

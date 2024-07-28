@@ -1,0 +1,15 @@
+{
+  "name": "toml-darwin-universal",
+  "version": "0.0.0",
+  "os": [
+    "darwin"
+  ],
+  "main": "toml.darwin-universal.node",
+  "files": [
+    "toml.darwin-universal.node"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  }
+}

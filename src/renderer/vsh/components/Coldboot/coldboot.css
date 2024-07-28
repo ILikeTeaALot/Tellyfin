@@ -1,0 +1,126 @@
+@keyframes coldboot-text-in {
+	0% {
+		opacity: 0;
+		filter: blur(5px);
+	}
+
+	100% {
+		opacity: 1;
+	}
+}
+
+@keyframes coldboot-text-mask {
+	0% {
+		/* Position */
+		-webkit-mask-position: 100%;
+		mask-position: 100%;
+	}
+
+	100% {
+		-webkit-mask-position: 0%;
+		mask-position: 0%;
+	}
+}
+
+@keyframes coldboot-text-slide {
+	0% {
+		/* Position */
+		translate: -40px;
+	}
+
+	100% {
+		translate: 0px;
+	}
+}
+
+@keyframes coldboot-text-out {
+	0% {
+		opacity: 1;
+		/* Reset mask... */
+		-webkit-mask-image: none;
+		mask-image: none;
+	}
+
+	100% {
+		opacity: 0;
+		filter: blur(100px);
+		/* Reset mask... */
+		-webkit-mask-image: none;
+		mask-image: none;
+	}
+}
+
+@keyframes coldboot-null {
+	0% {}
+
+	100% {}
+}
+
+.coldboot {
+	/* Position */
+	position: fixed;
+	inset: 0;
+	/* padding-right: 20vw; */
+	/* Layout */
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	justify-content: center;
+	animation-name: coldboot-null;
+	animation-duration: 10s;
+	z-index: 10000000;
+}
+
+.coldboot span {
+	/* Just text style */
+	display: flex;
+	font-size: 1rem;
+	margin-right: 10vw;
+	margin-left: auto;
+}
+
+.coldboot .credit {
+	--mask-image: linear-gradient(to right, #000F 0%, #000F 40%, #0000 60%, #0000);
+	/* WebKit */
+	-webkit-mask-image: var(--mask-image);
+	/* -webkit-mask: var(--mask-image) no-repeat alpha; */
+	-webkit-mask-size: 400%;
+	-webkit-mask-repeat-x: no-repeat;
+	-webkit-mask-repeat-y: repeat;
+	/* Real Browsers */
+	mask-image: var(--mask-image);
+	mask-size: 400%;
+	mask-repeat: no-repeat repeat;
+	mask-mode: alpha;
+	mask-type: alpha;
+	/* Animation */
+	animation-name: coldboot-text-mask, coldboot-text-in, coldboot-text-out, coldboot-text-slide;
+	animation-delay: 1.5s, 1.5s, 5.3s, 1.5s;
+	animation-duration: 1.3s, 1.3s, 0.5s, 2.3s;
+	animation-timing-function: linear, var(--timing-function-decelerate), var(--timing-function-accelerate), var(--timing-function-decelerate);
+	animation-fill-mode: forwards;
+	/* Title-specific */
+	text-transform: uppercase;
+	white-space: nowrap;
+	/* Initial Appearance */
+	text-shadow: 0px 0px 3px, 0px 0px 5px, 0px 1px 1px #000000;
+	opacity: 0;
+}
+
+.coldboot .license {
+	/* max-width: 40vw; */
+	position: absolute;
+	font-size: 1rem;
+	line-height: 1.1;
+	font-weight: 500;
+	white-space: pre-line;
+	/* Animation */
+	animation-name: coldboot-text-in, coldboot-text-out;
+	/* animation-delay: 6.2s, 8.8s; */
+	animation-delay: 5.8s, 9.8s;
+	animation-duration: 0.3s, 0.2s;
+	animation-timing-function: var(--timing-function-decelerate), var(--timing-function-accelerate);
+	animation-fill-mode: forwards;
+	/* Initial Appearance */
+	opacity: 0;
+}
