@@ -62,11 +62,14 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const { mutate } = useSWRConfig();
 	// Props
 	const { active: _active, nav_position, onNavigate } = props;
-	const [nextUpSelected, setNextUpSelected] = useState(false);
-	const { data: nextUp, isLoading: nextUpIsLoading, isValidating: nextUpIsValidating } = useSWR(`next-up-${props.data.Id}`, () => getNextUp(props.data.Id!), { revalidateOnMount: true });
 	const { data: episodes, isLoading: episodesLoading, isValidating: episodesValidating, mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!), { keepPreviousData: true, revalidateOnMount: true });
 	// const { data: seasons, /* isLoading: seasonsLoading */ } = useSWR(`seasons-${props.data.Id}`, () => getSeasons(props.data.Id!), { keepPreviousData: true });
 	// const { data: seasons, isLoading: seasonsLoading, isValidating: seasonsValidating } = useSWR(() => episodes && !episodesLoading && !episodesValidating ? `seasons-${props.data.Id}` : null, () => seasonsFromEpisodes(episodes), { keepPreviousData: true, revalidateOnMount: true });
+	const [nextUpSelected, setNextUpSelected] = useState(false);
+	const { data: nextUp, isLoading: nextUpIsLoading, isValidating: nextUpIsValidating } = useSWR(`next-up-${props.data.Id}`, () => getNextUp(props.data.Id!), { revalidateOnMount: true });
+	// const nextUpIsLoading = false;
+	// const nextUpIsValidating = false;
+	// const nextUp = useMemo(() => getDefaultSelected(episodes), [episodes]);
 	const seasons = useMemo(() => seasonsFromEpisodes(episodes), [episodes]);
 	const seasonsLoading = false;
 	const seasonsValidating = false;
@@ -152,6 +155,21 @@ export function TvSeries(props: JellyfinScreenProps) {
 			}
 		}
 	}, [nextUpSelected, nextUp, nextUpIsLoading, episodes, seasons, seasonsLoading]);
+	// useEffect(() => {
+	// 	if (seasonsLoading) return;
+	// 	if (!nextUpSelected && nextUp) {
+	// 		setSelected((current) => {
+	// 			// const { season, episode } = current;
+	// 			const s_index = seasons?.findIndex(season => season.Id == episodes?.[nextUp].SeasonId) ?? -1;
+	// 			if (nextUp > 0 && s_index > -1) {
+	// 				setNextUpSelected(true);
+	// 				return { season: s_index, episode: nextUp };
+	// 			}
+	// 			return current;
+	// 		});
+	// 	}
+	// }, [nextUpSelected, nextUp, episodes, seasons, seasonsLoading]);
+
 	// // Cheeky useRefs to avoid re-creating the callback several times.
 	// const selectedRef = useRef(selected);
 	// selectedRef.current = selected;
@@ -513,7 +531,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const endIndex = Math.min(episodes.length, selected.episode + (4 + OVERDRAW)); // sel + (on-screen + overdraw)
 	return (
 		<div>
-			<div className="fullscreen-mask bottom">
+			<div className="fullscreen-mask /* bottom */">
 				<div class="series-info" style={{
 					// filter: nav_position == 0 ? undefined : "blur(60px) saturate(180%)",
 					opacity: nav_position == 0 ? 1 : 0,
@@ -593,11 +611,16 @@ export function TvSeries(props: JellyfinScreenProps) {
 									.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}` : null}
 							</span>
 						) : null}
-						{episodes[selected.episode]?.UserData?.Played ? <span>{(episodes[selected.episode]?.UserData?.Played ?? false) ? "Watched" : "Unwatched"}</span> : null}
-						{episodes[selected.episode]?.UserData && <span>Position: {toHMS((episodes[selected.episode].UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND)}</span>}
+						{episodes[selected.episode]?.UserData?.Played ? <span>{(episodes[selected.episode]?.UserData?.Played ?? false) ? "Watched" : "Unwatched"}{
+							episodes[selected.episode]?.UserData ?
+								episodes[selected.episode].UserData!.PlaybackPositionTicks != undefined ?
+								episodes[selected.episode].UserData!.PlaybackPositionTicks != 0 &&
+									` – Continue Watching from ${toHMS(episodes[selected.episode]!.UserData!.PlaybackPositionTicks! / TICKS_PER_SECOND)}` : null : null}
+							{null && ` – Last Played: ${episodes[selected.episode]?.UserData?.LastPlayedDate ?? "Never?"}`}</span> : null}
+						{/* {episodes[selected.episode]?.UserData && <span>Position: {toHMS((episodes[selected.episode].UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND)}</span>} */}
 						<p style={{ maxWidth: 1200 }}>{episodes[selected.episode]?.Overview ?? "No overview available"}</p>
-						<span style={{ /* whiteSpace: "nowrap", */ lineBreak: "loose", wordBreak: "break-all" }}>{episodes[selected.episode]?.Path}</span>
-						{episodes[selected.episode]?.MediaStreams ? episodes[selected.episode]?.MediaStreams!.map(_info => {
+						{row == Row.Overview && <span style={{ /* whiteSpace: "nowrap", */ lineBreak: "loose", wordBreak: "break-all" }}>{episodes[selected.episode]?.Path}</span>}
+						{row == Row.Overview && episodes[selected.episode]?.MediaStreams ? episodes[selected.episode]?.MediaStreams!.map(_info => {
 							return null;
 							// switch (info.Type) {
 							// 	case "Audio":
@@ -619,7 +642,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 							// 		return null;
 							// }
 						}) : null}
-						{episodes[selected.episode]?.MediaStreams ? episodes[selected.episode]?.MediaStreams!.map(info => <MediaStreamInfo info={info} />) : null}
+						{row == Row.Overview && episodes[selected.episode]?.MediaStreams ? episodes[selected.episode]?.MediaStreams!.map(info => <MediaStreamInfo info={info} />) : null}
 					</div>
 				</div>
 			</div>
@@ -901,6 +924,22 @@ async function getEpisodes(seriesId: Id) {
 		}, 0));
 	}
 	return all;
+}
+
+async function getContinueWatching(seriesId: Id) {
+	jellyfin.getItemsApi(api).getResumeItems({
+		userId: auth.User?.Id,
+		parentId: seriesId,
+		limit: 1,
+		includeItemTypes: ["Episode"],
+	})
+}
+
+function getDefaultSelected(episodes?: BaseItemDto[]) {
+	return episodes?.reduce((bestIndex, current, currentIndex, arr) =>
+		(arr[bestIndex]?.UserData?.LastPlayedDate
+			&& current.UserData?.LastPlayedDate
+			&& arr[bestIndex].UserData.LastPlayedDate > current.UserData.LastPlayedDate) ? bestIndex : currentIndex, 0);
 }
 
 export function BackdropImage(props: { selected: number, index: number, item: BaseItemDto; previous?: boolean; show: boolean; }) {
