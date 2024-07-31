@@ -235,7 +235,7 @@ impl ThemeManager {
 									// 		.body("ERROR: ICON NOT FOUND".as_bytes().to_vec())
 									// 		.unwrap(),
 									// );
-									responder.call(Err(napi::Error::new(Status::GenericFailure, "ERROR: ICON NOT FOUND")), ThreadsafeFunctionCallMode::NonBlocking);
+									responder.call(Err(napi::Error::new(Status::GenericFailure, "ERROR: ICON NOT FOUND: Icon key not found")), ThreadsafeFunctionCallMode::NonBlocking);
 									println!("¡Icon key not found!: {}", icon_key);
 									return;
 								}
@@ -244,7 +244,7 @@ impl ThemeManager {
 						match route.last() {
 							Some(Some(toml::Value::String(icon_path))) => {
 								// println!("Icon Path?: {}", icon_path);
-								let final_path = PathBuf::from("themes/PS3/icon/");
+								let final_path = PathBuf::from(format!("themes/{theme_path}/icon/"));
 								let final_path = final_path.join(icon_path);
 								// responder.respond(fs::read(final_path))
 								if let Ok(icon_data) = fs::read(final_path) {
@@ -262,7 +262,7 @@ impl ThemeManager {
 							}
 							_ => eprintln!("No icon found!")
 						}
-						responder.call(Err(napi::Error::new(Status::GenericFailure, "ERROR: ICON NOT FOUND")), ThreadsafeFunctionCallMode::NonBlocking);
+						responder.call(Err(napi::Error::new(Status::GenericFailure, "ERROR: ICON NOT FOUND: No Icon found")), ThreadsafeFunctionCallMode::NonBlocking);
 						// responder.respond(
 						// 	http::Response::builder()
 						// 		.status(http::StatusCode::NOT_FOUND)
