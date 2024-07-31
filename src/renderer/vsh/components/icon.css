@@ -1,0 +1,25 @@
+.cp_icon {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 64px;
+	height: 32px;
+}
+
+.cp_icon img {
+	/* width: 56px;
+	height: 56px; */
+	width: 64px;
+	height: 64px;
+	display: block;
+	filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.64));
+}
+
+.cp_icon img:first-child {
+	z-index: -10;
+}
+
+.cp_icon img:last-child {
+	z-index: -5;
+}
