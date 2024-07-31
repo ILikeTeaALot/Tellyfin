@@ -104,6 +104,10 @@
 	}
 }
 
+.absolute {
+	position: absolute;
+}
+
 .spin-baby-spin {
 	animation: rotate-forever 1s infinite linear;
 }
@@ -243,7 +247,7 @@ body {
 .control-panel .button-row {
 	display: flex;
 	flex-direction: row;
-	gap: 16px;
+	gap: 8px;
 	justify-content: center;
 	align-items: center;
 }
