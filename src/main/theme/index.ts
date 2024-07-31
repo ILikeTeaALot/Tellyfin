@@ -24,6 +24,7 @@ class ThemeManager extends EventEmitter {
 		this.#database = new Database(dbPath);
 		this.theme = "iliketeaalot.ps3"; // TOOD :: READ FROM SETTINGS!!!
 		this.native = new nThemeManager.ThemeManager(dbPath);
+		this.native.registerThemes();
 	}
 
 	setTheme(theme: string): Result<true> {
