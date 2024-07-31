@@ -16,4 +16,8 @@ export function setupVideoControlHandlers() {
 		playFile(file, start);
 		current_playing_id.inner = infoId ?? { type: "None" };
 	});
+
+	ipcMain.handle("clear_current_id", () => {
+		current_playing_id.inner = { type: "None" };
+	})
 }
