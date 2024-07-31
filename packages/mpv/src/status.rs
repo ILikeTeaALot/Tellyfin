@@ -205,9 +205,9 @@ fn status(mpv: &mut Mpv) -> Result<MpvStatus, Box<dyn Error>> {
         let paused = mpv.get_property::<bool>("pause")?;
         // When (playlist-pos == -1), there is no currently playing item. Therefore we're stopped.
         let playlist_pos = mpv.get_property::<i64>("playlist-pos")?;
-        // let stopped = mpv.get_property::<i64>("eof-reached")?;
+        let stopped = mpv.get_property::<bool>("eof-reached")?;
         // let idle = mpv.get_property::<bool>("idle")?;
-        let playback_status = match (playlist_pos == -1, paused) {
+        let playback_status = match (stopped || playlist_pos == -1, paused) {
             (false, true) => PlaybackStatus::Paused,
             (false, false) => PlaybackStatus::Playing,
             (true, _) => PlaybackStatus::Stopped,

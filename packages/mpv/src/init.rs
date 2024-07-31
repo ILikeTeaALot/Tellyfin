@@ -34,6 +34,8 @@ pub fn init_mpv(window_handle: Option<u32>, config_dir: String) -> Result<(), Bo
 		mpv.set_property("idle", "yes")?;
 		mpv.set_property("osc", "no")?;
 		mpv.set_property("force-window", "immediate")?;
+		mpv.set_property("keep-open", "yes")?;
+		mpv.set_property("keep-open-pause", "no")?;
 		// OSC/OSD
 		mpv.set_property("osd-bar", "no")?;
 		/* mpv.set_property("osd-bar-align-y", "0.95")?;
