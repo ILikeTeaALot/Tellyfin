@@ -43,7 +43,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					}).catch(console.error);
 					if (data.status.playbackStatus == PlaybackStatus.Stopped) {
 						// reinitAudioSystem();
-						// jellyfinStopped(data.mediaType.id);
+						jellyfinStopped(data.mediaType.id, data.position.time.position);
 					} else {
 						jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 					}
@@ -52,7 +52,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 			if (data.jellyfinData && data.mediaType.type == "Jellyfin") {
 				jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 				if (data.status.playbackStatus == PlaybackStatus.Stopped) {
-					// jellyfinStopped(data.mediaType.id);
+					jellyfinStopped(data.mediaType.id, data.position.time.position);
 				}
 			}
 			setDebugTime(data.position.time.position);
@@ -154,6 +154,12 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 			<div style={{ position: "fixed", bottom: 0, right: 0, width: "100vw", lineBreak: "anywhere" }}>
 				{/* <div>
 					{toHMS(DEBUG_TIME)}
+				</div> */}
+				{/* <div>
+					{JSON.stringify(videoState.position.time ?? {})}
+				</div> */}
+				{/* <div>
+					{JSON.stringify(videoState.mediaType ?? {})}
 				</div> */}
 				{/* <div>
 					{JSON.stringify(mpvState?.data?.audio ?? {})}
