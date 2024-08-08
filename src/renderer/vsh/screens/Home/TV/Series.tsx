@@ -16,6 +16,7 @@ import type { BaseItemDto, ItemFields } from "@jellyfin/sdk/lib/generated-client
 import { FeedbackSound, playFeedback } from "../../../context/AudioFeedback";
 import { Loading } from "../../../components/Loading";
 import type { ScopedMutator } from "swr/dist/_internal";
+import { playFile } from "~/renderer/vsh/functions/play";
 
 // const WIDTH = 320;
 const WIDTH = 400;
@@ -644,6 +645,11 @@ export function TvSeries(props: JellyfinScreenProps) {
 						}) : null}
 						{row == Row.Overview && episodes[selected.episode]?.MediaStreams ? episodes[selected.episode]?.MediaStreams!.map(info => <MediaStreamInfo info={info} />) : null}
 					</div>
+					<div>
+						{episodes[selected.episode]?.People && (
+							<div>{episodes[selected.episode]?.People?.map(peep => `${peep.Name} (${peep.Role})`).join("; ")}</div>
+						)}
+					</div>
 				</div>
 			</div>
 			<Menu active={menuOpen} items={menu} onSubmit={menu_submit} onCancel={menu_cancel} />
@@ -660,7 +666,23 @@ type EpisodePanelProps = {
 };
 
 function playEpisode(data: BaseItemDto, mutate: ScopedMutator, continue_playback: boolean) {
-	window.electronAPI.invoke("play_file", { file: data.Path, start: continue_playback ? (data.UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND : undefined, infoId: data.Id && { id: data.Id, type: "Jellyfin" } }).then(() => {
+	if (!data.Id) return;
+	/* return jellyfin.getMediaInfoApi(api).getPostedPlaybackInfo({
+		// TODO: Improve this to better support remote playback.
+		itemId: data.Id,
+		userId: auth.User?.Id,
+		enableDirectStream: true,
+		enableDirectPlay: true,
+		maxStreamingBitrate: 999_999_999_999,
+		// startTimeTicks: continue_playback ? data.UserData?.PlaybackPositionTicks ?? 0 : 0,
+	}).then(({ data : streamData }) => {
+		if (streamData.MediaSources?.at(0)) {
+			const source = streamData.MediaSources[0];
+			// window.electronAPI.invoke("play_file", { file: data.Path, start: continue_playback ? (data.UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND : undefined, infoId: data.Id && { id: data.Id, type: "Jellyfin", session: streamData.PlaySessionId } }).then(() => {
+		}
+	}) */
+	// TODO: Select best media source; Enable transcoding when remote; etc.
+	playFile(`${api.basePath}/Videos/${data.Id}/stream?static=true&api_key=${auth.AccessToken}`, continue_playback ? (data.UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND : 0, data.Id ? { id: data.Id, type: "Jellyfin", /* session: streamData.PlaySessionId! */ } : undefined).then(() => {
 		window.electronAPI.invoke("transport_command", { command: "Play" });
 		mutate<VideoContextType>("mpv_state", (current) => {
 			if (current) {

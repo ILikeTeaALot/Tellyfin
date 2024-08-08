@@ -64,7 +64,8 @@ export function FilmDetail(props: JellyfinScreenProps) {
 						// 		}
 						// 	});
 						// });
-						playFile(info.Path, info.Id ? { type: "Jellyfin", id: info.Id } : undefined);
+						// playFile(info.Path, 0, info.Id ? { type: "Jellyfin", id: info.Id } : undefined);
+						playFile(`${api.basePath}/Videos/${info.Id}/stream?static=true&api_key=${auth.AccessToken}`, 0, info.Id ? { type: "Jellyfin", id: info.Id } : undefined);
 					}
 				}
 				break;
