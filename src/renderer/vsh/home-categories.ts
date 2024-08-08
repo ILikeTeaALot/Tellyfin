@@ -26,18 +26,18 @@ export const categories: XBCategoryData[] = [
 		key: "video",
 		name: "Video",
 	},
-	{
-		key: "tv",
-		name: "TV & Video",
-	},
+	// {
+	// 	key: "tv",
+	// 	name: "TV & Video",
+	// },
 	{
 		key: "services",
 		name: "Video Streaming",
 	},
-	{
-		key: "live_tv",
-		name: "Live TV",
-	},
+	// {
+	// 	key: "live_tv",
+	// 	name: "Live TV",
+	// },
 	{
 		key: "games",
 		name: "Games",
