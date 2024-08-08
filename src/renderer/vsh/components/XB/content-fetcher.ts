@@ -3,7 +3,7 @@
 import type { JSX } from "preact";
 import type { ContentItem } from "../Content/types";
 import api, { jellyfin } from "../../context/Jellyfin";
-import type { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
+import type { BaseItemDto, CollectionType } from "@jellyfin/sdk/lib/generated-client/models";
 
 export interface XBItem extends ContentItem {
 	Icon?:
@@ -172,6 +172,7 @@ async function getXBarVideoContent(): Promise<CategoryContent> {
 						case "boxsets":
 						case "movies":
 						case "playlists":
+						case "tvshows":
 							return true;
 						case undefined:
 							return true;
@@ -205,15 +206,36 @@ async function getXBarVideoContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon:
-					item.CollectionType == "playlists"
-						? "icon:general.playlist"
-						: "icon:video.folder",
+				Icon: folderIconForCollectionType(item.CollectionType),
 				jellyfin: true,
 				jellyfin_data: item,
 			})),
 		],
 	};
+}
+
+function folderIconForCollectionType(collection?: CollectionType) {
+	switch (collection) {
+		case "playlists":
+			return "icon:general.playlist";
+		case "tvshows":
+		case "boxsets":
+		case "livetv":
+			return "icon:tv.folder";
+		case "movies":
+		case "trailers":
+		case "homevideos":
+			return "icon:video.folder";
+		case "music":
+		case "musicvideos":
+			return "icon:music.folder";
+		case "books":
+		case "photos":
+		case "unknown":
+		case "folders":
+		default:
+			return;
+	}
 }
 
 async function getXBarTVContent(): Promise<CategoryContent> {
@@ -249,10 +271,7 @@ async function getXBarTVContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon:
-					item.CollectionType == "playlists"
-						? "icon:general.playlist"
-						: "icon:tv.folder",
+				Icon: folderIconForCollectionType(item.CollectionType),
 				jellyfin: true,
 				jellyfin_data: item,
 			})),
@@ -303,10 +322,7 @@ async function getXBarMusicContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon:
-					item.CollectionType == "playlists"
-						? "icon:general.playlist"
-						: "icon:music.folder",
+				Icon: folderIconForCollectionType(item.CollectionType),
 				jellyfin: true,
 				jellyfin_data: item,
 			})),
@@ -342,10 +358,7 @@ async function getXBarPhotoContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon:
-					item.CollectionType == "playlists"
-						? "icon:general.playlist"
-						: "icon:photos.folder",
+				Icon: folderIconForCollectionType(item.CollectionType),
 				jellyfin: true,
 				jellyfin_data: item,
 			})),
@@ -380,10 +393,7 @@ async function getXBarLiveTVContent(): Promise<CategoryContent> {
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
 				id: item.Id!,
-				Icon:
-					item.CollectionType == "playlists"
-						? "icon:general.playlist"
-						: "icon:tv.folder",
+				Icon: folderIconForCollectionType(item.CollectionType),
 				jellyfin: true,
 				jellyfin_data: item,
 			})),
