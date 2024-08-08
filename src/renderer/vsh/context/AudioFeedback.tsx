@@ -120,7 +120,9 @@ export enum FeedbackSound {
 // 	// });
 // }
 
-export function reinitAudioSystem() {}
+export function reinitAudioSystem() {
+	window.electronAPI.invoke("reinit_bass");
+}
 
 // function AudioFeedbackProvider({ children }: { children: ComponentChildren; }) {
 // 	const context = useMemo(() => ({ play: playFeedback }), []);
