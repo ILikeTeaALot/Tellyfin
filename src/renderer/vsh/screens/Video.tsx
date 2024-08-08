@@ -129,7 +129,7 @@ export function Video(props: ScreenProps) {
 	}, [closeAllPanels]);
 	const on_dialog_submit = useCallback((confirmed: boolean) => {
 		if (confirmed) {
-			if (state.mediaType.type == "Jellyfin") jellyfinStopped(state.mediaType.id, state.position.time.position);
+			if (state.mediaType.type == "Jellyfin") jellyfinStopped(state.mediaType.id, state.mediaType.session, state.position.time.position);
 			window.electronAPI.invoke("transport_command", { command: "Stop" });
 			changeState(AppState.Home);
 		} else {
@@ -161,7 +161,7 @@ export function Video(props: ScreenProps) {
 				setDisplayVisible(v => !v);
 				return;
 			case "Stop":
-				if (state.mediaType.type == "Jellyfin") jellyfinStopped(state.mediaType.id, state.position.time.position);
+				if (state.mediaType.type == "Jellyfin") jellyfinStopped(state.mediaType.id, state.mediaType.session, state.position.time.position);
 				return;
 		}
 	}, [closeAllPanels, state.mediaType, state.position.time.position]);

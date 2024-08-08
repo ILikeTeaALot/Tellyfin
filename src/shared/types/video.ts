@@ -11,4 +11,5 @@ export type MediaInfo = { type: "None"; } | {
 } | {
 	type: "Jellyfin";
 	id: string;
+	session?: string;
 };

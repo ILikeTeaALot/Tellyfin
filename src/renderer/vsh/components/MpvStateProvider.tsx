@@ -43,7 +43,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					}).catch(console.error);
 					if (data.status.playbackStatus == PlaybackStatus.Stopped) {
 						// reinitAudioSystem();
-						jellyfinStopped(data.mediaType.id, data.position.time.position);
+						jellyfinStopped(data.mediaType.id, data.mediaType.session, data.position.time.position);
 					} else {
 						jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 					}
@@ -52,7 +52,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 			if (data.jellyfinData && data.mediaType.type == "Jellyfin") {
 				jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 				if (data.status.playbackStatus == PlaybackStatus.Stopped) {
-					jellyfinStopped(data.mediaType.id, data.position.time.position);
+					jellyfinStopped(data.mediaType.id, data.mediaType.session, data.position.time.position);
 				}
 			}
 			setDebugTime(data.position.time.position);
@@ -73,7 +73,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 	useEffect(() => {
 		switch (playback_status) {
 			case PlaybackStatus.Stopped:
-				window.electronAPI.invoke("reinit_bass");
+				window.setTimeout(() => reinitAudioSystem(), 1000);
 				break;
 			case PlaybackStatus.Paused:
 				break;
@@ -114,8 +114,9 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 							if (current.mediaType?.type == "Jellyfin" && payload.endFile == mpv_end_file_reason.MPV_END_FILE_REASON_EOF) {
 								const position = current.position.time.position;
 								const id = current.mediaType.id;
+								const playSessionId = current.mediaType.id;
 								setDebugTime(current.position.time.position);
-								setTimeout(() => jellyfinStopped(id, position), 1000);
+								setTimeout(() => jellyfinStopped(id, playSessionId, position), 1000);
 								// throw new Error(`Time: ${current.position.time.position}`);
 							}
 							return {

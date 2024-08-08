@@ -1,12 +1,13 @@
 import api, { jellyfin } from "../context/Jellyfin";
 import { TICKS_PER_SECOND } from "../util/functions";
 
-export function jellyfinStopped(itemId: string, seconds?: number) {
+export function jellyfinStopped(itemId: string, playSessionId?: string, seconds?: number) {
 	try {
 		// window.electronAPI.invoke("clear_current_id");
 		jellyfin.getPlaystateApi(api).onPlaybackStopped({
 			// userId: auth.User!.Id!,
 			itemId,
+			playSessionId,
 			positionTicks: seconds ? Math.round(seconds * TICKS_PER_SECOND) : undefined,
 		})
 	} catch (e) {

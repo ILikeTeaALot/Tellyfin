@@ -73,7 +73,7 @@ export function Home(props: ScreenProps) {
 		if (timeout.current != null) clearTimeout(timeout.current);
 		selectScreen(updateScreens, setCurrentScreen, NavigateAction.Enter, "Home", item);
 		if (item.id == "system.dvd") {
-			playFile("J:\\", { type: "DVD", path: "J:\\", title: 1, chapter: 1, name: "Unknown" }); // Apparently specifying just the drive letter works. At least on Windows.
+			playFile("J:\\", 0, { type: "DVD", path: "J:\\", title: 1, chapter: 1, name: "Unknown" }); // Apparently specifying just the drive letter works. At least on Windows.
 		}
 		playFeedback(FeedbackSound.Enter);
 	}, []);
