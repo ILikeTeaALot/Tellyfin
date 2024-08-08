@@ -129,10 +129,26 @@ pub fn transport_command(function: String, mpv: &MpvState) -> Result<(), String>
                 mpv.command("stop", &[])
                 // Ok(())
             }
-            // "FastForward" => {}
+			"UndoSeek" => {
+				mpv.command("revert-seek", &[]).map_err(|e| e.to_string())?;
+				mpv.set_property("pause", true)
+			},
+            // "FastForward" => {
+			// 	let curr = mpv.get_property::<i64>("speed").map_err(|e| e.to_string())?;
+			// 	if curr > 60 {
+			// 		mpv.set_property("speed", 1)
+			// 	} else {
+			// 		mpv.set_property("speed", curr * 2)
+			// 	}
+			// },
             // "Rewind" => {}
+			"JumpForward" => mpv.command("seek", &["15", "relative+exact"]),
+			"JumpBackward" => mpv.command("seek", &["-15", "relative+exact"]),
+			"StepForward" => mpv.command("frame-step", &[]),
+			"StepBackward" => mpv.command("frame-back-step", &[]),
             "PrevChapter" => go_to_chapter(mpv, RelativeChapter::Previous),
             "NextChapter" => go_to_chapter(mpv, RelativeChapter::Next),
+			// TODO
             "SubtitleOptions" => mpv.command("cycle", &["sub"]),
             "AudioOptions" => mpv.command("cycle", &["aid"]), // Audio (track) ID
             // "SceneSearch" => quick_fun_test(mpv),
@@ -144,6 +160,7 @@ pub fn transport_command(function: String, mpv: &MpvState) -> Result<(), String>
     return ok;
 }
 
+#[allow(unused)]
 fn quick_fun_test(mpv: &Mpv) -> Result<(), libmpv2::Error> {
     let files = mpv.get_property::<i64>("playlist/count")?;
     println!("Playlist count: {}", files);
@@ -170,11 +187,11 @@ fn quick_fun_test(mpv: &Mpv) -> Result<(), libmpv2::Error> {
 
 #[napi(js_name = "seek")]
 pub fn _seek(mode: String, seconds: f64) -> Result<(), napi::Error> {
-	seek(mode, seconds, &MPV).map_err(map_string_error)
+	seek(&mode, seconds, &MPV).map_err(map_string_error)
 }
 
-pub fn seek(mode: String, seconds: f64, mpv: &MpvState) -> Result<(), String> {
-    let ok = use_mpv_lock(mpv, |mpv| match &*mode {
+pub fn seek(mode: &str, seconds: f64, mpv: &MpvState) -> Result<(), String> {
+    let ok = use_mpv_lock(mpv, |mpv| match mode {
         "relative" => mpv
             .command("seek", &[&seconds.to_string(), "relative"])
             .map_err(|e| e.to_string()),

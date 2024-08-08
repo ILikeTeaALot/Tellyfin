@@ -11,9 +11,10 @@ export type ControlPanelProps<Action, Config> = {
 const video_configuration_functions = {
 	"SceneSearch": "Scene Search",
 	"GoTo": "Go to time",
-	"AudioOptions": "Select audio settings",
+	"AudioOptions": "Select audio options",
 	"SubtitleOptions": "Select subtitle options",
-	// "AVSettings",
+	"AVSettings": "Configure Audio/Video settings",
+	"Revert": "Return to the previous position",
 	// "TimeOptions",
 	"Display": "Show video information on-screen",
 };
@@ -26,16 +27,20 @@ const video_transport_functions: [string, string][] = [
 	["Play", "Play"],
 	["Pause", "Pause"],
 	["Stop", "Stop playback"],
-	// "JumpBack15",
-	// "JumpForward15",
-	// "SlowRewind",
-	// "SlowForward",
-	// "FrameBack",
-	// "FrameForward",
+	["JumpBackward", "Jump Backward 15 seconds"],
+	["JumpForward", "Jump Forward 15 seconds"],
+	["SlowRewind", "Slow Rewind"],
+	["SlowForward", "Slow Forward"],
+	["StepBackward", "Step 1 frame backward"],
+	["StepForward", "Step 1 frame forward"],
 ];
 
 
 export type VideoFunction = keyof typeof video_configuration_functions;
+
+// type VideoFunction_ = VideoFunction | "Stop";
+
+// export { VideoFunction_ as VideoFunction };
 
 const getConfigOptions = (options: Array<VideoFunction>) => options.map(key => [key, video_configuration_functions[key]] as [VideoFunction, string]);
 
