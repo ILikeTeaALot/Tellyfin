@@ -79,7 +79,7 @@ const createWindow = (): void => {
 		},
 	});
 
-	mainWindowId.inner = uiWindow.id;
+	mainWindowId.inner = uiWindow.webContents;
 
 	uiWindow.on("close", () => {
 		app.quit();

@@ -245,7 +245,8 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 							parsed.searchParams.get("ssort"),
 							parsed.searchParams.get("genre"),
 						);
-						for (const [opt_index, option] of options.entries()) {
+						console.log("options:", options);
+						if (options.ok) for (const [opt_index, option] of options.value.entries()) {
 							menu_items.push({
 								value: option.identifier,
 								label: option.name,

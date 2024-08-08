@@ -1,5 +1,7 @@
 // import Database from "@tauri-apps/plugin-sql";
 
+import type { Result } from "~/shared/types/result";
+
 class TellyfinDB {
 	db: null;
 
@@ -12,7 +14,7 @@ class TellyfinDB {
 	}
 
 	async processQuery(table: string, cond?: string | null, scond?: string | null, sort?: string | null, ssort?: string | null, genre?: string | null) {
-		return window.electronAPI.invoke<Array<Record<string, any>>>("unsafe_query", {
+		return window.electronAPI.invoke<Result<Array<Record<string, any>>>>("unsafe_query", {
 			q: `SELECT * FROM ${table} ${cond ? `WHERE ${cond}` : ""}`,
 			params: [],
 		});
