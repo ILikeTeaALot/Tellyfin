@@ -21,9 +21,10 @@ const COLUMNS = 4;
 const ITEM_WIDTH = 280;
 const ITEM_HEIGHT = 420;
 
-const GAP = 60;
+const V_GAP = 60;
+const H_GAP = 40;
 
-const GRID_WIDTH = ((COLUMNS - 1) * GAP + (COLUMNS * ITEM_WIDTH)); // (5 * GAP + 6 * WIDTH) // 1740
+const GRID_WIDTH = ((COLUMNS - 1) * H_GAP + (COLUMNS * ITEM_WIDTH)); // (5 * GAP + 6 * WIDTH) // 1740
 
 // const MARGIN_TOP = 120;
 const MARGIN_TOP = 128;
@@ -245,9 +246,9 @@ export function ContentGrid(props: ContentGridProps) {
 				{data.slice(startIndex, endIndex).map((item, _index) => {
 					const index = startIndex + _index;
 					const row = Math.floor(index / columns);
-					let yPosition = ((window.innerHeight / 2) - (ITEM_HEIGHT / 2)) + (((ITEM_HEIGHT + GAP) * (row))) - ((ITEM_HEIGHT + GAP) * selected_row);
+					let yPosition = ((window.innerHeight / 2) - (ITEM_HEIGHT / 2)) + (((ITEM_HEIGHT + V_GAP) * (row))) - ((ITEM_HEIGHT + V_GAP) * selected_row);
 					if (selected_row == 0) {
-						yPosition -= (ITEM_HEIGHT + GAP) / 2;
+						yPosition -= (ITEM_HEIGHT + V_GAP) / 2;
 						yPosition += MARGIN_TOP;
 					} else {
 						yPosition += OFFSET_Y; // OR MARGIN_TOP
@@ -255,18 +256,19 @@ export function ContentGrid(props: ContentGridProps) {
 					if (selected_row == last_row) {
 						// yPosition += (ITEM_HEIGHT + GAP) / 2;
 					}
+					const xPosition = MARGIN_LEFT + ((index % columns) * (ITEM_WIDTH + H_GAP));
 					// if (nav_position > 0) yPosition += 120;
 					return (
 						<div key={item.id} class="grid-item" style={{
 							// opacity: selected_row > row ? 0.2 : 1,
 							opacity: selected_row == row ? 1 : 0.7,
 							// translate: `0px ${(window.innerHeight / 2) - (HEIGHT / 2) - ((HEIGHT + GAP) * Math.floor(selected / columns))}px`,
-							translate: `${MARGIN_LEFT + ((index % columns) * (ITEM_WIDTH + GAP))}px ${yPosition}px`,
+							translate: `${xPosition}px ${yPosition}px`,
 						}}>
 							<div className={selected == index && nav_position <= 0 ? "panel active" : props.nav_position <= 0 ? "panel inactive" : "panel"} style={{
 								width: ITEM_WIDTH,
 								height: ITEM_HEIGHT,
-								borderRadius: 16,
+								borderRadius: 20,
 							}}>
 								<div className={"panel-content"}>
 									<div className={"shadow"} />
