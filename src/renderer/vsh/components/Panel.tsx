@@ -26,7 +26,7 @@ export function ContentPanel(props: PanelProps) {
 		<div className={state == PanelState.Active ? "panel active" : state == PanelState.Inactive ? scaleDownInactive ? "panel inactive scale-down" : "panel inactive" : "panel"} style={{
 			width,
 			height,
-			borderRadius: 16,
+			borderRadius: 20,
 			aspectRatio,
 		}}>
 			<div className={"panel-content"}>
