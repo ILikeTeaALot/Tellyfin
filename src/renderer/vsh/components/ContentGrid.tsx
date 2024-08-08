@@ -18,8 +18,11 @@ export type ContentGridProps = {
 
 const COLUMNS = 4;
 
-const ITEM_WIDTH = 280;
-const ITEM_HEIGHT = 420;
+// const ITEM_WIDTH = 280;
+// const ITEM_HEIGHT = 420;
+
+const ITEM_WIDTH = 300;
+const ITEM_HEIGHT = 450;
 
 const V_GAP = 60;
 const H_GAP = 40;
@@ -248,7 +251,7 @@ export function ContentGrid(props: ContentGridProps) {
 					const row = Math.floor(index / columns);
 					let yPosition = ((window.innerHeight / 2) - (ITEM_HEIGHT / 2)) + (((ITEM_HEIGHT + V_GAP) * (row))) - ((ITEM_HEIGHT + V_GAP) * selected_row);
 					if (selected_row == 0) {
-						yPosition -= (ITEM_HEIGHT + V_GAP) / 2;
+						yPosition -= (ITEM_HEIGHT + V_GAP) / 4;
 						yPosition += MARGIN_TOP;
 					} else {
 						yPosition += OFFSET_Y; // OR MARGIN_TOP
@@ -264,6 +267,7 @@ export function ContentGrid(props: ContentGridProps) {
 							opacity: selected_row == row ? 1 : 0.7,
 							// translate: `0px ${(window.innerHeight / 2) - (HEIGHT / 2) - ((HEIGHT + GAP) * Math.floor(selected / columns))}px`,
 							translate: `${xPosition}px ${yPosition}px`,
+							zIndex: index == selected ? 100000 : undefined,
 						}}>
 							<div className={selected == index && nav_position <= 0 ? "panel active" : props.nav_position <= 0 ? "panel inactive" : "panel"} style={{
 								width: ITEM_WIDTH,
