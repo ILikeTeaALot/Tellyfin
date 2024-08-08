@@ -7,11 +7,14 @@ Currently, only the folder-format of themes is supported.
 To install a theme, drop the folder alongside this file and ensure it has the following structure:
 
 ```
-themes
-	├─ Theme 1
-	│	└─ <--[As Below]-->
-	└─ Theme 2
-		├─ [icons]
+themes/
+	├─ Theme 1/
+	│	├─ [icon]
+	│	│	├─ ...
+	│	│	└─ Icons.toml
+	│	└─ Theme.toml
+	└─ Theme 2/
+		├─ [icon]
 		│	├─ ...
 		│	└─ Icons.toml
 		├─ [music]
