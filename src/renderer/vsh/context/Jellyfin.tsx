@@ -98,6 +98,11 @@ export default api;
 
 export const JellyfinContext = createContext<Api | null>(null);
 
+/**
+ * Must be rendered within the Settings Context Provider.
+ * @param props Children requiring Jellyfin API context
+ * @returns {props.children} wrapped in the Jellyfin API Context Provider.
+ */
 export function JellyfinApiProvider(props: { children: ComponentChildren; }) {
 	const jfn = useMemo(() => new Jellyfin({
 		clientInfo: {
@@ -112,5 +117,5 @@ export function JellyfinApiProvider(props: { children: ComponentChildren; }) {
 		resetApi(jfn.createApi(server_address));
 	}, [jfn]);
 	if (!api) return null;
-	return <JellyfinContext.Provider value={api}></JellyfinContext.Provider>;
+	return <JellyfinContext.Provider value={api}>{props.children}</JellyfinContext.Provider>;
 }
