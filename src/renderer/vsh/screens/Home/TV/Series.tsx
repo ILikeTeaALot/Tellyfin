@@ -612,11 +612,11 @@ export function TvSeries(props: JellyfinScreenProps) {
 									.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}` : null}
 							</span>
 						) : null}
-						{episodes[selected.episode]?.UserData?.Played ? <span>{(episodes[selected.episode]?.UserData?.Played ?? false) ? "Watched" : "Unwatched"}{
+						{episodes[selected.episode]?.UserData?.Played || episodes[selected.episode]?.UserData?.PlaybackPositionTicks ? <span>{episodes[selected.episode]?.UserData?.Played && "Watched"}{(episodes[selected.episode]?.UserData?.Played && episodes[selected.episode]?.UserData?.PlaybackPositionTicks) ? " – " : null}{
 							episodes[selected.episode]?.UserData ?
 								episodes[selected.episode].UserData!.PlaybackPositionTicks != undefined ?
-								episodes[selected.episode].UserData!.PlaybackPositionTicks != 0 &&
-									` – Continue Watching from ${toHMS(episodes[selected.episode]!.UserData!.PlaybackPositionTicks! / TICKS_PER_SECOND)}` : null : null}
+								episodes[selected.episode].UserData!.PlaybackPositionTicks != 0 ?
+									`Continue Watching from ${toHMS(episodes[selected.episode]!.UserData!.PlaybackPositionTicks! / TICKS_PER_SECOND)}` : null : null : null}
 							{null && ` – Last Played: ${episodes[selected.episode]?.UserData?.LastPlayedDate ?? "Never?"}`}</span> : null}
 						{/* {episodes[selected.episode]?.UserData && <span>Position: {toHMS((episodes[selected.episode].UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND)}</span>} */}
 						<p style={{ maxWidth: 1200 }}>{episodes[selected.episode]?.Overview ?? "No overview available"}</p>
@@ -792,7 +792,7 @@ function EpisodePanel(props: EpisodePanelProps) {
 		<>
 			<BackdropImage {...props} item={props.episode} show={index == selected && showBackdrop} />
 			<div className="episode-container" ref={ref} style={{
-				zIndex: 5,
+				zIndex: index == selected ? 10 : 5,
 				/* Attempt 2 */
 				// translate: `${translate}px`,
 				/*  */
