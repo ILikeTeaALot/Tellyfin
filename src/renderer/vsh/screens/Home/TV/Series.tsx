@@ -81,6 +81,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const [tabRowX, setTabRowX] = useState(0);
 	const [selected, setSelected] = useReducer(selectionReducer, { season: 0, episode: 0, previous: { season: 0, episode: 0 } });
 	const [menuOpen, setMenuOpen] = useState(false);
+	const [tabHighlightStyle, setTabHighlightSettings] = useState({ translate: -20, width: 70, height: 70 });
 	const [keyRepeatCount, setKeyRepeatCount] = useState(0);
 	const [enter_pressed, setEnterPressed] = useState(false);
 	const active = _active && !menuOpen;
@@ -419,19 +420,30 @@ export function TvSeries(props: JellyfinScreenProps) {
 			if (element) {
 				const tab_row_width = tab_row_content.current.clientWidth;
 				const scrollWidth = SCREEN_WIDTH - HORIZONTAL_MARGIN * 2;
-				if (tab_row_width < scrollWidth) {
-					setTabRowX(0);
-					return;
-				}
 				const width = element.clientWidth;
 				const offsetLeft = element.offsetLeft;
+				if (tab_row_width < scrollWidth) {
+					setTabRowX(0);
+					setTabHighlightSettings({
+						width: width + 40,
+						height: element.clientHeight,
+						translate: offsetLeft - 20,
+					});
+					return;
+				}
 				const screen_centre = SCREEN_WIDTH / 2;
 				const centre = HORIZONTAL_MARGIN - screen_centre + (width / 2) + offsetLeft;
 				const max_offset = tab_row_width - scrollWidth;
-				setTabRowX((offsetLeft + (width / 2)) > screen_centre - HORIZONTAL_MARGIN ? Math.min(centre, max_offset) : 0);
+				const tabRowX = (offsetLeft + (width / 2)) > screen_centre - HORIZONTAL_MARGIN ? Math.min(centre, max_offset) : 0;
+				setTabRowX(tabRowX);
+				setTabHighlightSettings({
+					width: width + 40,
+					height: element.clientHeight,
+					translate: offsetLeft - 20 - tabRowX,
+				});
 			}
 		}
-	}, [seasons, selected.season, anyValidating]);
+	}, [_active, seasons, selected.season, selected.previous.season, episodes, anythingHappening, row]);
 	useLayoutEffect(() => {
 		if (episodes && seasons) {
 			const seasonIndex = seasons.findIndex(season => season.Id == episodes[selected.episode]?.SeasonId);
@@ -555,6 +567,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 					/>} */}
 					<h1 style={{ marginLeft: 80, marginTop: 80 }}>{props.data.Name}</h1>
 					<div className={row == Row.Seasons ? "tab-row active" : "tab-row"}>
+						<div class="focus-highlight shadow" style={tabHighlightStyle} />
 						<div ref={tab_row_content} className="tab-row-content" style={{ translate: `${-tabRowX}px` }}>
 							{/* <div style={{ display: "flex", gap: 40 }}> */}
 							{seasons?.map((season, index) => {
@@ -575,6 +588,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 							})}
 							{/* </div> */}
 						</div>
+						<div class="focus-highlight front" style={tabHighlightStyle} />
 					</div>
 					<div className="episode-info">
 						<h1>{episodes[selected.episode]?.Name ?? "Title Unknown"}</h1>
