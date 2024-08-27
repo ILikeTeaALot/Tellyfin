@@ -81,7 +81,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const [tabRowX, setTabRowX] = useState(0);
 	const [selected, setSelected] = useReducer(selectionReducer, { season: 0, episode: 0, previous: { season: 0, episode: 0 } });
 	const [menuOpen, setMenuOpen] = useState(false);
-	const [tabHighlightStyle, setTabHighlightSettings] = useState({ translate: -20, width: 70, height: 70 });
+	const [tabHighlightStyle, setTabHighlightSettings] = useState({ translate: -15, width: 70, height: 70 });
 	const [keyRepeatCount, setKeyRepeatCount] = useState(0);
 	const [enter_pressed, setEnterPressed] = useState(false);
 	const active = _active && !menuOpen;
@@ -425,9 +425,9 @@ export function TvSeries(props: JellyfinScreenProps) {
 				if (tab_row_width < scrollWidth) {
 					setTabRowX(0);
 					setTabHighlightSettings({
-						width: width + 40,
+						width: width + 30,
 						height: element.clientHeight,
-						translate: offsetLeft - 20,
+						translate: offsetLeft - 15,
 					});
 					return;
 				}
@@ -437,9 +437,9 @@ export function TvSeries(props: JellyfinScreenProps) {
 				const tabRowX = (offsetLeft + (width / 2)) > screen_centre - HORIZONTAL_MARGIN ? Math.min(centre, max_offset) : 0;
 				setTabRowX(tabRowX);
 				setTabHighlightSettings({
-					width: width + 40,
+					width: width + 30,
 					height: element.clientHeight,
-					translate: offsetLeft - 20 - tabRowX,
+					translate: offsetLeft - 15 - tabRowX,
 				});
 			}
 		}

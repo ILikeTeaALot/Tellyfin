@@ -43,7 +43,7 @@
 	/* flex-grow: 1; */
 	/* place-content: stretch; */
 	/* gap: 20px; */
-	gap: 80px;
+	gap: 60px;
 	transition-duration: var(--standard-duration);
 	will-change: translate;
 }
@@ -55,6 +55,7 @@
 	border-radius: 99999px;
 	opacity: 0;
 	transition-duration: var(--standard-duration);
+	transition-timing-function: cubic-bezier(0, 1.35, 0.6, 0.98); /* Adjust the second value to change the "amount" of bounce */
 }
 
 .tab-row.active .focus-highlight {
