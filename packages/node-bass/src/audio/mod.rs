@@ -84,7 +84,7 @@ pub struct AudioFeedbackManager {
 	move_category: Mutex<Sample>,
 	ok: Mutex<Sample>,
 	no: Mutex<Sample>,
-	background: Mutex<Stream>,
+	background: Mutex<Option<Stream>>,
 
 	mixer: Arc<Mixer>,
 }
@@ -126,19 +126,23 @@ impl AudioFeedbackManager {
 			// "./themes/PS2/sound/SCPH-10000_00019.wav",
 			BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE,
 			None::<DWORD>,
-		)
-		.expect("Stream");
+		).ok();
+		// .expect("Stream");
 		#[allow(unused_unsafe)]
 		unsafe {
-			BASS_ChannelSetSync(
-				background.handle(),
-				BASS_SYNC_END | BASS_SYNC_MIXTIME,
-				0,
-				Some(restart_background),
-				NULL,
-			)
+			if let Some(background) = background.as_ref() {
+				BASS_ChannelSetSync(
+					background.handle(),
+					BASS_SYNC_END | BASS_SYNC_MIXTIME,
+					0,
+					Some(restart_background),
+					NULL,
+				);
+			}
 		};
-		BASS_ChannelSetPosition(background.handle(), BACKGROUND_START, BASS_POS_BYTE);
+		if let Some(background) = background.as_ref() {
+			BASS_ChannelSetPosition(background.handle(), BACKGROUND_START, BASS_POS_BYTE);
+		}
 		// mixer.add(background.handle(), 0).ok();
 		Self {
 			background: Mutex::new(background),
@@ -304,7 +308,7 @@ impl AudioFeedbackManager {
 			FeedbackSound::No => self.no.safe_lock().get_channel(flags),
 			FeedbackSound::Coldboot => {
 				let lock = self.coldboot.safe_lock();
-				lock.set_position_bytes(0);
+				lock.set_position_bytes(0).ok();
 				Some(*lock.handle())
 			}
 			FeedbackSound::Gameboot => self.gameboot.safe_lock().get_channel(flags),
@@ -323,7 +327,9 @@ impl AudioFeedbackManager {
 				// }
 				self.mixer.pause().ok();
 				self.mixer.dump().ok();
-				BASS_ChannelSetPosition(self.background.safe_lock().handle(), BACKGROUND_START, BASS_POS_BYTE);
+				if let Some(background) = self.background.safe_lock().as_ref() {
+					BASS_ChannelSetPosition(background.handle(), BACKGROUND_START, BASS_POS_BYTE);
+				}
 				coldboot_actions();
 				// self.mixer.flush();
 			}
@@ -357,12 +363,16 @@ impl AudioFeedbackManager {
 
 	#[napi]
 	pub fn play_background(&self) {
-		self.mixer.add(self.background.safe_lock().handle(), BASS_MIXER_CHAN_DOWNMIX).ok();
+		if let Some(background) = self.background.safe_lock().as_ref() {
+			self.mixer.add(background.handle(), BASS_MIXER_CHAN_DOWNMIX).ok();
+		}
 	}
 
 	#[napi]
 	pub fn stop_background(&self) {
-		self.mixer.remove_channel(self.background.safe_lock().handle()).ok();
+		if let Some(background) = self.background.safe_lock().as_ref() {
+			self.mixer.remove_channel(background.handle()).ok();
+		}
 	}
 }
 
@@ -382,6 +392,7 @@ pub fn stop_background(manager: &AudioFeedbackManager) {
 /// IMPORTANT
 /// 
 /// Call this function before anything else!
+#[allow(non_snake_case)]
 #[napi]
 pub fn init_BASS() -> BassState {
 	BassState::new().expect("Handling this in JS is too hard...")

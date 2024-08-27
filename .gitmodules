@@ -4,3 +4,15 @@
 [submodule "crates/bass"]
 	path = crates/bass
 	url = git@github.com:ILikeTeaALot/bass
+[submodule "themes/PS3"]
+	path = themes/PS3
+	url = git@github.com:ILikeTeaALot/iliketeaalot.ps3.git
+	branch = master
+[submodule "themes/PS2"]
+	path = themes/PS2
+	url = git@github.com:ILikeTeaALot/iliketeaalot.ps2.git
+	branch = master
+[submodule "themes/System"]
+	path = themes/System
+	url = git@github.com:Tellyfin/System.git
+	branch = master
