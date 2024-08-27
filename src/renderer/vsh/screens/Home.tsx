@@ -72,8 +72,19 @@ export function Home(props: ScreenProps) {
 	const handleRootNavigate = useCallback((item: ContentItem) => {
 		if (timeout.current != null) clearTimeout(timeout.current);
 		selectScreen(updateScreens, setCurrentScreen, NavigateAction.Enter, "Home", item);
-		if (item.id == "system.dvd") {
-			playFile("J:\\", 0, { type: "DVD", path: "J:\\", title: 1, chapter: 1, name: "Unknown" }); // Apparently specifying just the drive letter works. At least on Windows.
+		switch (item.id) {
+			case "system.dvd":
+				playFile("J:\\", 0, { type: "DVD", path: "J:\\", title: 1, chapter: 1, name: "Unknown" }); // Apparently specifying just the drive letter works. At least on Windows.
+				break;
+			case "com.steampowered":
+				window.electronAPI.invoke("close-steam-runner");
+				break;
+			case "system.power.shutdown":
+				window.electronAPI.invoke("exit-tellyfin");
+				break;
+			case "system.power.restart":
+				window.electronAPI.invoke("restart-tellyfin");
+				break;
 		}
 		playFeedback(FeedbackSound.Enter);
 	}, []);
