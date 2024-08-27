@@ -21,20 +21,25 @@
 /* Keyboard */
 
 .keyboard {
+	--accent-colour: #00A4DC;
 	--blink-animation: 0.5s linear 0s infinite alternate blink;
 
 	font-size: 25px;
 	line-height: 1;
 	/* line-height: 30px; */
 	/* line-height: 1.5; */
-	font-weight: 400;
+	font-weight: 700;
 	display: flex;
 	flex: 0;
 	flex-direction: column;
-	gap: 0.4em;
+	gap: 8px;
 	padding: 0.4em;
 	border-radius: 0.6em;
-	background-color: black;
+	/* background: linear-gradient(to bottom, #cedce7 0%, #596a72 100%); */
+	/* background: #596a72; */
+	/* background: #767676; */
+	background: #101010;
+	/* color: black; */
 	color: white;
 	text-align: center;
 	opacity: 0;
@@ -89,10 +94,16 @@
 	vertical-align: middle;
 	box-sizing: border-box;
 	border-radius: 0.2em;
+	color: white;
+	/* background: linear-gradient(to bottom, #f2f5f6 0%, #e3eaed 37%, #c8d7dc 100%); */
+	/* background: linear-gradient(to bottom, #CCCCCC 0%, #AAAAAA 100%); */
+	/* background: #AAAAAA; */
+	/* background: radial-gradient(ellipse at center, #eeeeee 0%, #cccccc 100%); */
+	/* background: linear-gradient(to bottom, #9b9b9b 0%, #eeeeee 25%, #eeeeee 75%, #aaaaaa 100%); */
 	background: #1F1F1F;
 	transition-duration: var(--transition-short);
-	border: 1px solid rgba(255, 255, 255, 0.20);
-	box-shadow: 0px 0px 0px 0px #000000, 0px 0px 0px 0px rgba(0, 0, 0, 0.70);
+	border: 2px solid rgba(255, 255, 255, 0.20);
+	box-shadow: 0px 0px 0px 0px var(--accent-colour), 0px 0px 0px 0px var(--accent-colour);
 }
 
 .keyboard .row .key .char {
@@ -146,12 +157,18 @@
 }
 
 .keyboard.open .row .key.active {
-	background: #333333;
-	box-shadow: 0 0 1px 1px #000000, 0 9px 25px 0 rgba(0, 0, 0, 0.70);
+	/* background: linear-gradient(to bottom, #eeeeee 0%, #cccccc 100%); */
+	/* background: linear-gradient(to bottom, #FFFFFF 0%, #DDDDDD 100%); */
+	/* background: #EEEEEE; */
+	/* background: radial-gradient(ellipse at center, #f2f5f6 0%, #e3eaed 37%, #c8d7dc 100%); */
+	background: #3F3F3F;
+	/* box-shadow: 0 0 1px 1px #000000, 0 9px 25px 0 rgba(0, 0, 0, 0.70); */
+	box-shadow: 0 0 4px 2px var(--accent-colour), 0 0 1px 2px var(--accent-colour);
 	/* outline: 0.1em solid; */
 	z-index: 1000;
-	animation: var(--key-text-glow);
-	scale: 1.1;
+	/* animation: var(--text-glow); */
+	/* scale: 1.1; */
+	translate: 0px -2px;
 }
 
 .keyboard.open .row .key.highlight {
