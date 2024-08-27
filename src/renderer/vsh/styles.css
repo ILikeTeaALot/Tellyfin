@@ -91,6 +91,24 @@
 	--text-glow: 2s text-glow var(--timing-function-ease) both infinite alternate /* calc(var(--transition-short) * 2) */;
 }
 
+/* Shadows */
+
+.dark {
+	--shadow-primary: 0 0 1px 1px #000000, 0 36px 100px 0 rgba(0, 0, 0, 0.70);
+	--shadow-secondary: 0 0 1px 1px #000000, 0 8px 40px 0 rgba(0, 0, 0, 0.70);
+	--shadow-tertiary: 0 0 1px 1px #000000, 0 36px 100px 0 rgba(0, 0, 0, 0.45);
+	--shadow-quaternary: 0 4px 20px 0 rgba(0, 0, 0, 0.45), 0 0 1px 1px #000000;
+}
+
+.light {
+	--shadow-primary: 0 36px 100px 0 rgba(0, 0, 0, 0.40), 0 0 3px 0 rgba(0, 0, 0, 0.55);
+	--shadow-secondary: 0 8px 40px 0 rgba(0, 0, 0, 0.25), 0 0 3px 0 rgba(0, 0, 0, 0.55);
+	--shadow-tertiary: 0 36px 100px 0 rgba(0, 0, 0, 0.25), 0 0 3px 0 rgba(0, 0, 0, 0.55);
+	--shadow-quaternary: 0 4px 20px 0 rgba(0, 0, 0, 0.25), 0 0 3px 0 rgba(0, 0, 0, 0.55);
+}
+
+/* Timing Function */
+
 * {
 	transition-timing-function: var(--timing-function-ease);
 }
