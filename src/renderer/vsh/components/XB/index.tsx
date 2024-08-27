@@ -190,12 +190,6 @@ function XBCategory(props: XBCategoryProps) {
 }
 
 function XBIcon(Icon: XBItem["Icon"], settings: UserSettings) {
-	/* 
-	Icon ? typeof Icon == "string" ? <img
-									src={Icon.startsWith("icon:") ? `xb-icon://localhost/${settings.theme.icons}/${Icon.substring(5)}` : Icon}
-								/> : typeof Icon == "function" ? <Icon /> : <img src={Icon.src.startsWith("icon:") ? `xb-icon://localhost/${settings.theme.icons}/${Icon.src.substring(5)}` : Icon.src} style={{ ...Icon }} /> : <img
-									src={`xb-icon://localhost/${settings.theme.icons}/general.folder`}
-								/> */
 	switch (typeof Icon) {
 		case "string":
 			return <img
