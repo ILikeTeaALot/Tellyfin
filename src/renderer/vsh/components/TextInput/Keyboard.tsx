@@ -4,6 +4,8 @@ import "./keyboard.css";
 import { en } from "./layouts";
 import { KeyboardLayout } from "./layouts/interfaces";
 import { useInput } from "../../hooks";
+import { useDidUpdate } from "../../hooks/use-did-update";
+import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
 
 interface KeyboardProps {
 	active: boolean;
@@ -26,6 +28,10 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, o
 
 	// Refs
 	const layouts = useRef(en.layouts);
+
+	useDidUpdate(() => {
+		playFeedback(FeedbackSound.SelectionMove);
+	}, [activeKey, activeRow]);
 
 	useInput(active, (button) => {
 		// let newActive: [number, number] = [...activeKey];
@@ -134,12 +140,15 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, o
 				newActiveX = (Math.min(activeKey + 1, 9));
 				break;
 			case "X":
+				playFeedback(FeedbackSound.SelectionMove);
 				deleteChar();
 				break;
 			case "Y":
+				playFeedback(FeedbackSound.SelectionMove);
 				insertSpace();
 				break;
 			case "L1":
+				playFeedback(FeedbackSound.SelectionMove);
 				setCursorPosition(Math.max(cursorPosition - 1, 0));
 				break;
 			case "L2":
@@ -147,10 +156,12 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, o
 				updateLayout(!shift ? layouts.current.shift : layouts.current.standard);
 				break;
 			case "R1":
+				playFeedback(FeedbackSound.SelectionMove);
 				setCursorPosition(Math.min(cursorPosition + 1, currentInputValue.length));
 				break;
 			case "Enter":
 				if (activeRow < 4) {
+					playFeedback(FeedbackSound.Enter);
 					const key = keyboardLayout[activeRow][activeKey];
 					setValue(`${currentInputValue.slice(0, cursorPosition)}${key}${currentInputValue.slice(cursorPosition)}`);
 					setCursorPosition(cursorPosition + 1);
@@ -158,6 +169,7 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, o
 					console.log("function rows");
 					switch (activeRow) {
 						case 4:
+							playFeedback(FeedbackSound.Enter);
 							console.log("function row 1");
 							switch (activeKey) {
 								/** Shift */
@@ -209,15 +221,19 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, o
 						case 5:
 							switch (activeKey) {
 								case 0:
+									playFeedback(FeedbackSound.Enter);
 									setCursorPosition(0);
 									break;
 								case 1:
+									playFeedback(FeedbackSound.Enter);
 									setCursorPosition(currentInputValue.length);
 									break;
 								case 2:
+									playFeedback(FeedbackSound.Enter);
 									setCursorPosition(Math.max(cursorPosition - 1, 0));
 									break;
 								case 3:
+									playFeedback(FeedbackSound.Enter);
 									setCursorPosition(Math.min(cursorPosition + 1, currentInputValue.length));
 									break;
 								case 8:
