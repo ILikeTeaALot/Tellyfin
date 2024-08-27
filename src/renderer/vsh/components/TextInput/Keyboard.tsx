@@ -95,7 +95,8 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, o
 						break;
 				}
 				if (breakEarly) break;
-				newActiveX = (Math.max(activeKey - 1, 0));
+				// newActiveX = (Math.max(activeKey - 1, 0)); // Old Style
+				newActiveX = (activeKey + 9) % 10;
 				break;
 			case "PadRight":
 			case "ArrowRight":
@@ -137,7 +138,8 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, o
 						break;
 				}
 				if (breakEarly) break;
-				newActiveX = (Math.min(activeKey + 1, 9));
+				// newActiveX = (Math.min(activeKey + 1, 9)); // Old Style
+				newActiveX = (activeKey + 1) % 10;
 				break;
 			case "X":
 				playFeedback(FeedbackSound.SelectionMove);
