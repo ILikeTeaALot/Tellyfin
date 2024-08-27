@@ -25,8 +25,7 @@ function refreshInterval(latest?: VideoContextType) {
 export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 	const [DEBUG_TIME, setDebugTime] = useState(0);
 	const [videoState, setVideoState] = useState(defaultVideoState);
-	const mpvState = useSWR("mpv_state", () => (window.electronAPI.invoke<VideoContextType>("mpv_status")), { fallbackData: defaultVideoState, refreshInterval });
-	const { data, mutate } = mpvState;
+	const { data, mutate} = useSWR("mpv_state", () => (window.electronAPI.invoke<VideoContextType>("mpv_status")), { fallbackData: defaultVideoState, refreshInterval });
 	useEffect(() => {
 		if (data) {
 			if (!data.jellyfinData) {
@@ -44,6 +43,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					if (data.status.playbackStatus == PlaybackStatus.Stopped) {
 						// reinitAudioSystem();
 						jellyfinStopped(data.mediaType.id, data.mediaType.session, data.position.time.position);
+						// window.electronAPI.invoke("transport_command", { command: "Stop" });
 					} else {
 						jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 					}
@@ -53,6 +53,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 				jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 				if (data.status.playbackStatus == PlaybackStatus.Stopped) {
 					jellyfinStopped(data.mediaType.id, data.mediaType.session, data.position.time.position);
+					// window.electronAPI.invoke("transport_command", { command: "Stop" });
 				}
 			}
 			setDebugTime(data.position.time.position);
@@ -65,7 +66,9 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 	const playback_status = data?.status?.playbackStatus;
 	useEffect(() => {
 		if (playback_status == PlaybackStatus.Stopped) {
-			window.electronAPI.invoke("play_background");
+			window.electronAPI.invoke("transport_command", { command: "Stop" }).then(() => {
+				window.electronAPI.invoke("play_background");
+			});
 		} else {
 			window.electronAPI.invoke("stop_background");
 		}
@@ -73,10 +76,9 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 	useEffect(() => {
 		switch (playback_status) {
 			case PlaybackStatus.Stopped:
-				window.setTimeout(() => reinitAudioSystem(), 1000);
+				window.setTimeout(() => reinitAudioSystem(), 2000);
 				break;
 			case PlaybackStatus.Paused:
-				break;
 			case PlaybackStatus.Playing:
 				window.electronAPI.invoke("stop_background");
 				break;
@@ -108,7 +110,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 				case "Deprecated":
 					break;
 				case "EndFile":
-					window.setTimeout(() => reinitAudioSystem(), 1000);
+					window.setTimeout(() => reinitAudioSystem(), 2000);
 					mutate(current => {
 						if (current) {
 							if (current.mediaType?.type == "Jellyfin" && payload.endFile == mpv_end_file_reason.MPV_END_FILE_REASON_EOF) {
@@ -117,6 +119,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 								const playSessionId = current.mediaType.id;
 								setDebugTime(current.position.time.position);
 								setTimeout(() => jellyfinStopped(id, playSessionId, position), 1000);
+								window.electronAPI.invoke("transport_command", { command: "Stop" });
 								// throw new Error(`Time: ${current.position.time.position}`);
 							}
 							return {
@@ -163,11 +166,11 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					{JSON.stringify(videoState.mediaType ?? {})}
 				</div> */}
 				{/* <div>
-					{JSON.stringify(mpvState?.data?.audio ?? {})}
-					{JSON.stringify(mpvState?.data?.tracks ?? {})}
+					{JSON.stringify(data?.audio ?? {})}
+					{JSON.stringify(data?.tracks ?? {})}
 				</div> */}
 				{/* <div>
-					{JSON.stringify(mpvState?.data?.mediaType ?? {})}
+					{JSON.stringify(data?.mediaType ?? {})}
 				</div> */}
 				{/* <div>
 					{JSON.stringify(videoState ?? {})}
