@@ -4,6 +4,7 @@ members = [
 	"crates/bass",
 	"crates/libtellyfin",
 	"crates/list-dvd",
+	"crates/start-tellyfin",
 	"crates/tellyfin-plugin",
 	"src-tauri",
 ]
