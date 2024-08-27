@@ -9,6 +9,7 @@ import { useDidUpdate } from "../../hooks/use-did-update";
 import { GAP, SELECTED_SCALE, UNSELECTED_SCALE, XB_CATEGORY_GAP, XB_CATEGORY_WIDTH, XB_ITEM_HEIGHT } from "./shared";
 import { SettingsContext } from "../../context/Settings";
 import { OverflowTextScroll } from "../TextScroll";
+import type { UserSettings } from "../../settings/types";
 
 const OFFSET_HAS_NAVIGATED = 480 - (XB_CATEGORY_WIDTH / 2 + XB_CATEGORY_GAP);
 // const OFFSET_SELECTED_CATEGORY = (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP) - OFFSET_HAS_NAVIGATED;
@@ -142,10 +143,11 @@ function XBCategory(props: XBCategoryProps) {
 		}
 	}, [data, selected]);
 	if (!data) return null;
+	const iconOffset = nav_position == 0 ? 0 : OFFSET_SELECTED_CATEGORY + (0 * (XB_CATEGORY_WIDTH / 2 + XB_CATEGORY_GAP)) + (-1 * XB_CATEGORY_GAP) + (XB_CATEGORY_WIDTH / 2);
 	const finalOffset = OFFSET_SELECTED_CATEGORY + ((nav_position + 1) * (XB_CATEGORY_WIDTH / 2 + XB_CATEGORY_GAP)) + ((nav_position) * XB_CATEGORY_GAP) + (nav_position == -1 ? XB_CATEGORY_WIDTH / 2 : 0);
 	return (
 		<div class={is_selected ? "xb-category selected" : "xb-category"} style={{ translate: `${x}px` }}>
-			<div class={first ? "xb-category-icon first" : last ? "xb-category-icon last" : "xb-category-icon"} style={{ translate: !active && is_selected ? finalOffset : 0, opacity: nav_position >= -1 ? 1 : 0 }}>
+			<div class={first ? "xb-category-icon first" : last ? "xb-category-icon last" : "xb-category-icon"} style={{ translate: !active && is_selected ? iconOffset : 0, opacity: nav_position >= -1 ? 1 : 0 }}>
 				<img src={icon ? icon : `xb-icon://localhost/${settings.theme.icons}/root.${id}`} />
 				<span class="xb-category-title">{name}</span>
 			</div>
@@ -166,11 +168,7 @@ function XBCategory(props: XBCategoryProps) {
 					return (
 						<div class={item_selected ? "xb-item selected" : "xb-item"} style={{ translate: `${!active && is_selected && item_selected ? finalOffset : 0}px ${y}px` }} key={item.id || index}>
 							<div class="xb-item-icon" style={{ scale: item_selected ? SELECTED_SCALE.toString() : UNSELECTED_SCALE.toString() }}>
-								{Icon ? typeof Icon == "string" ? <img
-									src={Icon.startsWith("icon:") ? `xb-icon://localhost/${settings.theme.icons}/${Icon.substring(5)}` : Icon}
-								/> : typeof Icon == "function" ? <Icon /> : <img src={Icon.src.startsWith("icon:") ? `xb-icon://localhost/${settings.theme.icons}/${Icon.src.substring(5)}` : Icon.src} style={{ ...Icon }} /> : <img
-									src={`xb-icon://localhost/${settings.theme.icons}/general.folder`}
-								/>}
+								{XBIcon(Icon, settings)}
 							</div>
 							<div class="xb-item-info" style={{
 								// transitionDuration: showUnselectedTitles ? "0ms" : "var(--transition-long)",
@@ -189,4 +187,35 @@ function XBCategory(props: XBCategoryProps) {
 			</div>
 		</div>
 	);
+}
+
+function XBIcon(Icon: XBItem["Icon"], settings: UserSettings) {
+	/* 
+	Icon ? typeof Icon == "string" ? <img
+									src={Icon.startsWith("icon:") ? `xb-icon://localhost/${settings.theme.icons}/${Icon.substring(5)}` : Icon}
+								/> : typeof Icon == "function" ? <Icon /> : <img src={Icon.src.startsWith("icon:") ? `xb-icon://localhost/${settings.theme.icons}/${Icon.src.substring(5)}` : Icon.src} style={{ ...Icon }} /> : <img
+									src={`xb-icon://localhost/${settings.theme.icons}/general.folder`}
+								/> */
+	switch (typeof Icon) {
+		case "string":
+			return <img
+				src={Icon.startsWith("icon:") ?
+					Icon.includes("/") ? `xb-icon://localhost/${Icon.substring(5)}` : `xb-icon://localhost/${settings.theme.icons}/${Icon.substring(5)}`
+					:
+					Icon}
+			/>;
+		case "object":
+			return <img
+				src={Icon.src.startsWith("icon:") ?
+					Icon.src.includes("/") ? `xb-icon://localhost/${Icon.src.substring(5)}` : `xb-icon://localhost/${settings.theme.icons}/${Icon.src.substring(5)}`
+					: Icon.src}
+				style={{ ...Icon }}
+			/>;
+		case "function":
+			return <Icon />;
+		case "undefined":
+			return <img
+				src={`xb-icon://localhost/${settings.theme.icons}/general.folder`}
+			/>;
+	}
 }
