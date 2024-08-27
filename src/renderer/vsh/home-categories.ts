@@ -1,10 +1,10 @@
 import type { XBCategoryData } from "./components/XB";
 
 export const categories: XBCategoryData[] = [
-	// {
-	// 	key: "system",
-	// 	name: "System",
-	// },
+	{
+		key: "system",
+		name: "System",
+	},
 	{
 		key: "settings",
 		name: "Settings",
@@ -30,10 +30,10 @@ export const categories: XBCategoryData[] = [
 	// 	key: "tv",
 	// 	name: "TV & Video",
 	// },
-	{
-		key: "services",
-		name: "Video Streaming",
-	},
+	// {
+	// 	key: "services",
+	// 	name: "Video Streaming",
+	// },
 	// {
 	// 	key: "live_tv",
 	// 	name: "Live TV",
@@ -46,8 +46,8 @@ export const categories: XBCategoryData[] = [
 		key: "network",
 		name: "Network",
 	},
-	{
-		key: "friends",
-		name: "Friends",
-	},
+	// {
+	// 	key: "friends",
+	// 	name: "Friends",
+	// },
 ]

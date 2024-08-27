@@ -26,9 +26,9 @@ export async function getXBarContent([_, category]: [
 	string,
 ]): Promise<CategoryContent> {
 	switch (category) {
-		case "network":
-		case "social":
-			return { content: [] };
+		// case "network":
+		// case "social":
+		// 	return { content: [] };
 		case "games":
 			return {
 				content: [
@@ -36,7 +36,7 @@ export async function getXBarContent([_, category]: [
 						id: "com.steampowered",
 						name: "Steam",
 						desc: "Your Steam library – Coming soon!",
-						Icon: "/SteamFolder5.png",
+						Icon: "icon:games.steam",
 					},
 				],
 			};
@@ -132,22 +132,33 @@ export async function getXBarContent([_, category]: [
 				content: [
 					{
 						id: "system.power.shutdown",
-						name: "Power Off",
+						// name: "Power Off",
+						name: "Exit Tellyfin",
 						Icon: "icon:system.power_off",
-						desc: "Close all applications and turn off the system. Select this before unplugging the AC power cord.",
+						// desc: "Close all applications and turn off the system. Select this before unplugging the AC power cord.",
+						desc: "Closes Tellyfin. Select this before unplugging the AC power cord.",
 					},
 					{
 						id: "system.power.restart",
 						name: "Restart",
 						Icon: "icon:system.restart",
-						desc: "Close all applications and restart the system.",
+						// desc: "Close all applications and restart the system.",
+						desc: "Closes and then re-opens Tellyfin.",
 					},
 					// { id: "system.power.sleep", name: "Enter Sleep Mode", Icon: "icon:system.sleep" },
 				],
 			};
 		default:
 			// TODO: Rust invoke
-			return { content: [] };
+			return {
+				content: [
+					{
+						id: "system.none",
+						name: "No Content",
+						Icon: "icon:system.unknown",
+					}
+				]
+			};
 	}
 }
 
@@ -316,7 +327,7 @@ async function getXBarMusicContent(): Promise<CategoryContent> {
 				(To disable Alto features, open the menu and select “Hide Alto”)`,
 				// Press Y/Triangle and select “Hide Alto” to not see this again.`,
 				id: "music.alto",
-				Icon: "/AltoIcon.png",
+				Icon: "icon:system/music.alto",
 			},
 			...musicLibraries.map((item) => ({
 				name: item.Name ?? "Unknown",
