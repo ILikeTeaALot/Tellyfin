@@ -118,26 +118,33 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 			{children}
 		</>
 	);
-	// const transitionStandard = useRef(300);
-	// const listeners = useRef(new Set<GamepadEventListener>());
-	// const releaseListeners = useRef(new Set<GamepadEventListener>());
-	const buttonsPressedRightNow = useRef(new Set<string>());
-	const axesActiveRightNow = useRef(new Set<GamepadButton>());
+
+	// const gamepads = useRef<ReturnType<typeof navigator.getGamepads>>(navigator.getGamepads());
+
 	const frame = useRef<number | undefined>();
 	/** Last "update tick" in milliseconds */
 	const last = useRef(performance.now());
-	const gamepads = useRef<ReturnType<typeof navigator.getGamepads>>(navigator.getGamepads());
+	// const transitionStandard = useRef(300);
+	// const listeners = useRef(new Set<GamepadEventListener>());
+	// const releaseListeners = useRef(new Set<GamepadEventListener>());
+	const buttonsPressedRightNow = useRef<Record<string, Set<string>>>({});
+	const axesActiveRightNow = useRef<Record<string, Set<GamepadButton>>>({});
 	// For some reason using a constant for these causes issues. No clue why!
 	// const button_countdowns = useRef<number[]>([1].fill(1, 0, 50));
-	const button_countdowns = useRef<{ [key: string]: number; }>({});
-	const axis_countdowns = useRef<number[]>([0].fill(-1, 0, 50));
-	const buttonPresses = useRef<{ [key: string]: number; }>({});
-	const axisActivations = useRef<number[]>([0].fill(0, 0, 50));
+	const button_countdowns = useRef<Record<string, Record<string, number>>>({});
+	const buttonPresses = useRef<Record<string, Record<string, number>>>({});
+	// Axes
+	const axis_countdowns = useRef<Record<string, number[]>>({});
+	const axisActivations = useRef<Record<string, number[]>>({});
 
 	// STATES
 	const [transitionDuration, _setTransitionDuration] = useState(300);
-	const setTransitionDuration = useCallback((value: number) => { 
+	const setTransitionDuration = useCallback((value: number /* | ((current: number) => number) */) => { 
 		window.__INTERNAL_TELLYFIN_GAMEPAD__.transition = Math.max(0, Math.min(value - 40, 400));
+		// if (typeof value == "number") {
+		// } else {
+		// 	window.__INTERNAL_TELLYFIN_GAMEPAD__.transition = Math.max(0, Math.min(value(window.__INTERNAL_TELLYFIN_GAMEPAD__.transition) - 40, 400));
+		// }
 		_setTransitionDuration(value)
 	}, [_setTransitionDuration])
 	const [pageIsFocused, setPageIsFocused] = useState(document.hasFocus());
@@ -148,10 +155,13 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 			console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
 				e.gamepad.index, e.gamepad.id,
 				e.gamepad.buttons.length, e.gamepad.axes.length);
+			// gamepads.current = navigator.getGamepads();
 		};
 		window.addEventListener("gamepadconnected", handleGamepadCon);
+		window.addEventListener("gamepaddisconnected", handleGamepadCon)
 		return () => {
 			window.removeEventListener("gamepadconnected", handleGamepadCon);
+			window.removeEventListener("gamepaddisconnected", handleGamepadCon);
 		};
 	}, []);
 
@@ -179,34 +189,47 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 			/** Milliseconds */
 			const delta = now - last.current;
 			// if (delta > 17) console.log("delta:", delta);
-			gamepads.current = navigator.getGamepads();
+			// gamepads.current = navigator.getGamepads();
 			const eventsToCall: /* (keyof globalThis.Gamepad["buttons"]) */any[] = [];
 			const releaseEventsToCall: /* (keyof globalThis.Gamepad["buttons"]) */any[] = [];
-			for (const index in gamepads.current) {
-				const gamepad = gamepads.current[index];
+			const gamepads = navigator.getGamepads();
+			for (const index in gamepads) {
+				const gamepad = gamepads[index];
 				// console.log(gamepad);
 				if (gamepad) {
+					const id = gamepad.index;
+					// ---- Super important intialisation thingamies ---- //
+					if (!axesActiveRightNow.current[id]) axesActiveRightNow.current[id] = new Set();
+					if (!buttonsPressedRightNow.current[id]) buttonsPressedRightNow.current[id] = new Set();
+	
+					if (!buttonPresses.current[id]) buttonPresses.current[id] = {};
+					if (!button_countdowns.current[id]) button_countdowns.current[id] = {};
+	
+					if (!axis_countdowns.current[id]) axis_countdowns.current[id] = [0].fill(200, 0, 50);
+					if (!axisActivations.current[id]) axisActivations.current[id] = [0].fill(0, 0, 50);
+					// -------------------------------------------------- //
 					for (const button in gamepad.buttons) {
 						if (!gamepad.buttons[button].pressed) {
-							buttonPresses.current[button] = 0;
-							button_countdowns.current[button] = -1;
-							if (buttonsPressedRightNow.current.has(button)) {
-								buttonsPressedRightNow.current.delete(button);
+							buttonPresses.current[id][button] = 0;
+							button_countdowns.current[id][button] = 0;
+							if (buttonsPressedRightNow.current[id].has(button)) {
+								buttonsPressedRightNow.current[id].delete(button);
 								releaseEventsToCall.push(button);
 							}
-						} else if (button_countdowns.current[button] > 0) {
+						} else if (button_countdowns.current[id][button] > 0) {
 							// console.log("countdown:", countdown.current);
 							// console.log(delta);
-							button_countdowns.current[button] = Math.max(button_countdowns.current[button] - delta, 0);
+							button_countdowns.current[id][button] = Math.max(button_countdowns.current[id][button] - delta, 0);
 							// console.log(countdown.current[button]);
 						} else {
 							if (gamepad.buttons[button].pressed) {
-								const time = buttonAcceleration(buttonPresses.current[button]);
-								button_countdowns.current[button] = time;
+								const time = buttonAcceleration(buttonPresses.current[id][button]);
+								button_countdowns.current[id][button] = time;
 								// setMovementInterval(time);
+								// setTransitionDuration(c => Math.min(c, time));
 								setTransitionDuration(time);
-								buttonsPressedRightNow.current.add(button);
-								buttonPresses.current[button]++;
+								buttonsPressedRightNow.current[id].add(button);
+								buttonPresses.current[id][button]++;
 								// console.log(gamepad.buttons[button]);
 								// console.log(button);
 								// console.log(GamepadButton[button]);
@@ -223,20 +246,22 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 						if (!button) continue;
 						const countdown_index = button;
 						if (!active) {
-							axisActivations.current[button] = 0;
-							axis_countdowns.current[countdown_index] = -1;
-							if (axesActiveRightNow.current.has(button)) {
-								axesActiveRightNow.current.delete(button);
+							axisActivations.current[id][button] = 0;
+							axis_countdowns.current[id][countdown_index] = 0;
+							if (axesActiveRightNow.current[id].has(button)) {
+								axesActiveRightNow.current[id].delete(button);
 								releaseEventsToCall.push(button);
 							}
-						} else if (axis_countdowns.current[countdown_index] > 0) {
-							axis_countdowns.current[countdown_index] = Math.max(axis_countdowns.current[countdown_index] - delta, 0);
+						} else if (axis_countdowns.current[id][countdown_index] > 0) {
+							axis_countdowns.current[id][countdown_index] = Math.max(axis_countdowns.current[id][countdown_index] - delta, 0);
 						} else if (active) {
-							const time = axisAcceleration(axisActivations.current[button]) / (Math.abs(value) * 1.5);
-							axis_countdowns.current[countdown_index] = time;
+							// Math.abs(value) > 0.4
+							const time = axisAcceleration(axisActivations.current[id][button]) / (Math.abs(value) * 1.5);
+							axis_countdowns.current[id][countdown_index] = time;
+							// throw new Error(`Time to repeat: ${time}`);
 							setTransitionDuration(time);
-							axesActiveRightNow.current.add(button);
-							axisActivations.current[button]++;
+							axesActiveRightNow.current[id].add(button);
+							axisActivations.current[id][button]++;
 							eventsToCall.push(button);
 						}
 					}
@@ -257,7 +282,13 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 				let event = new KeyboardEvent("keydown", { key: GamepadButton[button] });
 				window.dispatchEvent(event);
 			}
-			if (buttonsPressedRightNow.current.size == 0 && axesActiveRightNow.current.size == 0) {
+			if (navigator.getGamepads().every((pad, index, arr) => {
+				if (pad){
+					if (buttonsPressedRightNow.current[pad.id] && axesActiveRightNow.current[pad.id])
+						return buttonsPressedRightNow.current[pad.id].size == 0 && axesActiveRightNow.current[pad.id].size == 0;
+				}
+				return true;
+			})) {
 				setTransitionDuration(400);
 			}
 		};
@@ -270,6 +301,10 @@ export const GamepadContextProvider: React.FunctionComponent<React.PropsWithChil
 	return (
 		// <GamepadContext.Provider value={contextValue.current}>
 		<div style={{ "--standard-duration": `${transitionStandard}ms`, "--transition-short": `${Math.max(0, Math.min((transitionDuration / 2) - 20, 150))}ms` }}>
+			{/* {JSON.stringify(navigator.getGamepads().map(gamepad => ({
+				index: gamepad?.index,
+				id: gamepad?.id,
+			})))} */}
 			<MovementSpeed.Provider value={transitionStandard}>
 				{children}
 			</MovementSpeed.Provider>
