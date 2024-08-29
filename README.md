@@ -10,21 +10,13 @@ git clone git@github.com:ILikeTeaALot/Tellyfin.git
 # Pull submodules (open an issue if you get an access/permission error.)
 git submodule update --init --recursive
 # JS dependencies
-yarn install
+pnpm install
 ```
 
 > [!WARNING]
 > Tellyfin is **very** early in development. It also only works on Windows at this time.
 >
 > READ THIS BEFORE ATTEMPTING TO RUN Tellyfin/VSH
-
-> [!IMPORTANT]
-> ###### ADDITIONAL
->
-> For reasons unknown, and possibly only on my system (but I'm putting a note here to be safe), `cargo tauri dev` *does not work.* In order to run Tellyfin at this time, open 2 terminals in the project root:
->
-> - [Terminal 1] Run `yarn`/`yarn install` if you have not already, and then run `yarn dev`.
-> - [Terminal 2] Run `cargo run`.
 
 # Current Status
 
@@ -62,15 +54,17 @@ yarn install
 - [ ] Steam
 	- [ ] Library detection
 	- [ ] Game launching
+	- [x] Switching back-and-forth between Steam and Tellyfin (see the README in `crates/start-tellyfin`).
 - [ ] Emulators
-- [ ] Plug-in architecture(s)
+- [ ] Plug-in architecture(s) (which kind(s) to use is still undecided.)
 	- [ ] Daemon/IPC
 	- [ ] DLL
 	- [ ] Lua/Scheme
+	- [ ] Node module
 
 ## Details
 
-At present, playback and playback-control of media on the local filesystem works, selected by browsing through a local Jellyfin server.
+At present, playback and playback-control of media works, selected by browsing a Jellyfin server (see note just below).
 
 > [!IMPORTANT]
 > Jellyfin user authentication details must be placed in `[PROJECT ROOT]\vsh\src\context\jellyfin-settings.json`. A template is provided in the adjacent `jellyfin-settings-example.json`. This is a temporary situation until the media server setup wizard is completed.
@@ -88,16 +82,12 @@ The User Interface design is a top-level interface based on the [XMB](https://en
 >
 > \*Other than image resolution. That's hardcoded too and may result in a small amount of artifacting at 4K.
 
-> [!TIP]
-> ### XMB Icons
->
-> The example themes (PS3 icons and sounds + PS2 background audio) will be available soon™.
-
 ## Requirements
 
 1. A working Rust toolchain for compilation.
-2. Node.js v20 or newer + Yarn (other package managers *might* work).
+2. Node.js v20 or newer + PNPM (other package managers *might* work).
 3. [libmpv](#libmpv).
+3. [BASS](#BASS).
 4. A running Jellyfin server.
 
 ### libmpv
@@ -106,7 +96,7 @@ Download libmpv from [here](https://sourceforge.net/projects/mpv-player-windows/
 
 In order to run the application, you will need a copy of `mpv.dll` and `mpv.lib` (Rename `mpv.dll.a` to `mpv.lib`, because the GNU toolchain is a bit funky on Windows.)
 
-If you have one of the following CPUs, download the latest `libmpv/mpv-dev-x86_64-v3-[date]-git-xxx.7z`:
+If you have one of the following CPUs, download the latest `libmpv/mpv-dev-x86_64-v3-[date]-git-xxx.7z` (note the `v3` in the name):
 
 Intel: Haswell or newer with AVX2 (September 2013 - Present)
 or Atom "Gracemont" or newer (Nov 2021 - Present)
@@ -114,3 +104,33 @@ or Atom "Gracemont" or newer (Nov 2021 - Present)
 AMD: "Excavator" or any Ryzen CPU (c. June 2015 - Present)
 
 If you do not have one of the above CPUs, download the latest `libmpv/mpv-dev-x86_64-[date]-git-xxx.7z`
+
+If you plan on playing DVDs, you will also need `libdvdcss`.
+
+### BASS
+
+Go to [Un4Seen.com](https://www.un4seen.com/bass.html) and download the Win32 version of BASS and the following add-ons:
+
+Official Non-Codec Addons
+
+ - BASSmix !IMPORTANT
+ - BASSCD
+ - BASSloud
+ - BASSWASAPI
+
+Official Codecs
+
+ - BASSALAC
+ - BASSAPE
+ - BASSDSD
+ - BASSFLAC
+ - BASSHLS
+ - BASSOPUS
+ - BASSWEBM
+ - BASSWV
+
+Third Party
+
+ - BASS_MPC
+
+They're not all currently actively used, but BASS is planned to form the backbone of music playback so they will be required for wide format support.

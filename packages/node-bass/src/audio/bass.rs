@@ -5,7 +5,7 @@ use bass::{bass::Bass, bass_sys::{BASS_GetDevice, BASS_IsStarted, BASS_Start, BA
 use crate::util::SafeLock;
 
 pub const DEFAULT_PLUGINS: Option<&[&str]> = Some(&[
-	"bass_mpc", "bass_spx", "bass_tta", "bassape", "bassdsd", "bassflac", "basshls", "bassopus", "basswebm", "basswv",
+	"bass_mpc", "bassape", "bassdsd", "bassflac", "basshls", "bassopus", "basswebm", "basswv",
 ]);
 
 #[allow(unused)]
