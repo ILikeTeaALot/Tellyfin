@@ -82,6 +82,42 @@ The User Interface design is a top-level interface based on the [XMB](https://en
 >
 > \*Other than image resolution. That's hardcoded too and may result in a small amount of artifacting at 4K.
 
+## Screenshots
+
+### Video Category
+
+![Video Section](./.README/screenshots/XMB/Video.png)
+
+### TV Shows List
+
+![TV Shows](./.README/screenshots/TV_Shows_1.png)
+
+#### Menu
+
+![TV Shows with Menu open](./.README/screenshots/TV_Shows_1_-_Menu.png)
+
+### Show Info/Episodes
+
+![Episodes](./.README/screenshots/Episodes.png)
+
+#### Menu
+
+![TV Show Episodes with Menu open](./.README/screenshots/Episodes_-_Menu.png)
+
+### Video Controls
+
+![Playback Controls](./.README/screenshots/Video_Controls.png)
+
+### Settings
+
+![Settings](./.README/screenshots/XMB/Settings.png)
+
+### Settings List
+
+![Settings List for Themes](./.README/screenshots/XMB/Theme_Settings.png)
+
+(More screenshots available in `.README/screenshots`)
+
 ## Requirements
 
 1. A working Rust toolchain for compilation.
