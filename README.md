@@ -92,10 +92,6 @@ The User Interface design is a top-level interface based on the [XMB](https://en
 
 ![TV Shows](./.README/screenshots/TV_Shows_1.png)
 
-#### Menu
-
-![TV Shows with Menu open](./.README/screenshots/TV_Shows_1_-_Menu.png)
-
 ### Show Info/Episodes
 
 ![Episodes](./.README/screenshots/Episodes.png)
