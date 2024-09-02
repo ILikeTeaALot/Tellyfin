@@ -84,7 +84,7 @@
 			</Description>
 			<Options>
 				<Option value="Convert">Always 48kHz</Option>
-				<Option value="Upsample">Upscale <Def>(44.1/48kHz upsampled to 88.2/96/176.4/192kHz)</Def></Option>
+				<Option value="Upsample">Upsample <Def>(44.1/48kHz upsampled to 88.2/96/176.4/192kHz)</Def></Option>
 				<Option value="Auto">Auto <Def>(Try to match file, typically 44.1/48kHz)</Def></Option>
 				<Option value="Force">Forced <Def>(Force output frequency to match file)</Def></Option>
 			</Options>
