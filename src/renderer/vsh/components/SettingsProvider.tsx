@@ -20,7 +20,7 @@ const init = async () => {
 		// const current = settings.content;
 		if (!settings.content) throw new Error("No settings returned (TODO: Implement settings!)");
 		if (settings?.status == Status.FileCreated) {
-			window.electronAPI.invoke("save_settings", { content: JSON.stringify(default_user_settings), name });
+			window.electronAPI.invoke("save_settings", { content: default_user_settings, name });
 			return default_user_settings;
 		} else {
 			return settings.content;
@@ -48,11 +48,11 @@ export function SettingsProvider({ children }: { children: ComponentChildren; })
 			setSettingsLoaded(false);
 		}
 	}, [settings]);
-	const update = useCallback(async <T extends keyof UserSettings>(area: T, value: Partial<UserSettings[T]>) => {
+	const update = useCallback(async <T extends keyof UserSettings>(table: T, value: Partial<UserSettings[T]>) => {
 		mutate((settings) => {
 			if (settings) {
-				const newSettings = { ...settings, [area]: { ...settings[area], ...value } };
-				window.electronAPI.invoke("save_settings", { content: JSON.stringify(newSettings), name });
+				const newSettings = { ...settings, [table]: { ...settings[table], ...value } };
+				window.electronAPI.invoke("save_settings", { content: newSettings, name });
 				return newSettings;
 			}
 		}, { revalidate: false });

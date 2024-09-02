@@ -185,7 +185,7 @@ type SettingOptionSet = {
 	kind: SettingKind.Wizard;
 }
 
-type NewType = [CategoryContent & { root_key: string; }, Array<SettingOptionSet>] | [null, null];
+type NewType = [CategoryContent & { root_key: RootKey; }, Array<SettingOptionSet>] | [null, null];
 
 export const templateReplaceRegExp = /{([\w.]*)}+/g;
 

@@ -1,8 +1,11 @@
-import { BackgroundType, Bool, HomeStyle, type UserSettings } from "./types";
+import { BackgroundType, Bool, HomeStyle, TimeDisplay, type UserSettings } from "./types";
 
 export const default_user_settings: UserSettings = {
 	home: {
 		style: HomeStyle.XMB,
+	},
+	interface: {
+		timecode: TimeDisplay.LongTime,
 	},
 	music: {
 		preferred_library: "Alto",

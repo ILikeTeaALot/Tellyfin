@@ -20,9 +20,18 @@ export enum HomeStyle {
 	List = "List",
 }
 
+export enum TimeDisplay {
+	LongTime = "LongTime",
+	Minutes = "Minutes",
+	ShortTime = "ShortTime",
+}
+
 export type UserSettings = {
 	home: {
 		style: HomeStyle;
+	};
+	interface: {
+		timecode: TimeDisplay
 	};
 	music: {
 		preferred_library: "Alto" | string;
@@ -59,4 +68,5 @@ export type UserSettings = {
 		"24hz": Bool;
 		auto_play: Bool;
 	};
+	[key: string]: Record<string, any>;
 }
