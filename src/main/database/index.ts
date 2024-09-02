@@ -1,4 +1,4 @@
-import Database from "better-sqlite3";
+import Database, { type RunResult } from "better-sqlite3";
 import path from "node:path";
 import { app } from "electron";
 import { Err, Ok, type Result } from "~/shared/types/result";
@@ -9,6 +9,21 @@ class TellyfinDatabase {
 		const dbPath = path.join(app.getPath("userData"), "/data.db");
 		console.log(dbPath);
 		this.#database = new Database(dbPath);
+	}
+
+	transaction(handler: Parameters<typeof Database["prototype"]["transaction"]>[0]) {
+		this.#database.transaction(handler);
+	}
+
+	exec(s: string, params: any): Result<RunResult> {
+		try {
+			const stmt = this.#database.prepare(s);
+			const res = stmt.run(params);
+			return Ok(res);
+		} catch (e) {
+			console.error(e);
+			return Err(e);
+		}
 	}
 
 	row<T>(q: string, params: Array<any>): Result<T> {
