@@ -90,6 +90,12 @@ export async function getXBarContent([_, category]: [
 						desc: "Adjusts theme settings for Tellyfin, including icons, background, and fonts.",
 					},
 					{
+						id: "system.settings.interface",
+						name: "Interface Settings",
+						Icon: "icon:settings.plugins",
+						desc: "Adjusts settings for the user interface.",
+					},
+					{
 						id: "system.settings.video",
 						name: "Video Settings",
 						desc: "Adjusts settings for the MPV video player.",

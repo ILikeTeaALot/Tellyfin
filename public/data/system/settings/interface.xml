@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TellyXML version="1.0">
+	<Items class="SettingList" key="interface" scope="User">
+		<Item class="Setting" key="timecode" kind="Select">
+			<Title>Video Duration Display</Title>
+			<Description>Sets the visual style of video durations.</Description>
+			<Options>
+				<Option value="LongTime">Long <Def>(ex. 1 Hour, 23 Minutes and 46 Seconds)</Def></Option>
+				<Option value="Minutes">Minutes <Def>(ex. 87 Minutes)</Def></Option>
+				<Option value="ShortTime">Short <Def>(ex. 1:23:46)</Def></Option>
+			</Options>
+		</Item>
+	</Items>
+</TellyXML>
