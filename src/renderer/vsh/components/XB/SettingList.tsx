@@ -237,7 +237,7 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 					let src = option.getAttribute("src");
 					if (src) {
 						const parsed = new URL(src);
-						const options = await DB.processQuery(
+						const options = await window.DB.processQuery(
 							parsed.searchParams.get("table")!,
 							parsed.searchParams.get("cond")?.replace(/:/g, "="),
 							parsed.searchParams.get("scond"),

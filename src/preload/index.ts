@@ -2,7 +2,10 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { type IpcRendererEvent, contextBridge, ipcRenderer } from "electron";
+import type { UserSettings } from "~/renderer/vsh/settings/types";
 import type { MpvEvent } from "~/shared/events/mpv";
+
+import "./database";
 
 async function invoke<T = any>(command: string, args?: Record<string, any>): Promise<T> {
 	// throw new Error("Not implemented yet.");
@@ -14,6 +17,10 @@ function listenFor(channel: string, callback: (e: IpcRendererEvent) => void, err
 	return () => {
 		listener.removeListener(channel, callback);
 	};
+}
+
+async function getSetting<T>(table: keyof UserSettings, key: string): Promise<T | null> {
+	return ipcRenderer.invoke("get_setting", table, key);
 }
 
 function getMPVStatus() {
@@ -47,6 +54,5 @@ declare global {
 		__IS_DEV__: boolean;
 		// __VERSION__: string;
 		electronAPI: APIList;
-		windowId: "main" | "settings";
 	}
 }
