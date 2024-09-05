@@ -8,7 +8,6 @@ import { jellyfinStopped } from "../functions/stopped";
 import { reinitAudioSystem } from "../context/AudioFeedback";
 import { mpv_end_file_reason, type MpvEvent } from "~/shared/events/mpv";
 import type { IpcRendererEvent } from "electron";
-import { toHMS } from "../util/functions";
 
 export const MutateContext = createContext<KeyedMutator<VideoContextType>>(async () => undefined);
 
@@ -23,9 +22,9 @@ function refreshInterval(latest?: VideoContextType) {
 }
 
 export function MpvStateProvider(props: { children?: ComponentChildren; }) {
-	const [DEBUG_TIME, setDebugTime] = useState(0);
+	const [DEBUG_TIME, setDebugTime] = useState(0); // eslint-disable-line
 	const [videoState, setVideoState] = useState(defaultVideoState);
-	const { data, mutate} = useSWR("mpv_state", () => (window.electronAPI.invoke<VideoContextType>("mpv_status")), { fallbackData: defaultVideoState, refreshInterval });
+	const { data, mutate } = useSWR("mpv_state", () => (window.electronAPI.invoke<VideoContextType>("mpv_status")), { fallbackData: defaultVideoState, refreshInterval });
 	useEffect(() => {
 		if (data) {
 			if (!data.jellyfinData) {
@@ -93,11 +92,13 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					break;
 				case "StartFile":
 					mutate(current => current ? {
-						...current, status: { ...current?.status, playbackStatus: PlaybackStatus.Stopped }
+						...current, status: { ...current?.status, playbackStatus: PlaybackStatus.Playing }
 					} : current);
 					break;
 				case "FileLoaded":
-					mutate();
+					mutate(current => current ? {
+						...current, status: { ...current?.status, playbackStatus: PlaybackStatus.Playing }
+					} : current);
 					break;
 				case "VideoReconfig":
 				case "AudioReconfig":
