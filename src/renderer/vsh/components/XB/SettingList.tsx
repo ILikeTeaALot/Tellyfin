@@ -7,18 +7,21 @@ import { getXMLListContent } from "./list-content-fetcher";
 import { SettingsContext } from "../../context/Settings";
 import type { UserSettings } from "../../settings/types";
 import { useInput } from "../../hooks";
-import { DB } from "../../database";
+import { useNavigationFunctions, useNavPosition } from "../../hooks/routing";
+import { Wizard } from "../Wizard";
+import { getComponent } from "../../ComponentMap";
 
 export enum SettingKind {
+	None = "None",
 	List = "List",
 	Wizard = "Wizard",
 }
 
 export type XBSettingListProps = {
 	data_key: string;
-	nav_position: number;
-	onGoBack: () => void;
-	onNavigate: (item: XBItem) => void;
+	// nav_position: number;
+	// onGoBack: () => void;
+	// onNavigate: (item: XBItem) => void;
 };
 
 const DEFAULT_ROOT_DATA = {
@@ -41,14 +44,20 @@ const DEFAULT_ROOT_DATA = {
 export function SettingList(props: XBSettingListProps) {
 	const {
 		data_key,
-		nav_position,
+		// nav_position,
 		// onNavigate,
-		onGoBack,
+		// onGoBack,
 	} = props;
 	// const active = nav_position == 0;
 	const { settings, update } = useContext(SettingsContext);
 	// console.error(settings);
 	// const swr_key = useMemo(() => [data_key, settings] as const, [data_key, settings]);
+	const nav_position = useNavPosition();
+	const { back, forward, go, clear, pop, push } = useNavigationFunctions();
+	// const onNavigate = useCallback((item: XBItem) => { }, []);
+	const onGoBack = useCallback(() => {
+		back();
+	}, [back]);
 	// Oh the joys of javascript... (I wish I had Rust's enums here...)
 	const { data: document, isLoading, error, mutate } = useSWR(
 		data_key,
@@ -111,7 +120,7 @@ export function SettingList(props: XBSettingListProps) {
 		});
 	}, [update, mutate, root_key]);
 	const menu_cancel = useCallback(() => setMenuOpen(false), []);
-	const handleListNavigate = useCallback((_item: XBItem, index: number) => {
+	const handleListNavigate = useCallback((item: XBItem, index: number) => {
 		// Set and Open Option Menu
 		// getOptionsForSetting(item.id)
 		// 	.then(menu => {
@@ -129,14 +138,14 @@ export function SettingList(props: XBSettingListProps) {
 		const menu = menus[index];
 		if (menu.kind == SettingKind.Wizard) {
 			// Do something I haven't designed yet.
-		} else {
+			go(item.id, Wizard);
 			// menu.items = menu.items.map(item => ({ ...item, value: item.id }));
 			// music.[key] == system.settings:music.[key].[whatever]
 			// menu.default_item = menu.items.findIndex(v => v.id == item.id);
 			setMenu(menu);
 			setMenuLoaded(true);
 		}
-	}, [menus]);
+	}, [go, menus]);
 	useEffect(() => {
 		if (menuLoaded) {
 			setMenuLoaded(false);

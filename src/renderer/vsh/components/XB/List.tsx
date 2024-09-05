@@ -17,12 +17,12 @@ import { OverflowTextScroll } from "../TextScroll";
  * Either `data` OR `data_key` must be specified. If not you will just get an empty list
  */
 export type XBListProps = {
-	data?: Array<ContentItem>;
+	data?: Array<XBItem>;
 	data_key?: string;
 	default_item?: number;
 	hideValue?: boolean;
 	nav_position: number;
-	onGoBack: () => void;
+	onGoBack?: () => void;
 	onNavigate: (item: XBItem, index: number) => void;
 };
 
@@ -84,7 +84,7 @@ export function XBList(props: XBListProps) {
 		}
 	}, [data, selected, onNavigate]);
 	useInput(input_active, (button) => {
-		switch (button) {
+		if (onGoBack) switch (button) {
 			case "PadLeft":
 			case "ArrowLeft":
 			case "Back":
@@ -100,7 +100,7 @@ export function XBList(props: XBListProps) {
 	const categoryTranslate = (480 - (XB_CATEGORY_WIDTH / 2 + XB_CATEGORY_GAP)) + ((navPosition + 1) * (XB_CATEGORY_WIDTH + XB_CATEGORY_GAP)) + ((navPosition - 1) * XB_CATEGORY_GAP);
 	return (
 		<div class={active ? "xb-category selected" : "xb-category"} style={{ translate: `${categoryTranslate}px` }}>
-			<img class="xb-list-back-arrow" src={back} style={{ left: 0 - XB_CATEGORY_GAP }} />
+			{onGoBack && <img class="xb-list-back-arrow" src={back} style={{ left: 0 - XB_CATEGORY_GAP }} />}
 			<div class={"xb-category-content"} style={{ opacity: 1 }}>
 				{data.content.slice(startIndex, endIndex).map((item, _index) => {
 					const index = _index + startIndex;

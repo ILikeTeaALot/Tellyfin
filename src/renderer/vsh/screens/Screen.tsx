@@ -32,7 +32,7 @@ export function ViewScreen(props: NewScreenProps) {
 		case ContentType.Jellyfin:
 			return (
 				<div key={data.id} style={{ zIndex }}>
-					<JellyfinContent nav_position={nav_position} data={data} onNavigate={handleNavigate} />
+					<JellyfinContent /* nav_position={nav_position} */ data={data} /* onNavigate={handleNavigate} */ />
 				</div>
 			);
 		case ContentType.List:
@@ -45,7 +45,7 @@ export function ViewScreen(props: NewScreenProps) {
 			return (
 				<div key={data.id} style={{ zIndex }}>
 					{/* <ContentList nav_position={nav_position} data={data.content} onNavigate={handleNavigate} /> */}
-					<SettingList nav_position={nav_position} data_key={data.id} onGoBack={handleListGoBack} onNavigate={handleListNavigate} />
+					<SettingList /* nav_position={nav_position} */ data_key={data.id} /* onGoBack={handleListGoBack} onNavigate={handleListNavigate} */ />
 				</div>
 			);
 		case ContentType.Grid:

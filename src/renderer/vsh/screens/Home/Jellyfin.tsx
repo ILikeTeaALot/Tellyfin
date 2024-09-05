@@ -6,24 +6,40 @@ import { AppMode } from "../../context/AppState";
 import { AppState } from "../../AppStates";
 import { FilmDetail } from "./Films/FilmDetail";
 import { ContentGrid } from "../../components/ContentGrid";
-import type { ContentItem } from "../../components/Content/types";
+import { ContentType, type ContentItem } from "../../components/Content/types";
 import useSWR from "swr";
 import { newestScreenDataFetcher } from "./new-new-screen-data";
 import { XBList } from "../../components/XB/List";
 import type { XBItem } from "../../components/XB/content-fetcher";
 import { Loading } from "../../components/Loading";
 import { useInput } from "../../hooks";
+import { useNavigationFunctions, useNavPosition } from "../../hooks/routing";
+import type { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 
 export const TEXT_ITEM_HEIGHT = 56;
 
 export type JellyfinContentProps = {
-	nav_position: number;
-	data: ScreenContent;
-	onNavigate: (action: NavigateAction, item?: ContentItem) => void;
+	// nav_position: number;
+	data: { jellyfin_data?: BaseItemDto; id: string; };
+	// onNavigate: (action: NavigateAction, item?: ContentItem) => void;
 };
 
 export function JellyfinContent(props: JellyfinContentProps) {
-	const { nav_position, onNavigate } = props;
+	// const { nav_position, onNavigate } = props;
+	const nav_position = useNavPosition();
+	const { go, back } = useNavigationFunctions();
+	const onNavigate = useCallback((action: NavigateAction, item?: ContentItem) => {
+		switch (action) {
+			case NavigateAction.Enter:
+				if (item) go(item.id, JellyfinContent, { data: item });
+				return;
+			case NavigateAction.Back:
+				back();
+				return;
+			case NavigateAction.Play:
+				return;
+		}
+	}, [back, go]);
 	const state = useContext(AppMode);
 	const { data, isLoading, isValidating } = useSWR(`screen-data-${props.data.jellyfin_data?.Id ?? props.data.id}`, () => newestScreenDataFetcher("", props.data.jellyfin_data));
 	const handleListNavigate = useCallback((item: XBItem) => {
@@ -42,10 +58,10 @@ export function JellyfinContent(props: JellyfinContentProps) {
 	);
 	switch (props.data.jellyfin_data.Type) {
 		case "Series": return (
-			<TvSeries active={state == AppState.Home && nav_position == 0} nav_position={nav_position} data={props.data.jellyfin_data} onNavigate={props.onNavigate} />
+			<TvSeries active={state == AppState.Home && nav_position == 0} nav_position={nav_position} data={props.data.jellyfin_data} onNavigate={onNavigate} />
 		);
 		case "Movie": return (
-			<FilmDetail active={state == AppState.Home && nav_position == 0} nav_position={nav_position} data={props.data.jellyfin_data} onNavigate={props.onNavigate} />
+			<FilmDetail active={state == AppState.Home && nav_position == 0} nav_position={nav_position} data={props.data.jellyfin_data} onNavigate={onNavigate} />
 		);
 		case "CollectionFolder": {
 			if (!data || !data.content) return (
@@ -55,7 +71,7 @@ export function JellyfinContent(props: JellyfinContentProps) {
 				case "movies":
 				case "tvshows":
 					return (
-						<ContentGrid data={data.content} nav_position={nav_position} onNavigate={props.onNavigate} />
+						<ContentGrid data={data.content} nav_position={nav_position} onNavigate={onNavigate} />
 					);
 				default:
 					return (

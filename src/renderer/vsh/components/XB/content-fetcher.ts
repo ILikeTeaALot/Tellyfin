@@ -11,7 +11,7 @@ export interface XBItem extends ContentItem {
 	| string
 	| { width: number; height: number; src: string; };
 	desc?: string;
-	/** E.g. current setting/option value */
+	/** E.g. current setting/option value OR duration of an item */
 	value?: string | number;
 }
 

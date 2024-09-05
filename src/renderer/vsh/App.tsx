@@ -18,6 +18,7 @@ import { DynamicBackground } from "./components/DynamicBackground";
 import { Coldboot } from "./components/Coldboot";
 import { SettingsProvider } from "./components/SettingsProvider";
 import { ImposeMenu } from "./components/Impose";
+import { NavigationProvider } from "./context/NavigationContext";
 
 function appStateReducer(state: AppState, action: AppState | ((current: AppState) => AppState) | "animation-complete") {
 	if (action == "animation-complete") return AppState.Home;
@@ -205,12 +206,14 @@ function AppInner() {
 						<div className="background" style={{ opacity: state == AppState.Player ? 0 : 1 }} />
 						{/* <div className="background image" style={{ opacity: state == AppState.Player || playback_status != PlaybackStatus.Stopped ? 0 : 1 }} /> */}
 						{/* <DynamicBackground style={{ opacity: state == AppState.Player || playback_status != PlaybackStatus.Stopped ? 0 : 1 }} /> */}
-						<Video active={!DEBUG_keyboard && (state == AppState.Player && playback_status != PlaybackStatus.Stopped)} change_state={change_state} />
-						<Home active={!DEBUG_keyboard && (state == AppState.Home || playback_status == PlaybackStatus.Stopped) && state != AppState.Coldboot} change_state={change_state} />
-						<StatusBar show={state == AppState.Home} loading={requestCount > 0 || spinOverride} />
+						<Video active={!DEBUG_keyboard && state != AppState.Impose && (state == AppState.Player && playback_status != PlaybackStatus.Stopped)} change_state={change_state} />
+						<NavigationProvider>
+							<Home active={!DEBUG_keyboard && state != AppState.Impose && (state == AppState.Home || playback_status == PlaybackStatus.Stopped) && state != AppState.Coldboot} change_state={change_state} />
+						</NavigationProvider>
+						<StatusBar show={state != AppState.Player && state != AppState.Coldboot} loading={requestCount > 0 || spinOverride} />
 						<Keyboard active={DEBUG_keyboard} onCancel={dummy} onEnter={dummy} x={240} y={400} />
 						{/* <div style={{ opacity: overlayVisible ? "1" : "0", transitionDuration: "600ms" }}>
-						</div> */}
+							</div> */}
 						<ImposeMenu active={state == AppState.Impose} onCancel={cancelImpose} />
 						<Coldboot run={state == AppState.Coldboot} onComplete={onColdbootFinish} />
 					</SettingsProvider>
