@@ -308,10 +308,10 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 			menus.push({
 				kind: SettingKind.None,
 			});
-			const link = setting.querySelector("Link");
-			const id = setting.querySelector("Id")?.textContent;
-			const Component = getComponent(setting.querySelector("Component")?.textContent);
-			const props = Object.fromEntries(Array.from(setting.querySelector("Props")?.querySelectorAll("Prop") ?? []).map(element => {
+			const link = setting.querySelector("Link")!;
+			const id = link.querySelector("Id")?.textContent;
+			const Component = getComponent(link.querySelector("Component")?.textContent);
+			const props = Object.fromEntries(Array.from(link.querySelector("Props")?.querySelectorAll("Prop") ?? []).map(element => {
 				switch (element.querySelector("Value")?.getAttribute("type")) {
 					case "string":
 						return [element.getAttribute("key"), element.querySelector("Value")?.textContent] as const;

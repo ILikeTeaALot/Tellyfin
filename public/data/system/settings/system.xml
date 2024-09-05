@@ -1,9 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TellyXML version="1.0">
 	<Items class="SettingList" key="system" scope="User">
-		<Item class="Setting" key="about" kind="AboutTellyfin">
+		<Item class="Link" key="about" to="AboutTellyfin">
 			<Title>About Tellyfin</Title>
-			<DisplayFormat> </DisplayFormat>
+			<Link>
+				<Id>AboutTellyfin</Id>
+				<Component>AboutTellyfin</Component>
+				<Props>
+					<Prop key="test">
+						<!-- Only strings are implemented for now... more to follow! -->
+						<Value type="string">I am a test</Value>
+					</Prop>
+					<Prop key="objectTest">
+						<!-- TODO -->
+						<Value type="object">
+							<Property key="propertyTest">
+								<Value type="string">Object Value Test</Value>
+							</Property>
+							<Property key="objectPropertyObjectTest">
+								<Value type="object">
+									<Property key="subTest">
+										<Value type="string">Object Sub-object value</Value>
+									</Property>
+								</Value>
+							</Property>
+						</Value>
+					</Prop>
+				</Props>
+			</Link>
 		</Item>
 	</Items>
 </TellyXML>
