@@ -1,6 +1,6 @@
 /** This is unlikely to be the permanent way this is done */
 
-import type { JSX } from "preact";
+import type { ComponentProps, ComponentType, JSX } from "preact";
 import type { ContentItem } from "../Content/types";
 import api, { jellyfin } from "../../context/Jellyfin";
 import type { BaseItemDto, CollectionType } from "@jellyfin/sdk/lib/generated-client/models";
@@ -13,6 +13,13 @@ export interface XBItem extends ContentItem {
 	desc?: string;
 	/** E.g. current setting/option value OR duration of an item */
 	value?: string | number;
+	class?: "Link" | "Folder" | "Setting";
+	/** REQUIRED when .class is "Link" */
+	to?: {
+		id: string,
+		Component: ComponentType<any>,
+		props: ComponentProps<ComponentType<any>>,
+	};
 }
 
 export type CategoryContent = {

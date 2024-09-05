@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TellyXML version="1.0">
 	<Items class="SettingList" key="sound" scope="User">
-		<Item class="Setting" key="output" default="0" kind="Setup">
+		<Item class="Setting" key="output" kind="Setup">
 			<Title>Audio Output Settings</Title>
 			<Description>Adjust the audio output settings for the system.</Description>
 			<DisplayFormat>{channels} {layout}</DisplayFormat>

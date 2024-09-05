@@ -139,11 +139,15 @@ export function SettingList(props: XBSettingListProps) {
 		if (menu.kind == SettingKind.Wizard) {
 			// Do something I haven't designed yet.
 			go(item.id, Wizard);
+		} else if (menu.kind == SettingKind.List) {
 			// menu.items = menu.items.map(item => ({ ...item, value: item.id }));
 			// music.[key] == system.settings:music.[key].[whatever]
 			// menu.default_item = menu.items.findIndex(v => v.id == item.id);
 			setMenu(menu);
 			setMenuLoaded(true);
+		} else if ((item.class == "Link" || item.class == "Folder") && item.to) {
+			go(item.to.id, item.to.Component, item.to.props);
+			// NavigationContext.push(item.to!);
 		}
 	}, [go, menus]);
 	useEffect(() => {
@@ -192,7 +196,9 @@ type SettingOptionSet = {
 	items: Array<XBMenuItem<string | number>>;
 } | {
 	kind: SettingKind.Wizard;
-}
+} | {
+	kind: SettingKind.None;
+};
 
 type NewType = [CategoryContent & { root_key: RootKey; }, Array<SettingOptionSet>] | [null, null];
 
@@ -204,14 +210,16 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 	if (!document || !settings) return [null, null];
 	const root = document.querySelector(`Items[class="SettingList"]`)!;
 	const root_key = root.getAttribute("key")! as RootKey;
-	const list = root.querySelectorAll(`Item[class="Setting"]`);
+	const list = root.querySelectorAll(`Item`);
 	// const list = document.evaluate("//Items/Item", document.getRootNode());
 	const settingsList: XBItem[] = [];
 	const menus: SettingOptionSet[] = [];
 	// for (let setting = list.iterateNext(); setting != null; setting = list.iterateNext()) {
 	for (const [, setting] of list.entries()) {
+		const className = setting.getAttribute("class") as XBItem["class"];
 		const key = setting.getAttribute("key")! as Key<typeof root_key>;
 		const kind = setting.getAttribute("kind")! as "Select" | "Setup";
+		// const to = setting.getAttribute("to")! as string;
 		const title = setting.querySelector("Title")?.textContent!;
 		const desc = setting.querySelector("Description")?.textContent;
 		const display_format_string = setting.querySelector("DisplayFormat")?.textContent;
@@ -276,7 +284,7 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 				}
 			}
 			if (display_format_string) {
-				displayValue = display_format_string.replace(templateReplaceRegExp, (match: string, p1: string) => lookupReplacementString(raw_value, match, p1))
+				displayValue = display_format_string.replace(templateReplaceRegExp, (match: string, p1: string) => lookupReplacementString(raw_value, match, p1));
 			}
 			const forced_default = setting.getAttribute("default");
 			if (forced_default) {
@@ -288,14 +296,31 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 				kind: SettingKind.List,
 			});
 			settingsList.push({ id: key, name: title.trim(), desc: desc?.trim(), Icon: "icon:settings.item", value: displayValue?.trim() ?? "Unknown" });
-		} else {
+		} else if (kind == "Setup") {
 			menus.push({
 				kind: SettingKind.Wizard,
 			});
 			if (display_format_string) {
 				displayValue = display_format_string.replace(templateReplaceRegExp, (match: string, p1: string) => lookupReplacementString(raw_value, match, p1));
 			}
-			settingsList.push({ id: key, name: title.trim(), desc: desc?.trim(), Icon: "icon:settings.item", value: displayValue?.trim() ?? "Object [TODO]" /* settings[root_key][key] */ });
+			settingsList.push({ id: key, name: title.trim(), desc: desc?.trim(), Icon: "icon:settings.item", value: displayValue?.trim() /* settings[root_key][key] */ });
+		} else if (className == "Link") {
+			menus.push({
+				kind: SettingKind.None,
+			});
+			const link = setting.querySelector("Link");
+			const id = setting.querySelector("Id")?.textContent;
+			const Component = getComponent(setting.querySelector("Component")?.textContent);
+			const props = Object.fromEntries(Array.from(setting.querySelector("Props")?.querySelectorAll("Prop") ?? []).map(element => {
+				switch (element.querySelector("Value")?.getAttribute("type")) {
+					case "string":
+						return [element.getAttribute("key"), element.querySelector("Value")?.textContent] as const;
+					default:
+						return false;
+				}
+			}).filter(v => !!v));
+			const to = id && Component ? { id, Component, props } : undefined;
+			settingsList.push({ id: key, name: title.trim(), desc: desc?.trim(), Icon: "icon:settings.item", class: "Link", to });
 		}
 	}
 	return [{ content: settingsList, root_key }, menus];
