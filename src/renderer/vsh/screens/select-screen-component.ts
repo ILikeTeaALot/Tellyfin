@@ -1,9 +1,7 @@
-import { Component, type ComponentProps, type ComponentType, type FunctionalComponent, type FunctionComponent } from "preact";
+import { type ComponentProps, type ComponentType, type FunctionComponent } from "preact";
 import type { XBItem } from "../components/XB/content-fetcher";
 import { JellyfinContent } from "./Home/Jellyfin";
 import { SettingList } from "../components/XB/SettingList";
-import { useInput } from "../hooks";
-import { useNavigationFunctions, useNavPosition } from "../hooks/routing";
 
 type NavigationComponentInfo<C extends ComponentType<any> = FunctionComponent> = {
 	Component: C | null;
@@ -33,15 +31,15 @@ export function selectScreenComponent(current_item: XBItem): NavigationComponent
 	return { Component: null, props: {} };
 }
 
-function NoComponent() {
-	const { back } = useNavigationFunctions();
-	const position = useNavPosition();
-	useInput(position == 0, (button) => {
-		switch (button) {
-			case "Back":
-			case "Backspace":
-				back();
-		}
-	}, [back]);
-	return null;
-}
+// function NoComponent() {
+// 	const { back } = useNavigationFunctions();
+// 	const position = useNavPosition();
+// 	useInput(position == 0, (button) => {
+// 		switch (button) {
+// 			case "Back":
+// 			case "Backspace":
+// 				back();
+// 		}
+// 	}, [back]);
+// 	return null;
+// }

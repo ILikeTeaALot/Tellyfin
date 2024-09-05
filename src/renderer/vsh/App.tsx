@@ -14,7 +14,7 @@ import VideoState, { PlaybackStatus } from "./context/VideoContext";
 import { StatusBar } from "./components/StatusBar";
 import { useInput, useInputRelease } from "./hooks";
 import { Keyboard } from "./components/TextInput/Keyboard";
-import { DynamicBackground } from "./components/DynamicBackground";
+import { DynamicBackground } from "./components/DynamicBackground"; // eslint-disable-line
 import { Coldboot } from "./components/Coldboot";
 import { SettingsProvider } from "./components/SettingsProvider";
 import { ImposeMenu } from "./components/Impose";

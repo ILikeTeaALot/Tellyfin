@@ -3,7 +3,6 @@ import useSWR from "swr";
 import { useInput } from "../../hooks";
 import { type CategoryContent, type XBItem } from "./content-fetcher";
 import { getXBListContent } from "./list-content-fetcher";
-import type { ContentItem } from "../Content/types";
 
 /// @ts-ignore
 import back from "../../assets/arrow_l.svg";

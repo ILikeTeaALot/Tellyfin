@@ -14,9 +14,9 @@ import { selectScreenComponent } from "./select-screen-component";
 import { FeedbackSound, playFeedback } from "../context/AudioFeedback";
 
 export function Home(props: ScreenProps) {
-	const { active, change_state } = props;
+	const { active } = props;
 	const current = useCurrent();
-	const { back, forward, go, clear, pop, push } = useNavigationFunctions();
+	const { back, forward, go, clear, pop, push } = useNavigationFunctions(); // eslint-disable-line
 	const timeout = useRef<number | null>(null);
 	const [selectedRootItem, setSelectedRootItem] = useState<XBItem | null>(null);
 	const handleRootNavigate = useCallback((item: XBItem) => {

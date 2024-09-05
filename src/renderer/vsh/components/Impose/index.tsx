@@ -10,7 +10,9 @@ export function ImposeMenu(props: { active: boolean; onCancel: () => void; }) {
 		}
 	}, [onCancel]);
 	if (active) return (
-		<h1>[Impose/Quick Menu]</h1>
+		<div class="dialog">
+			<h1>Impose/Quick Menu</h1>
+		</div>
 	);
 	return null;
 }

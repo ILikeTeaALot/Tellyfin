@@ -1,5 +1,5 @@
 import { useInput } from "../../hooks";
-import { useCurrent, useNavigationFunctions, useNavPosition } from "../../hooks/routing";
+import { useNavigationFunctions, useNavPosition } from "../../hooks/routing";
 
 export function Wizard() {
 	const { back } = useNavigationFunctions();

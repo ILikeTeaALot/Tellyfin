@@ -82,8 +82,8 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const [selected, setSelected] = useReducer(selectionReducer, { season: 0, episode: 0, previous: { season: 0, episode: 0 } });
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [tabHighlightStyle, setTabHighlightSettings] = useState({ translate: -15, width: 70, height: 70 });
-	const [keyRepeatCount, setKeyRepeatCount] = useState(0);
-	const [enter_pressed, setEnterPressed] = useState(false);
+	const [keyRepeatCount, setKeyRepeatCount] = useState(0); // eslint-disable-line
+	const [enter_pressed, setEnterPressed] = useState(false); // eslint-disable-line
 	const active = _active && !menuOpen;
 	// const [selectedEpisode, setSelectedEpisode] = useState(0);
 	// const [selectedSeason, setSelectedSeason] = useState(0);
@@ -452,9 +452,9 @@ export function TvSeries(props: JellyfinScreenProps) {
 				season: seasonIndex == -1 ? 0 : seasonIndex,
 			}));
 		}
-	}, [seasons, episodes]);
+	}, [seasons, episodes]); // eslint-disable-line
 	const [, setBackgroundHoldIndexState] = useState(true);
-	const [backgroundHoldIndex, setBackgroundHoldIndex] = useState(selected.episode);
+	const [backgroundHoldIndex, setBackgroundHoldIndex] = useState(selected.episode); // eslint-disable-line
 	useInput(active, () => {
 		setBackgroundHoldIndexState(state => {
 			if (state) {
@@ -732,14 +732,14 @@ function EpisodePanel(props: EpisodePanelProps) {
 	// useLayoutEffect(() => {
 	// 	setHighlightSelected(_highlight_selected);
 	// }, [_highlight_selected]);
-	const [showBackdrop, setBackdropVis] = useState(true);
+	const [showBackdrop, setBackdropVis] = useState(true); // eslint-disable-line
 	useInput(true, () => {
 		setBackdropVis(false);
 	}, []);
 	useInputRelease(() => {
 		setBackdropVis(true);
 	}, true, []);
-	const [shouldHighlight, setShouldHighlight] = useState(false);
+	const [shouldHighlight, setShouldHighlight] = useState(false); // eslint-disable-line
 	// const [translate, setTranslate] = useState(() => initialEpisodeTranslate(selected, prevSelected, _highlight_selected, index));
 	// const animationSpeed = useContext(MovementSpeed);
 	// const animate = useCallback(() => {}, []);
@@ -859,6 +859,7 @@ async function getNextUp(seriesId: Id) {
 	return data.Items!;
 }
 
+// eslint-disable-next-line
 async function getSeasons(seriesId: Id) {
 	let { data } = await jellyfin.getTvShowsApi(api).getSeasons({
 		seriesId,
@@ -962,6 +963,7 @@ async function getEpisodes(seriesId: Id) {
 	return all;
 }
 
+// eslint-disable-next-line
 async function getContinueWatching(seriesId: Id) {
 	jellyfin.getItemsApi(api).getResumeItems({
 		userId: auth.User?.Id,
@@ -971,6 +973,7 @@ async function getContinueWatching(seriesId: Id) {
 	})
 }
 
+// eslint-disable-next-line
 function getDefaultSelected(episodes?: BaseItemDto[]) {
 	return episodes?.reduce((bestIndex, current, currentIndex, arr) =>
 		(arr[bestIndex]?.UserData?.LastPlayedDate

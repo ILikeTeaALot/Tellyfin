@@ -1,18 +1,16 @@
 import { useCallback, useContext, useEffect } from "preact/hooks";
 import { NavigateAction } from "../../components/ContentList";
-import { ScreenContent } from "../common";
 import { TvSeries } from "./TV/Series";
 import { AppMode } from "../../context/AppState";
 import { AppState } from "../../AppStates";
 import { FilmDetail } from "./Films/FilmDetail";
 import { ContentGrid } from "../../components/ContentGrid";
-import { ContentType, type ContentItem } from "../../components/Content/types";
+import { type ContentItem } from "../../components/Content/types";
 import useSWR from "swr";
 import { newestScreenDataFetcher } from "./new-new-screen-data";
 import { XBList } from "../../components/XB/List";
 import type { XBItem } from "../../components/XB/content-fetcher";
 import { Loading } from "../../components/Loading";
-import { useInput } from "../../hooks";
 import { useNavigationFunctions, useNavPosition } from "../../hooks/routing";
 import type { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 
