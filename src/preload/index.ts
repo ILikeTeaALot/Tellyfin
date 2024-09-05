@@ -30,6 +30,7 @@ function getMPVStatus() {
 const apiList = {
 	invoke,
 	getMPVStatus,
+	getSetting,
 	listenFor,
 }
 
