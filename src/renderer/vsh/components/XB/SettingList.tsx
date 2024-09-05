@@ -53,7 +53,7 @@ export function SettingList(props: XBSettingListProps) {
 	// console.error(settings);
 	// const swr_key = useMemo(() => [data_key, settings] as const, [data_key, settings]);
 	const nav_position = useNavPosition();
-	const { back, forward, go, clear, pop, push } = useNavigationFunctions();
+	const { back, forward, go, clear, pop, push } = useNavigationFunctions(); // eslint-disable-line
 	// const onNavigate = useCallback((item: XBItem) => { }, []);
 	const onGoBack = useCallback(() => {
 		back();

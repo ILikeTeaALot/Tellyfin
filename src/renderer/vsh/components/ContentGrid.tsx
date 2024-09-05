@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo, useCallback, useEffect, useRef, useLayoutEffect } from "preact/hooks";
+import { useState, useContext, useMemo, useCallback, useRef, useLayoutEffect } from "preact/hooks";
 import { NavigateAction } from "./ContentList";
 import { ContentItem } from "./Content/types";
 import api, { auth, jellyfin } from "../context/Jellyfin";

@@ -12,10 +12,9 @@
  * 
  */
 
-import { createContext, type ComponentChild, type ComponentProps, type ComponentType, type FunctionComponent } from "preact";
+import { createContext, type ComponentChild, type ComponentProps, type ComponentType } from "preact";
 import { useCallback, useContext, useMemo, useState } from "preact/hooks";
 import { useMatch } from "../hooks/routing";
-import { Home } from "../screens/Home";
 import { FeedbackSound, playFeedback } from "./AudioFeedback";
 
 interface RouteData<P = {}> {
@@ -184,9 +183,4 @@ export function Route(props: RouteProps) {
 	} else {
 		return null;
 	}
-}
-
-function Test() {
-	const { push } = useContext(NavigationContext);
-	push("Home", Home, { active: true, change_state() { } });
 }
