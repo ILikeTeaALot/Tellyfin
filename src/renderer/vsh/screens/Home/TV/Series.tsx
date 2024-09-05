@@ -544,6 +544,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const endIndex = Math.min(episodes.length, selected.episode + (4 + OVERDRAW)); // sel + (on-screen + overdraw)
 	return (
 		<div>
+			<BackdropImage index={0} selected={0} item={props.data} show={_active} />
 			<div className="fullscreen-mask /* bottom */">
 				<div class="series-info" style={{
 					// filter: nav_position == 0 ? undefined : "blur(60px) saturate(180%)",
@@ -552,13 +553,13 @@ export function TvSeries(props: JellyfinScreenProps) {
 					transitionTimingFunction: nav_position == 0 ? "var(--timing-function-decelerate)" : "var(--timing-function-accelerate)",
 					transitionDelay: nav_position == 0 ? "var(--transition-standard)" : "0ms",
 				}}>
-					{episodes[backgroundHoldIndex] && <BackdropImage
+					{/* {episodes[backgroundHoldIndex] && <BackdropImage
 						selected={selected.episode}
 						index={backgroundHoldIndex}
 						item={episodes[backgroundHoldIndex]}
 						previous
 						show
-					/>}
+					/>} */}
 					{/* {episodes[selected.episode] && <BackdropImage
 						selected={selected.episode}
 						index={selected.episode}
@@ -804,7 +805,7 @@ function EpisodePanel(props: EpisodePanelProps) {
 	// const backgroundTransitionDelay = selected == index ? "0ms" : "2000ms";
 	return (
 		<>
-			<BackdropImage {...props} item={props.episode} show={index == selected && showBackdrop} />
+			{/* <BackdropImage {...props} item={props.episode} show={index == selected && showBackdrop} /> */}
 			<div className="episode-container" ref={ref} style={{
 				zIndex: index == selected ? 10 : 5,
 				/* Attempt 2 */
@@ -898,7 +899,7 @@ function seasonsFromEpisodes(episodes?: BaseItemDto[]) {
 		const seasonsList = new Map();
 		// episodes.forEach(episode => seasonsList.set(episode.SeasonId!, episode.SeasonName!));
 		for (const episode of episodes!) {
-			seasonsList.set(episode.SeasonId, episode.SeasonName);
+			seasonsList.set(episode?.SeasonId ?? crypto?.randomUUID() ?? "never", episode?.SeasonName ?? "Unknown Season"); // TODO: FIXME
 		}
 		// const array = Array.from(new Map(seasonsList));
 		// const array = seasonsList;
@@ -1004,7 +1005,7 @@ export function BackdropImage(props: { selected: number, index: number, item: Ba
 			// transitionDelay: backgroundTransitionDelay,
 			// transitionDelay: previous ? "10s" : "var(--transition-standard)",
 		}}>
-			<img ref={imgRef} src={`${api.basePath}/Items/${item.Id}/Images/Primary?fillWidth=${SCREEN_WIDTH * 1.2}&blur=800`} style={{
+			<img ref={imgRef} src={`${api.basePath}/Items/${item.Id}/Images/Backdrop?fillWidth=${SCREEN_WIDTH * 1.2}&blur=0`} style={{
 				position: "fixed",
 				top: "-10vh",
 				left: "-10vw",
@@ -1022,13 +1023,25 @@ export function BackdropImage(props: { selected: number, index: number, item: Ba
 			}} onLoad={onLoaded} />
 			<div style={{
 				position: "fixed",
-				// inset: 0,
-				top: "-10vh",
-				left: "-10vw",
-				width: "120vw",
-				height: "120vh",
+				inset: 0,
+				// top: "-10vh",
+				// left: "-10vw",
+				// width: "120vw",
+				// height: "120vh",
+				width: "100vw",
+				height: "100vh",
 				zIndex: -10,
-				// backdropFilter: "blur(200px)",
+				backdropFilter: "blur(400px) brightness(60%) saturate(180%)",
+				mask: "linear-gradient(to bottom, #00000077, black 90%)",
+				background: "rgba(0, 0, 0, 0.6)",
+			}} />
+			<div style={{
+				position: "fixed",
+				inset: 0,
+				width: "100vw",
+				height: "100vh",
+				zIndex: -9,
+				mask: "linear-gradient(to bottom, #000000FF, #00000000 70%)",
 				background: "rgba(0, 0, 0, 0.6)",
 			}} />
 		</div>
