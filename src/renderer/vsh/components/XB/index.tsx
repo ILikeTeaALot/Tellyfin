@@ -8,7 +8,7 @@ import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
 import { useDidUpdate } from "../../hooks/use-did-update";
 import { GAP, SELECTED_SCALE, UNSELECTED_SCALE, XB_CATEGORY_GAP, XB_CATEGORY_WIDTH, XB_ITEM_HEIGHT } from "./shared";
 import { SettingsContext } from "../../context/Settings";
-import { OverflowTextScroll } from "../TextScroll";
+import { OverflowTextScroll } from "../OverflowTextScroll";
 import type { UserSettings } from "../../settings/types";
 
 const OFFSET_HAS_NAVIGATED = 480 - (XB_CATEGORY_WIDTH / 2 + XB_CATEGORY_GAP);

@@ -10,7 +10,7 @@ import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
 import { useDidUpdate } from "../../hooks/use-did-update";
 import { GAP, SELECTED_SCALE, UNSELECTED_SCALE, XB_CATEGORY_GAP, XB_CATEGORY_WIDTH, XB_ITEM_HEIGHT } from "./shared";
 import { SettingsContext } from "../../context/Settings";
-import { OverflowTextScroll } from "../TextScroll";
+import { OverflowTextScroll } from "../OverflowTextScroll";
 
 /**
  * Either `data` OR `data_key` must be specified. If not you will just get an empty list

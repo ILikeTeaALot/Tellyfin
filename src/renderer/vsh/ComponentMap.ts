@@ -6,7 +6,7 @@ import { XBList } from "./components/XB/List";
 import { Menu } from "./components/Menu";
 import { JellyfinContent } from "./screens/Home/Jellyfin";
 import { ContentGrid } from "./components/ContentGrid";
-import { OverflowTextScroll } from "./components/TextScroll";
+import { OverflowTextScroll } from "./components/OverflowTextScroll";
 import { Wizard } from "./components/Wizard";
 
 const ComponentMap = new Map<string, ComponentType<any>>([
