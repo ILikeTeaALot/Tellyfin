@@ -6,7 +6,6 @@ members = [
 	"crates/list-dvd",
 	"crates/start-tellyfin",
 	"crates/tellyfin-plugin",
-	"src-tauri",
 ]
 exclude = [
 	"bootstrap",
