@@ -1,0 +1,14 @@
+.scroll-area {
+	overflow: visible;
+	position: fixed;
+	inset: 0;
+	display: block;
+}
+
+.scroll-area .content {
+	display: block;
+	width: 100%;
+	transition-duration: var(--transition-short);
+	/* --timing-function-ease: cubic-bezier(0.45, 0, 0.55, 1); */ /* Ease-In-Out Quadratic */
+	transition-timing-function: linear;
+}
