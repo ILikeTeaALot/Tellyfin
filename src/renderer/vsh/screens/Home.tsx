@@ -81,7 +81,8 @@ type HomeRootProps = {
 function HomeRoot(props: HomeRootProps) {
 	const { active, currScreen, handleRootNavigate, handleRootSelectionChange } = props;
 	const { settings } = useContext(SettingsContext);
-	switch (settings.home.style) {
+	switch (settings?.home?.style) {
+		case undefined:
 		case HomeStyle.XMB:
 			return <XBar active={active} nav_position={0 - currScreen} categories={categories} first_selected={2} onNavigate={handleRootNavigate} onSelectionChange={handleRootSelectionChange} />;
 		case HomeStyle.List:
