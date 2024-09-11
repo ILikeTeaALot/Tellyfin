@@ -191,6 +191,8 @@ function AppInner() {
 
 	const cancelImpose = useCallback(() => setState(imposeReturnTo.current), []);
 
+	const homeActive = !DEBUG_keyboard && state != AppState.Impose && (state == AppState.Home || playback_status == PlaybackStatus.Stopped) && state != AppState.Coldboot;
+
 	return (
 		<SWRConfig value={{
 			keepPreviousData: true,
@@ -207,8 +209,8 @@ function AppInner() {
 						{/* <div className="background image" style={{ opacity: state == AppState.Player || playback_status != PlaybackStatus.Stopped ? 0 : 1 }} /> */}
 						{/* <DynamicBackground style={{ opacity: state == AppState.Player || playback_status != PlaybackStatus.Stopped ? 0 : 1 }} /> */}
 						<Video active={!DEBUG_keyboard && state != AppState.Impose && (state == AppState.Player && playback_status != PlaybackStatus.Stopped)} change_state={change_state} />
-						<NavigationProvider>
-							<Home active={!DEBUG_keyboard && state != AppState.Impose && (state == AppState.Home || playback_status == PlaybackStatus.Stopped) && state != AppState.Coldboot} change_state={change_state} />
+						<NavigationProvider active={homeActive}>
+							<Home active={homeActive} change_state={change_state} />
 						</NavigationProvider>
 						<StatusBar show={state != AppState.Player && state != AppState.Coldboot} loading={requestCount > 0 || spinOverride} />
 						<Keyboard active={DEBUG_keyboard} onCancel={dummy} onEnter={dummy} x={240} y={400} />

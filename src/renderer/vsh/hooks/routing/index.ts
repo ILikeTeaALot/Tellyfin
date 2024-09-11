@@ -16,6 +16,11 @@ export function useNavigationFunctions() {
 	return { back, forward, go, clear, pop, push };
 }
 
+export function useNavActive() {
+	const { active, position } = useContext(NavigationContext);
+	return active && position == 0;
+}
+
 export function useNavPosition() {
 	const { position } = useContext(NavigationContext);
 	return position;

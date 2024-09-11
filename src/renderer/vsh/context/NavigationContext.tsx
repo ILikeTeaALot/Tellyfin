@@ -50,6 +50,7 @@ interface NavigationContextType {
 	stack: readonly RouteData<any>[];
 	current: number;
 	position: number;
+	active: boolean;
 }
 
 /**
@@ -65,10 +66,12 @@ export const NavigationContext = createContext<NavigationContextType>({
 	current: 0,
 	stack: [],
 	position: 0,
+	active: false,
 });
 
 interface NavigationProviderProps {
 	children: ComponentChild;
+	active: boolean;
 }
 
 /**
@@ -82,7 +85,7 @@ interface NavigationProviderProps {
  * @returns 
  */
 export function NavigationProvider(props: NavigationProviderProps) {
-	const { children } = props;
+	const { active, children } = props;
 	const [current, setCurrent] = useState<number>(-1);
 	const [stack, updateStack] = useState<Array<RouteData<any>>>([]);
 	const clear = useCallback(() => {
@@ -101,7 +104,15 @@ export function NavigationProvider(props: NavigationProviderProps) {
 		playFeedback(FeedbackSound.Enter);
 	}, []);
 	const pop = useCallback(() => {
-		updateStack(curr => [...curr.slice(0, -2)]);
+		setCurrent(current => {
+			updateStack(stack => {
+				// if (current == stack.length - 1) {
+				// 	setCurrent(current => current + 1);
+				// }
+				return [...stack.slice(0, -1)];
+			});
+			return current;
+		});
 	}, []);
 	const push = useCallback(<P extends {} = {}>(id: string, Component: ComponentType<P>, props?: P) => {
 		setCurrent(current => {
@@ -126,8 +137,8 @@ export function NavigationProvider(props: NavigationProviderProps) {
 		playFeedback(FeedbackSound.Enter);
 	}, []);
 	const value = useMemo(() => ({
-		back, forward, clear, pop, push, go, current, position: 0, stack,
-	}), [back, forward, clear, pop, push, go, current, stack]);
+		back, forward, clear, pop, push, go, current, position: 0, stack, active,
+	}), [back, forward, clear, pop, push, go, current, stack, active]);
 	return (
 		<NavigationContext.Provider value={value}>
 			{children}
@@ -140,12 +151,13 @@ export function NavigationProvider(props: NavigationProviderProps) {
  */
 export function StackRenderer(props: { current_offset?: number; }) {
 	const { current_offset } = props;
-	const { current, stack } = useContext(NavigationContext);
+	const { current, stack, active } = useContext(NavigationContext);
 	return (
 		<>
 			{stack.map(({ id, Component, props }, index) => {
+				const position = (index - current) + (current_offset ?? 0);
 				return (
-					<RouteInternal key={`${id}-${index}`} position={(index - current) + (current_offset ?? 0)}>
+					<RouteInternal key={`${id}-${index}`} active={active && position == 0} position={position}>
 						<Component {...props} />
 					</RouteInternal>
 				);
