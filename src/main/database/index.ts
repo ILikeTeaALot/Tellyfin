@@ -25,6 +25,16 @@ class TellyfinDatabase {
 			return Err(e);
 		}
 	}
+	
+	exec_raw(s: string, params: any): Result<true> {
+		try {
+			const res = this.#database.exec(s);
+			return Ok(true);
+		} catch (e) {
+			console.error(e);
+			return Err(e);
+		}
+	}
 
 	row<T>(q: string, params: Array<any>): Result<T> {
 		try {
