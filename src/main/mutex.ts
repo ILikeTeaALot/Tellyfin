@@ -5,11 +5,11 @@ export class Mutex<T> {
 		this.#value = initial;
 	}
 
-	set inner(value: T) {
+	set value(value: T) {
 		this.#value = value;
 	}
 
-	get inner() {
+	get value() {
 		return this.#value;
 	}
 }

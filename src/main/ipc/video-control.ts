@@ -14,10 +14,10 @@ export function setupVideoControlHandlers() {
 
 	ipcMain.handle("play_file", (_, { file, infoId, start }: { file: string; infoId: MediaInfo; start: number; }) => {
 		playFile(file, start);
-		current_playing_id.inner = infoId ?? { type: "None" };
+		current_playing_id.value = infoId ?? { type: "None" };
 	});
 
 	ipcMain.handle("clear_current_id", () => {
-		current_playing_id.inner = { type: "None" };
+		current_playing_id.value = { type: "None" };
 	})
 }
