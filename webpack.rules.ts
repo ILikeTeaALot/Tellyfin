@@ -33,6 +33,10 @@ export const rules: Required<ModuleOptions>["rules"] = [
 		type: "asset/resource",
 	},
 	{
+		test: /\.(md|txt)/,
+		type: "asset/source",
+	},
+	{
 		test: /\.json/,
 		type: "json",
 	}
