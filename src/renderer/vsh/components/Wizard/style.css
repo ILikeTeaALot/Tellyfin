@@ -1,0 +1,27 @@
+.wizard {}
+
+.wizard .screen-wrapper {
+	position: absolute;
+	width: 100vw;
+	transition-duration: var(--transition-standard);
+}
+
+.wizard .screen {
+	display: flex;
+	flex-direction: column;
+	width: 100vw;
+	height: 100%;
+	justify-content: center;
+	align-content: center;
+}
+
+.wizard .screen .option {
+	opacity: 0.6;
+	transform-origin: left center;
+	scale: 1!important;
+}
+
+.wizard .screen .option.selected {
+	opacity: 1;
+	scale: 1.05!important;
+}

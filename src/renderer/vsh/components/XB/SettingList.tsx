@@ -138,7 +138,7 @@ export function SettingList(props: XBSettingListProps) {
 		const menu = menus[index];
 		if (menu.kind == SettingKind.Wizard) {
 			// Do something I haven't designed yet.
-			go(item.id, Wizard);
+			go(item.id, Wizard, { key: `system/settings/setup/${root_key}/${item.id}`, root_key: root_key as string, item_key: item.id });
 		} else if (menu.kind == SettingKind.List) {
 			// menu.items = menu.items.map(item => ({ ...item, value: item.id }));
 			// music.[key] == system.settings:music.[key].[whatever]
@@ -149,7 +149,7 @@ export function SettingList(props: XBSettingListProps) {
 			go(item.to.id, item.to.Component, item.to.props);
 			// NavigationContext.push(item.to!);
 		}
-	}, [go, menus]);
+	}, [go, menus, root_key]);
 	useEffect(() => {
 		if (menuLoaded) {
 			setMenuLoaded(false);
@@ -175,7 +175,7 @@ export function SettingList(props: XBSettingListProps) {
 	if ((!data || data.content.length == 0) && error) return <div style={{ position: "fixed", top: 0 }}>{JSON.stringify(isLoading)} {data_key} {JSON.stringify(error)} {JSON.stringify(data)}</div>;
 	if (!data) return null;
 	return (
-		<>
+		<div style={{ opacity: nav_position < 0 ? 0 : 1 }}>
 			<XBList key={0}
 				/// @ts-expect-error
 				override_active={menuOpen}
@@ -183,7 +183,7 @@ export function SettingList(props: XBSettingListProps) {
 				nav_position={nav_position} data={data.content} onGoBack={handleListGoBack} onNavigate={handleListNavigate} />
 			<Menu key={1} active={menuOpen} {...menu} rootMinWidth={570} onSubmit={menu_submit} onCancel={menu_cancel} />
 			{error && <span style={{ position: "fixed", top: 0, left: 0 }}>{JSON.stringify(error)}</span>}
-		</>
+		</div>
 	);
 }
 
@@ -219,7 +219,6 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 		const className = setting.getAttribute("class") as XBItem["class"];
 		const key = setting.getAttribute("key")! as Key<typeof root_key>;
 		const kind = setting.getAttribute("kind")! as "Select" | "Setup";
-		// const to = setting.getAttribute("to")! as string;
 		const title = setting.querySelector("Title")?.textContent!;
 		const desc = setting.querySelector("Description")?.textContent;
 		const display_format_string = setting.querySelector("DisplayFormat")?.textContent;

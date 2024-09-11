@@ -1,0 +1,118 @@
+{
+	"Setup": {
+		"table": "music",
+		"key": "cd_import",
+		"name": "Audio CD Import Setup",
+		"Screens": [
+			{
+				"class": "Select",
+				"key": "format",
+				"display": "Encoding Format",
+				"default": "FLAC",
+				"options": [
+					{
+						"value": "FLAC",
+						"display": "FLAC (Free Lossless Audio Codec) (Recommended)"
+					},
+					{
+						"value": "ALAC",
+						"display": "ALAC (Apple Lossless Audio Codec)"
+					},
+					{
+						"value": "AAC",
+						"display": "AAC (Advanced Audio Coding)"
+					},
+					{
+						"value": "MP3",
+						"display": "MP3 (MPEG Layer-3 Audio)"
+					}
+				]
+			},
+			{
+				"class": "Select",
+				"key": "vbr",
+				"display": "Encoding Type",
+				"default": true,
+				"conditions": [
+					{
+						"key": "format",
+						"is": {
+							"op": "eq",
+							"to": "AAC"
+						}
+					},
+					{
+						"key": "format",
+						"is": {
+							"op": "eq",
+							"to": "MP3"
+						}
+					}
+				],
+				"options": [
+					{
+						"value": true,
+						"display": "Variable Bitrate"
+					},
+					{
+						"value": false,
+						"display": "Constant Bitrate"
+					}
+				]
+			},
+			{
+				"class": "Select",
+				"key": "bitrate",
+				"display": "Bitrate",
+				"default": 256,
+				"conditions": [
+					{
+						"key": "vbr",
+						"is": {
+							"op": "eq",
+							"to": false
+						},
+						"and": [
+							{
+								"key": "format",
+								"is": {
+									"op": "ne",
+									"to": "FLAC"
+								}
+							},
+							{
+								"key": "format",
+								"is": {
+									"op": "ne",
+									"to": "ALAC"
+								}
+							}
+						]
+					}
+				],
+				"options": [
+					{
+						"value": 128,
+						"display": "128kbps"
+					},
+					{
+						"value": 160,
+						"display": "160kbps"
+					},
+					{
+						"value": 192,
+						"display": "192kbps"
+					},
+					{
+						"value": 256,
+						"display": "256kbps"
+					},
+					{
+						"value": 320,
+						"display": "320kbps"
+					}
+				]
+			}
+		]
+	}
+}
