@@ -1,32 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TellyXML version="1.0">
 	<Items class="SettingList" key="system" scope="User">
-		<Item class="Link" key="about" to="AboutTellyfin">
+		<Item class="Link" key="about">
 			<Title>About Tellyfin</Title>
 			<Link>
 				<Id>AboutTellyfin</Id>
 				<Component>AboutTellyfin</Component>
-				<Props>
-					<Prop key="test">
-						<!-- Only strings are implemented for now... more to follow! -->
-						<Value type="string">I am a test</Value>
-					</Prop>
-					<Prop key="objectTest">
-						<!-- TODO -->
+				<!-- Was this easier than turning the whole thing into JSON? -->
+				<!-- I honestly don't know. It wasn't that hard, and writing -->
+				<!-- settings in XML is quite nice. -->
+				<!-- It's also more compact than JSON... -->
+				<!-- ...other than Link props -->
+				<Properties>
+					<!-- This is how you do a string... -->
+					<Property key="test">
+						<string>I am a test</string>
+					</Property>
+					<!-- ...and this is an object -->
+					<Property key="objectTest">
 						<Value type="object">
 							<Property key="propertyTest">
-								<Value type="string">Object Value Test</Value>
+								<string>Object Value Test</string>
 							</Property>
 							<Property key="objectPropertyObjectTest">
 								<Value type="object">
 									<Property key="subTest">
-										<Value type="string">Object Sub-object value</Value>
+										<string>Object Sub-object value</string>
+									</Property>
+									<!-- And for good measure, here's a number! -->
+									<Property key="numberTest">
+										<number>10</number>
 									</Property>
 								</Value>
 							</Property>
 						</Value>
-					</Prop>
-				</Props>
+					</Property>
+				</Properties>
 			</Link>
 		</Item>
 	</Items>
