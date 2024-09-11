@@ -3,7 +3,7 @@ import { TICKS_PER_SECOND } from "../util/functions";
 
 export function jellyfinStopped(itemId: string, playSessionId?: string, seconds?: number) {
 	try {
-		// window.electronAPI.invoke("clear_current_id");
+		// window.electronAPI.clearNowPlayingId();
 		jellyfin.getPlaystateApi(api).onPlaybackStopped({
 			// userId: auth.User!.Id!,
 			itemId,

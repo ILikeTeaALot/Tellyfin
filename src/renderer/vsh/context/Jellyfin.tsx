@@ -4,8 +4,6 @@ import axios from "axios";
 
 import { deviceInfo, server_address, user } from "./jellyfin-settings.json";
 
-// import axiosAdapter from "axios-tauri-http-adapter";
-// import fetchAdapter from "@shiroyasha9/axios-fetch-adapter";
 import { createContext, type ComponentChildren } from "preact";
 import { useContext, useEffect, useMemo, useState } from "preact/hooks";
 import { SettingsContext } from "./Settings";

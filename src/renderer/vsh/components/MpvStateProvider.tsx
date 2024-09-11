@@ -24,7 +24,7 @@ function refreshInterval(latest?: VideoContextType) {
 export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 	const [DEBUG_TIME, setDebugTime] = useState(0); // eslint-disable-line
 	const [videoState, setVideoState] = useState(defaultVideoState);
-	const { data, mutate } = useSWR("mpv_state", () => (window.electronAPI.invoke<VideoContextType>("mpv_status")), { fallbackData: defaultVideoState, refreshInterval });
+	const { data, mutate } = useSWR("mpv_state", () => (window.electronAPI.getMPVStatus()), { fallbackData: defaultVideoState, refreshInterval });
 	useEffect(() => {
 		if (data) {
 			if (!data.jellyfinData) {
@@ -42,7 +42,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					if (data.status.playbackStatus == PlaybackStatus.Stopped) {
 						// reinitAudioSystem();
 						jellyfinStopped(data.mediaType.id, data.mediaType.session, data.position.time.position);
-						// window.electronAPI.invoke("transport_command", { command: "Stop" });
+						// window.electronAPI.transportCommand("Stop");
 					} else {
 						jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 					}
@@ -52,7 +52,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 				jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 				if (data.status.playbackStatus == PlaybackStatus.Stopped) {
 					jellyfinStopped(data.mediaType.id, data.mediaType.session, data.position.time.position);
-					// window.electronAPI.invoke("transport_command", { command: "Stop" });
+					// window.electronAPI.transportCommand("Stop");
 				}
 			}
 			setDebugTime(data.position.time.position);
@@ -65,11 +65,11 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 	const playback_status = data?.status?.playbackStatus;
 	useEffect(() => {
 		if (playback_status == PlaybackStatus.Stopped) {
-			window.electronAPI.invoke("transport_command", { command: "Stop" }).then(() => {
-				window.electronAPI.invoke("play_background");
-			});
+			window.electronAPI.transportCommand("Stop").then(() => {
+				window.electronAPI.playBackground();
+			})
 		} else {
-			window.electronAPI.invoke("stop_background");
+			window.electronAPI.stopBackground();
 		}
 	}, [playback_status]);
 	useEffect(() => {
@@ -79,7 +79,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 				break;
 			case PlaybackStatus.Paused:
 			case PlaybackStatus.Playing:
-				window.electronAPI.invoke("stop_background");
+				window.electronAPI.stopBackground();
 				break;
 		}
 	}, [playback_status]);
@@ -120,7 +120,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 								const playSessionId = current.mediaType.id;
 								setDebugTime(current.position.time.position);
 								setTimeout(() => jellyfinStopped(id, playSessionId, position), 1000);
-								window.electronAPI.invoke("transport_command", { command: "Stop" });
+								window.electronAPI.transportCommand("Stop");
 								// throw new Error(`Time: ${current.position.time.position}`);
 							}
 							return {

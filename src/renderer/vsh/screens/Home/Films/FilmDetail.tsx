@@ -56,8 +56,8 @@ export function FilmDetail(props: JellyfinScreenProps) {
 			case "Enter":
 				if (info && row == Row.Episodes) {
 					if (info.Path) {
-						// window.electronAPI.invoke("play_file", { file: info.Path, infoId: info.Id }).then(() => {
-						// 	window.electronAPI.invoke("transport_command", { command: "Play" });
+						// window.electronAPI.playFile(info.Path, info.Id).then(() => {
+						// 	window.electronAPI.transportCommand("Play");
 						// 	mutate<VideoContextType>("mpv_state", (current) => {
 						// 		if (current) {
 						// 			return { ...current, jellyfin_data: info ?? null };

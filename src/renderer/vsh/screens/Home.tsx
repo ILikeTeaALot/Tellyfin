@@ -32,16 +32,16 @@ export function Home(props: ScreenProps) {
 				playFeedback(FeedbackSound.Enter);
 				return;
 			case "com.steampowered":
-				window.electronAPI.invoke("close-steam-runner");
 				playFeedback(FeedbackSound.Enter);
+				window.electronAPI.closeSteamRunner();
 				return;
 			case "system.power.shutdown":
-				window.electronAPI.invoke("exit-tellyfin");
 				playFeedback(FeedbackSound.Enter);
+				window.electronAPI.exitTellyfin();
 				return;
 			case "system.power.restart":
-				window.electronAPI.invoke("restart-tellyfin");
 				playFeedback(FeedbackSound.Enter);
+				window.electronAPI.restartTellyfin();
 				return;
 		}
 		const { Component, props } = selectScreenComponent(item);

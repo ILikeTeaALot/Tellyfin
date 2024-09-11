@@ -55,9 +55,9 @@ function AppInner() {
 
 	useEffect(() => {
 		if (pageIsFocused) {
-			window.electronAPI.invoke("play_background");
+			window.electronAPI.playBackground();
 		} else {
-			window.electronAPI.invoke("stop_background");
+			window.electronAPI.stopBackground();
 		}
 	}, [pageIsFocused]);
 

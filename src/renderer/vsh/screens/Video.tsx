@@ -96,17 +96,17 @@ export function Video(props: ScreenProps) {
 				setExitConfirmActive(true);
 				break;
 			case "Enter":
-				window.electronAPI.invoke("transport_command", { command: "TogglePlay" }).then(() => {
+				window.electronAPI.transportCommand("TogglePlay").then(() => {
 					refresh_mpv();
 				}, () => { });
 				break;
 			case "PadLeft":
-				window.electronAPI.invoke("seek", { mode: "relative", seconds: -10 }).then(() => {
+				window.electronAPI.seek("relative", -10).then(() => {
 					console.log("Succeeded!");
 				}, () => { });
 				break;
 			case "PadRight":
-				window.electronAPI.invoke("seek", { mode: "relative", seconds: 10 }).then(() => {
+				window.electronAPI.seek("relative", 10).then(() => {
 					console.log("Succeeded!");
 				}, () => { });
 				break;
@@ -122,15 +122,15 @@ export function Video(props: ScreenProps) {
 	const on_submit = useCallback((seconds: number) => {
 		// if (state.jellyfin_data?.Chapters) {
 		// 	const seconds = (state.jellyfin_data.Chapters[seconds].StartPositionTicks ?? -1) / TICKS_PER_SECOND;
-		// 	if (seconds >= 0) window.electronAPI.invoke("seek", { mode: "absolute", seconds });
+		// 	if (seconds >= 0) window.electronAPI.seek("absolute", seconds);
 		// }
-		if (seconds >= 0) window.electronAPI.invoke("seek", { mode: "absolute", seconds });
+		if (seconds >= 0) window.electronAPI.seek("absolute", seconds);
 		closeAllPanels();
 	}, [closeAllPanels]);
 	const on_dialog_submit = useCallback((confirmed: boolean) => {
 		if (confirmed) {
 			if (state.mediaType.type == "Jellyfin") jellyfinStopped(state.mediaType.id, state.mediaType.session, state.position.time.position);
-			window.electronAPI.invoke("transport_command", { command: "Stop" });
+			window.electronAPI.transportCommand("Stop");
 			changeState(AppState.Home);
 		} else {
 			setExitConfirmActive(false);
@@ -139,7 +139,7 @@ export function Video(props: ScreenProps) {
 	const on_cancel = useCallback(() => {
 		closeAllPanels();
 	}, [closeAllPanels]);
-	const handle_panel_action = useCallback((action: string) => {
+	const handle_panel_action = useCallback((action: VideoFunction | "Stop") => {
 		switch (action) {
 			case "SceneSearch":
 				closeAllPanels();
@@ -150,11 +150,11 @@ export function Video(props: ScreenProps) {
 				setSeekActive(true);
 				return;
 			case "SubtitleOptions":
-				window.electronAPI.invoke("transport_command", { command: action });
+				window.electronAPI.transportCommand(action);
 				// setPanelActive(false);
 				return;
 			case "AudioOptions":
-				window.electronAPI.invoke("transport_command", { command: "AudioOptions" });
+				window.electronAPI.transportCommand("AudioOptions");
 				// setPanelActive(false);
 				return;
 			case "Display":

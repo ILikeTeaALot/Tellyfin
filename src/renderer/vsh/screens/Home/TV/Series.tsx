@@ -698,7 +698,7 @@ function playEpisode(data: BaseItemDto, mutate: ScopedMutator, continue_playback
 	}) */
 	// TODO: Select best media source; Enable transcoding when remote; etc.
 	playFile(`${api.basePath}/Videos/${data.Id}/stream?static=true&api_key=${auth.AccessToken}`, continue_playback ? (data.UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND : 0, data.Id ? { id: data.Id, type: "Jellyfin", /* session: streamData.PlaySessionId! */ } : undefined).then(() => {
-		window.electronAPI.invoke("transport_command", { command: "Play" });
+		window.electronAPI.transportCommand("Play");
 		mutate<VideoContextType>("mpv_state", (current) => {
 			if (current) {
 				return { ...current, jellyfinData: data };

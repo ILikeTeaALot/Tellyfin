@@ -121,7 +121,7 @@ export enum FeedbackSound {
 // }
 
 export function reinitAudioSystem() {
-	window.electronAPI.invoke("reinit_bass");
+	window.electronAPI.reinitBASS();
 }
 
 // function AudioFeedbackProvider({ children }: { children: ComponentChildren; }) {
@@ -134,5 +134,5 @@ export function reinitAudioSystem() {
 // }
 
 export function playFeedback(feedback: FeedbackSound) {
-	window.electronAPI.invoke("play_feedback", { sound: feedback });
+	window.electronAPI.playFeedback(feedback);
 }

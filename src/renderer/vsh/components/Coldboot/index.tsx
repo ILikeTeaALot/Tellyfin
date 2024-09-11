@@ -5,13 +5,13 @@ import type { JSX } from "preact/jsx-runtime";
 export function Coldboot({ run, onComplete }: { run: boolean; onComplete: () => void; }) {
 	useEffect(() => {
 		if (run) {
-			window.electronAPI.invoke("play_feedback", { sound: "Coldboot" });
+			window.electronAPI.playFeedback("Coldboot")
 		}
 	}, [run]);
 	// const animationIndex = useRef(0);
 	const onAllAnimationEnd = useCallback(() => {
 		onComplete();
-		window.electronAPI.invoke("play_background");
+		window.electronAPI.playBackground();
 	}, [onComplete]);
 	const onAnimationEnd = useCallback((e: JSX.TargetedAnimationEvent<HTMLSpanElement>) => {
 		e.stopPropagation();

@@ -121,18 +121,18 @@ export function VideoControlPanel(props: ControlPanelProps<VideoFunction, VideoF
 						// 	case 0:
 						// 		const func = video_configuration_functions[selected];
 						// 		if (func) {
-						// 			window.electronAPI.invoke("transport_command", { command: func });
+						// 			window.electronAPI.transportCommand(func);
 						// 		}
 						// 		break;
 						// 	case 1:
-						// 		window.electronAPI.invoke("transport_command", { command: video_transport_functions[selected] });
+						// 		window.electronAPI.transportCommand(video_transport_functions[selected]);
 						// 		break;
 						// }
 						const func = functions[row][selected][0];
 						if (row == 0) {
 							switch (func) {
 								case "SubtitleOptions":
-									window.electronAPI.invoke("transport_command", { command: func });
+									window.electronAPI.transportCommand(func);
 									return;
 								default:
 									onAction(func as VideoFunction);
@@ -141,7 +141,7 @@ export function VideoControlPanel(props: ControlPanelProps<VideoFunction, VideoF
 						} else if (row == 1) {
 							if (func) {
 								if (func == "Stop") onAction("Stop");
-								window.electronAPI.invoke("transport_command", { command: func }).then(() => refresh_mpv());
+								window.electronAPI.transportCommand(func).then(() => refresh_mpv());
 								// videoState.stateChanged();
 							}
 						}
