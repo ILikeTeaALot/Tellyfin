@@ -2,32 +2,34 @@ import type { FunctionComponent } from "preact";
 import { useState, useRef } from "preact/hooks";
 import "./keyboard.css";
 import { en } from "./layouts";
-import { KeyboardLayout } from "./layouts/interfaces";
+import { KeyboardLayout, type KeyboardLayoutCollection } from "./layouts/interfaces";
 import { useInput } from "../../hooks";
 import { useDidUpdate } from "../../hooks/use-did-update";
 import { FeedbackSound, playFeedback } from "../../context/AudioFeedback";
 
 interface KeyboardProps {
 	active: boolean;
+	defaultValue?: string;
 	onCancel: () => void;
 	onEnter: (text: string) => void;
 	x?: number;
 	y?: number;
+	overrideLayout?: KeyboardLayoutCollection;
 }
 
-export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, onEnter, x, y }) => {
+export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, defaultValue, onCancel, onEnter, x, y, overrideLayout }) => {
 	// State
 	const [activeKey, setActiveKey] = useState<number>(0);
 	const [activeRow, setActiveRow] = useState<number>(0);
 	const [cursorPosition, setCursorPosition] = useState<number>(0);
-	const [keyboardLayout, updateLayout] = useState<KeyboardLayout>(en.layouts.standard);
+	const [keyboardLayout, updateLayout] = useState<KeyboardLayout>(overrideLayout?.standard ?? en.layouts.standard);
 	const [shift, setShiftState] = useState<boolean>(false);
 	const [alt, setAltState] = useState<boolean>(false);
 	// const [symbols, setSymbolState] = useState<boolean>(false);
-	const [currentInputValue, setValue] = useState<string>("");
+	const [currentInputValue, setValue] = useState<string>(defaultValue ?? "");
 
 	// Refs
-	const layouts = useRef(en.layouts);
+	const layouts = useRef(overrideLayout ?? en.layouts);
 
 	useDidUpdate(() => {
 		playFeedback(FeedbackSound.SelectionMove);
@@ -142,11 +144,13 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, o
 				newActiveX = (activeKey + 1) % 10;
 				break;
 			case "X":
-				playFeedback(FeedbackSound.SelectionMove);
+			case "Backspace":
+				playFeedback(FeedbackSound.Enter);
 				deleteChar();
 				break;
 			case "Y":
-				playFeedback(FeedbackSound.SelectionMove);
+			case "Space":
+				playFeedback(FeedbackSound.Enter);
 				insertSpace();
 				break;
 			case "L1":
@@ -160,6 +164,9 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, o
 			case "R1":
 				playFeedback(FeedbackSound.SelectionMove);
 				setCursorPosition(Math.min(cursorPosition + 1, currentInputValue.length));
+				break;
+			case "R2":
+				onEnter(currentInputValue);
 				break;
 			case "Enter":
 				if (activeRow < 4) {
@@ -249,7 +256,7 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, o
 				// cancelRepeat(GamepadButton.Enter);
 				break;
 			case "Back":
-			case "Backspace":
+			case "Escape":
 				// cancelRepeat(GamepadButton.Back);
 				onCancel();
 				return;
@@ -301,7 +308,7 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, onCancel, o
 				<div className={activeKey === 5 && activeRow === 5 ? "key active" : "key"} />
 				<div className={activeKey === 6 && activeRow === 5 ? "key active" : "key"} />
 				<div className={activeKey === 7 && activeRow === 5 ? "key active" : "key"} />
-				<div className={activeKey > 7 && activeRow === 5 ? "key highlight active" : "key highlight"} style={{ gridColumn: "span 2" }}><span className="char small">Done</span></div>
+				<div className={activeKey > 7 && activeRow === 5 ? "key highlight active" : "key highlight"} onClick={() => onEnter(currentInputValue)} style={{ gridColumn: "span 2" }}><span className="char small">Done</span></div>
 			</div>
 		</div>
 	);

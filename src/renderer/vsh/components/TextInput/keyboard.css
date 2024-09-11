@@ -59,6 +59,9 @@
 .keyboard .input {
 	text-align: left;
 	white-space: pre;
+	font-size: 1.4em;
+	font-weight: 500;
+	letter-spacing: 0.02em;
 	height: 1.6em;
 	line-height: 1.5;
 	overflow: visible;
