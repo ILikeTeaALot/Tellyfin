@@ -68,6 +68,7 @@ export interface MpvEventEx {
 }
 /** `window_handle`: `Option`al because it's pointless on Wayland. */
 export declare function init(windowHandle: number | undefined | null, configDir: string): void
+export declare function setProperty(property: string, value: string): void
 export const enum MediaType {
   General = 0,
   BluRay = 3,

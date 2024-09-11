@@ -2,12 +2,19 @@ use std::error::Error;
 
 use libmpv2::Mpv;
 
-use crate::{map_dyn_error, MPV};
+use crate::{map_dyn_error, map_string_error, use_mpv_lock, MPV};
 
 /// `window_handle`: `Option`al because it's pointless on Wayland.
 #[napi]
 pub fn _init(window_handle: Option<u32>, config_dir: String) -> Result<(), napi::Error> {
 	init_mpv(window_handle, config_dir).map_err(map_dyn_error)
+}
+
+#[napi]
+pub fn set_property(property: String, value: String) -> Result<(), napi::Error> {
+	use_mpv_lock(&MPV, |mpv| {
+		mpv.set_property(&property, value.as_str())
+	}).map_err(map_string_error)
 }
 
 /// TODO: A way to reload MPV when non-runtime settings are changed

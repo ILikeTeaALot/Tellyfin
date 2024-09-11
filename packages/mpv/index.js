@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { pause, play, transportCommand, seek, setTrack, playFile, deinit, MpvEvent, init, MediaType, PlaybackStatus, VideoRepeatType, MpvTrackType, status, listenForEvent } = nativeBinding
+const { pause, play, transportCommand, seek, setTrack, playFile, deinit, MpvEvent, init, setProperty, MediaType, PlaybackStatus, VideoRepeatType, MpvTrackType, status, listenForEvent } = nativeBinding
 
 module.exports.pause = pause
 module.exports.play = play
@@ -321,6 +321,7 @@ module.exports.playFile = playFile
 module.exports.deinit = deinit
 module.exports.MpvEvent = MpvEvent
 module.exports.init = init
+module.exports.setProperty = setProperty
 module.exports.MediaType = MediaType
 module.exports.PlaybackStatus = PlaybackStatus
 module.exports.VideoRepeatType = VideoRepeatType
