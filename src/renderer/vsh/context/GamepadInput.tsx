@@ -45,7 +45,8 @@ export const MovementSpeed = React.createContext(300);
 
 const GAMEPAD_BUTTON_REPEAT_INITIAL = 400;
 // const GAMEPAD_BUTTON_REPEAT = 75;
-const GAMEPAD_BUTTON_REPEAT = 150;
+const GAMEPAD_BUTTON_REPEAT = 100;
+// const GAMEPAD_BUTTON_REPEAT = 150;
 // const GAMEPAD_BUTTON_REPEAT = 200;
 // const GAMEPAD_BUTTON_REPEAT = 250;
 /** The button repeats at which repeat-rate doubles */
