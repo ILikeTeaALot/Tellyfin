@@ -29,6 +29,7 @@ pnpm install
 - [x] Jellyfin Library discovery
 	- [x] Some Jellyfin library browsing (see below)
 - [x] Some parts of Themes (see below)
+- [x] Settings
 
 ### Still To-do
 
@@ -75,7 +76,7 @@ The User Interface design is a top-level interface based on the [XMB](https://en
  - Alto integration (the XMB works quite well as a GUI for Music)
  - Emulators/RetroArch
  - Steam
- - Navigable Settings (settings are currently hard-coded in a handful of places throughout the source code.)
+ - Navigable Settings (DONE - Mostly)
 
 > [!NOTE]
 > The layout of the UI also only works properly at 1920x1080. To use at 4K, set the zoom to 200%; everything should work correctly\*.
