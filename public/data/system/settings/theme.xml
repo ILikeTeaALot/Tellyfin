@@ -6,8 +6,8 @@
 			<Description>Sets or installs a complete theme for the system.</Description>
 			<Options>
 				<Option function="InstallTheme">Install</Option>
-				<Query function="InstalledThemes" src="xb://localhost/query?table=THEMES&amp;cond=identifier+IS+NOT+'system'">
-					<Option value="{id}">{name}</Option>
+				<Query src="xb://localhost/query?table=THEMES&amp;cond=identifier+IS+NOT+'system'">
+					<Option value="$[id]">$[name]</Option>
 				</Query>
 			</Options>
 		</Item>
@@ -17,7 +17,7 @@
 			<Options>
 				<!-- Note: escaping & as &amp; causes no issues when file is actually parsed. -->
 				<Query function="ThemeSounds" src="xb://localhost/query?table=THEMES&amp;sort=name&amp;cond=sound:true">
-					<Option value="{id}">{name}</Option>
+					<Option value="$[id]">$[name]</Option>
 				</Query>
 			</Options>
 		</Item>
@@ -26,7 +26,7 @@
 			<Description>Sets the icons used for system functions.</Description>
 			<Options>
 				<Query function="ThemeIcons" src="xb://localhost/query?table=THEMES&amp;sort=name&amp;cond=icons:true">
-					<Option value="{id}">{name}</Option>
+					<Option value="$[id]">$[name]</Option>
 				</Query>
 			</Options>
 		</Item>
@@ -36,7 +36,7 @@
 			<Options>
 				<Option function="ThemeSelectWallpaper" value="Wallpaper">Wallpaper</Option>
 				<!-- <Query function="ThemeBackgrounds" src="xb://localhost/query?table=THEMES&amp;sort=name&amp;cond=background:true">
-					<Option value="{id}">{name}</Option>
+					<Option value="$[id]">$[name]</Option>
 				</Query> -->
 			</Options>
 		</Item>
@@ -46,7 +46,7 @@
 			<Options>
 				<Option value="None">None</Option>
 				<Query function="ThemeMusic" src="xb://localhost/query?table=THEMES&amp;sort=name&amp;cond=music:true">
-					<Option value="Some({id})">{name}</Option>
+					<Option value="Some($[id])">$[name]</Option>
 				</Query>
 			</Options>
 		</Item>

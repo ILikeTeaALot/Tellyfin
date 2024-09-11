@@ -8,7 +8,7 @@
 				<Option value="Alto">Alto</Option>
 				<!-- TODO: Music Sources Database -->
 				<!-- <Query src="xb://localhost/query?table=MUSIC_SOURCES">
-					<Option value="jellyfin:{id}">{name}</Option>
+					<Option value="jellyfin:$[id]">$[name]</Option>
 				</Query> -->
 			</Options>
 		</Item>
@@ -17,15 +17,15 @@
 			<Description>Sets the codec and bit rate when importing audio CDs.</Description>
 			<!-- For settings that are an Object, a display formatter is required. -->
 			<!-- This will be advancing to handle simple boolean logic in future. -->
-			<DisplayFormat>Format: {format} {bitrate} {vbr}</DisplayFormat>
+			<DisplayFormat>Format: $[format] $[bitrate] $[vbr]</DisplayFormat>
 			<!-- Setups automatically have a confirmation screen at the end. -->
 			<Setup id="CDImportSettings" key="cd_import">
 				<Screen id="setup.cd_import.format" key="Format">
 					<Select key="cd_import.format">
-						<Option value="FLAC">FLAC</Option>
-						<Option value="ALAC">ALAC</Option>
-						<Option value="AAC">AAC</Option>
-						<Option value="MP3">MP3</Option>
+						<Option value="FLAC">FLAC (Free Lossless Audio Codec) (Recommended)</Option>
+						<Option value="ALAC">ALAC (Apple Lossless Audio Codec)</Option>
+						<Option value="AAC">AAC (Advanced Audio Coding)</Option>
+						<Option value="MP3">MP3 (MPEG Layer-3 Audio)</Option>
 					</Select>
 				</Screen>
 				<!-- Experimenal and Unstable :: Not used yet. -->

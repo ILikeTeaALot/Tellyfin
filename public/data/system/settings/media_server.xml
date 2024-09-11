@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TellyXML version="1.0">
 	<Items class="SettingList" key="media_server" scope="User">
-		<Item class="Setting" key="add" kind="Setup">
+		<Item class="Link" key="add">
 			<Title>Add Media Server Connection</Title>
-			<DisplayFormat> </DisplayFormat>
+			<Link>
+				<Id>AddMediaServer</Id>
+				<Component>AddMediaServer</Component>
+				<Properties />
+			</Link>
 		</Item>
 	</Items>
 </TellyXML>

@@ -10,6 +10,7 @@ import { useInput } from "../../hooks";
 import { useNavigationFunctions, useNavPosition } from "../../hooks/routing";
 import { Wizard } from "../Wizard";
 import { getComponent } from "../../ComponentMap";
+import { varEx } from "../../functions/varex";
 
 export enum SettingKind {
 	None = "None",
@@ -283,7 +284,8 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 				}
 			}
 			if (display_format_string) {
-				displayValue = display_format_string.replace(templateReplaceRegExp, (match: string, p1: string) => lookupReplacementString(raw_value, match, p1));
+				// displayValue = display_format_string.replace(templateReplaceRegExp, (match: string, p1: string) => lookupReplacementString(raw_value, match, p1));
+				displayValue = varEx(display_format_string, raw_value);
 			}
 			const forced_default = setting.getAttribute("default");
 			if (forced_default) {
@@ -300,7 +302,8 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 				kind: SettingKind.Wizard,
 			});
 			if (display_format_string) {
-				displayValue = display_format_string.replace(templateReplaceRegExp, (match: string, p1: string) => lookupReplacementString(raw_value, match, p1));
+				// displayValue = display_format_string.replace(templateReplaceRegExp, (match: string, p1: string) => lookupReplacementString(raw_value, match, p1));
+				displayValue = varEx(display_format_string, raw_value);
 			}
 			settingsList.push({ id: key, name: title.trim(), desc: desc?.trim(), Icon: "icon:settings.item", value: displayValue?.trim() /* settings[root_key][key] */ });
 		} else if (className == "Link") {
@@ -325,6 +328,6 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 	return [{ content: settingsList, root_key }, menus];
 }
 
-function lookupReplacementString(raw_value: any, _match: string, p1: string) {
-	return raw_value[p1] ?? "";
-}
+// function lookupReplacementString(raw_value: any, _match: string, p1: string) {
+// 	return raw_value[p1] ?? "";
+// }

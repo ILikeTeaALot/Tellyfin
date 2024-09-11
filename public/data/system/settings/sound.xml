@@ -4,7 +4,7 @@
 		<Item class="Setting" key="output" kind="Setup">
 			<Title>Audio Output Settings</Title>
 			<Description>Adjust the audio output settings for the system.</Description>
-			<DisplayFormat>{channels} {layout}</DisplayFormat>
+			<DisplayFormat>$[channels] $[layout]</DisplayFormat>
 		</Item>
 		<Item class="Setting" key="multi_out" kind="Select">
 			<Title>Audio Multi-Output</Title>

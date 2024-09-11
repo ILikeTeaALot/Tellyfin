@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TellyXML version="1.0">
+	<Items class="SettingList" key="mpv" scope="User">
+		<Item class="Setting" key="vo" default="0" kind="Select">
+			<Title>Video Output Driver</Title>
+			<Description>Sets the graphical output method used by MPV.</Description>
+			<Options>
+				<Option value="gpu-next">GPU Next <Def>(libplacebo, Recommended)</Def></Option>
+				<Option value="gpu">GPU</Option>
+				<Option value="direct3d">Direct3D <Def>(Windows Only)</Def></Option>
+				<Option value="sdl">SDL2</Option>
+				<Option value="sdl">SDL2</Option>
+			</Options>
+		</Item>
+	</Items>
+</TellyXML>

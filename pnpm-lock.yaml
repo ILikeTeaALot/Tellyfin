@@ -62,6 +62,9 @@ importers:
       toml:
         specifier: workspace:^
         version: link:packages/toml
+      varex:
+        specifier: ^1.4.1
+        version: 1.4.1
     devDependencies:
       '@electron-forge/cli':
         specifier: ^7.4.0
@@ -4802,6 +4805,9 @@ packages:
 
   validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
+
+  varex@1.4.1:
+    resolution: {integrity: sha512-NgpbPMv+/H3BQHWI9Dv35AnEtzchojRezDJ6uipdOU/WgKRdiG2fIA4NQd9otR5x9CdyiFs0Y/gx1+J+sd3tRQ==}
 
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
@@ -10618,6 +10624,8 @@ snapshots:
     dependencies:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
+
+  varex@1.4.1: {}
 
   vary@1.1.2: {}
 

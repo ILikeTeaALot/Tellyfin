@@ -66,7 +66,8 @@
 		"react-dom": "npm:@preact/compat",
 		"smol-toml": "^1.2.2",
 		"swr": "^2.2.5",
-		"toml": "workspace:^"
+		"toml": "workspace:^",
+		"varex": "^1.4.1"
 	},
 	"packageManager": "pnpm@9.5.0"
 }
