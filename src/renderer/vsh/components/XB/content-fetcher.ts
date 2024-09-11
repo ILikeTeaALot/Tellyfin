@@ -104,6 +104,12 @@ export async function getXBarContent([_, category]: [
 					},
 					{
 						id: "system.settings.video",
+						name: "Playback Settings",
+						desc: "Adjusts settings for the playback experience.",
+						Icon: "icon:settings.system",
+					},
+					{
+						id: "system.settings.mpv",
 						name: "Video Settings",
 						desc: "Adjusts settings for the MPV video player.",
 						Icon: "icon:settings.video",
@@ -113,6 +119,12 @@ export async function getXBarContent([_, category]: [
 						name: "Media Server Connection Settings",
 						desc: "Adjust settings for existing media server connections or connect to additional media servers.",
 						Icon: "icon:settings.media_server",
+					},
+					{
+						id: "system.settings.system",
+						name: "System Settings",
+						Icon: "icon:settings.system",
+						desc: "Adjusts settings for and displays information about the system.",
 					},
 					{
 						id: "system.settings.sound",
@@ -131,12 +143,6 @@ export async function getXBarContent([_, category]: [
 						name: "Plug-in Settings",
 						Icon: "icon:settings.plugins",
 						desc: "Adjusts settings for plug-ins.",
-					},
-					{
-						id: "system.settings.system",
-						name: "System Settings",
-						Icon: "icon:settings.system",
-						desc: "Adjusts settings for and displays information about the system.",
 					},
 				],
 			};
