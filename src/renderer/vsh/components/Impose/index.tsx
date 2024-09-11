@@ -11,7 +11,9 @@ export function ImposeMenu(props: { active: boolean; onCancel: () => void; }) {
 	}, [onCancel]);
 	if (active) return (
 		<div class="dialog">
-			<h1>Impose/Quick Menu</h1>
+			<div class="content">
+				<h1>Impose/Quick Menu</h1>
+			</div>
 		</div>
 	);
 	return null;

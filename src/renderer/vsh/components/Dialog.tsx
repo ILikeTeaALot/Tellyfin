@@ -61,7 +61,7 @@ export function Dialog(props: DialogProps) {
 		}
 	}, [type, selected]);
 	return (
-		<div class="dialog" style={{ opacity: active ? 1 : 0 }}>
+		<div class="dialog dark" style={{ opacity: active ? 1 : 0 }}>
 			<div class="content">
 				<span class="message">{props.children}</span>
 				{options()}

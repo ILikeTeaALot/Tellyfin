@@ -521,11 +521,18 @@ body {
 .dialog {
 	position: fixed;
 	inset: 0;
-	background:rgba(0, 0, 0, 0.95);
 	display: flex;
 	justify-content: center;
 	flex-direction: column;
 	transition-duration: var(--transition-standard);
+}
+
+.dialog.dark {
+	background: rgba(0, 0, 0, 0.95);
+}
+
+.dialog.blur {
+	backdrop-filter: blur(80px) saturate(180%);
 }
 
 .dialog .content {
@@ -534,6 +541,7 @@ body {
 	justify-content: center;
 	align-items: center;
 	gap: 2rem;
+	width: 100vw;
 	height: calc(100% - 280px);
 	border-top: 1px solid white;
 	border-bottom: 1px solid white;
@@ -551,13 +559,21 @@ body {
 	gap: 200px;
 }
 
+.dialog .content .options.vertical {
+	flex-direction: column;
+	gap: 20px;
+	align-content: center;
+	align-items: flex-start;
+	margin: 0 auto;
+}
+
 .dialog .content .options .option {
 	scale: 0.825;
 	transition-duration: var(--transition-standard);
 }
 
 .dialog .content .options .option.selected {
-	font-weight: 500;
+	/* font-weight: 500; */
 	/* scale: 1.2; */
 	scale: 1;
 	animation: var(--text-glow);
