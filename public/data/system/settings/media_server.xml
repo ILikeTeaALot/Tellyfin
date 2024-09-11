@@ -9,5 +9,13 @@
 				<Properties />
 			</Link>
 		</Item>
+		<Item class="Link" key="add">
+			<Title>Remove Media Server Connection</Title>
+			<Link>
+				<Id>RemoveMediaServer</Id>
+				<Component>RemoveMediaServer</Component>
+				<Properties />
+			</Link>
+		</Item>
 	</Items>
 </TellyXML>
