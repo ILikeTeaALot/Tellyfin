@@ -19,7 +19,7 @@ pnpm install
 > READ THIS BEFORE ATTEMPTING TO RUN Tellyfin/VSH
 
 > [!NOTE]
-> To add a Jellyfin server, go to [Settings] › [Media Server Connection Settings] › [Add Media Server Connection] and fill in the name, address, and login details for the server. To remove one, go to [Settings] › [Media Server Connection Settings] › [Add Media Server Connection] and select the server from the list that you wish to remove.
+> To add a Jellyfin server, go to [Settings] › [Media Server Connection Settings] › [Add Media Server Connection] and fill in the name, address, and login details for the server. To remove one, go to [Settings] › [Media Server Connection Settings] › [Remove Media Server Connection] and select the server from the list that you wish to remove.
 
 # Current Status
 
@@ -70,7 +70,7 @@ pnpm install
 At present, playback and playback-control of media works, selected by browsing one or more Jellyfin servers (see note just below).
 
 > [!NOTE]
-> To add a Jellyfin server, go to [Settings] › [Media Server Connection Settings] › [Add Media Server Connection] and fill in the name, address, and login details for the server.
+> To add a Jellyfin server, go to [Settings] › [Media Server Connection Settings] › [Add Media Server Connection] and fill in the name, address, and login details for the server. To remove one, go to [Settings] › [Media Server Connection Settings] › [Remove Media Server Connection] and select the server from the list that you wish to remove.
 
 The User Interface design is a top-level interface based on the [XMB](https://en.wikipedia.org/wiki/XrossMediaBar), which navigates to a hybrid of vertical lists, grids, single-option landing pages (i.e. 1 option: *Play*), and a contiuous row of episodes for TV shows. Eventually the top-level menu will support navigating:
 
