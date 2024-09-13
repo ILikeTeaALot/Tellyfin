@@ -21,7 +21,7 @@ export const Keyboard: FunctionComponent<KeyboardProps> = ({ active, defaultValu
 	// State
 	const [activeKey, setActiveKey] = useState<number>(0);
 	const [activeRow, setActiveRow] = useState<number>(0);
-	const [cursorPosition, setCursorPosition] = useState<number>(0);
+	const [cursorPosition, setCursorPosition] = useState<number>(defaultValue?.length ?? 0);
 	const [keyboardLayout, updateLayout] = useState<KeyboardLayout>(overrideLayout?.standard ?? en.layouts.standard);
 	const [shift, setShiftState] = useState<boolean>(false);
 	const [alt, setAltState] = useState<boolean>(false);

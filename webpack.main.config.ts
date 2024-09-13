@@ -15,7 +15,7 @@ export const mainConfig: Configuration = {
 		rules,
 	},
 	plugins,
-	externals: ["@tellyfin/theme", "mpv", "node-bass", "toml"],
+	externals: ["@tellyfin/image-fetcher", "@tellyfin/theme", "mpv", "node-bass", "toml"],
 	resolve: {
 		alias: {
 			"~": resolve(__dirname, "src/"),

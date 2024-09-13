@@ -1,10 +1,9 @@
-import api, { jellyfin } from "../context/Jellyfin";
 import { TICKS_PER_SECOND } from "../util/functions";
 
-export function jellyfinStopped(itemId: string, playSessionId?: string, seconds?: number) {
+export function jellyfinStopped(serverId: string | number, itemId: string, playSessionId?: string, seconds?: number) {
 	try {
 		// window.electronAPI.clearNowPlayingId();
-		jellyfin.getPlaystateApi(api).onPlaybackStopped({
+		window.playStateAPI.onPlaybackStopped(serverId, {
 			// userId: auth.User!.Id!,
 			itemId,
 			playSessionId,

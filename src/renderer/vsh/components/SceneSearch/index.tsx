@@ -4,7 +4,6 @@ import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, u
 import { useInput } from "../../hooks";
 import VideoState from "../../context/VideoContext";
 import { ContentPanel, PanelState } from "../Panel";
-import api from "../../context/Jellyfin";
 import { type BaseItemDto, type ChapterInfo } from "@jellyfin/sdk/lib/generated-client/models";
 import { TICKS_PER_SECOND } from "../../util/functions";
 import { Timeline } from "../Timeline";
@@ -194,7 +193,7 @@ export function SceneSearch(props: ChapterSelectProps) {
 						}} state={index == selectedScene ? PanelState.Active : PanelState.Inactive} width={WIDTH} height={/* videoState.jellyfin_data?.AspectRatio ? WIDTH / videoState.jellyfin_data.AspectRatio : */ HEIGHT}>
 							<img
 								decoding="async"
-								src={`${api.basePath}/Items/${videoState.jellyfinData?.Id}/Images/Chapter/${index}?fillWidth=${WIDTH * 2}&fillHeight=${HEIGHT * 2}&tag=${scene.ImageTag}`}
+								src={`xb-image://media-server_${videoState.jellyfinData?.ServerId}/Items/${videoState.jellyfinData?.Id}/Images/Chapter/${index}?fillWidth=${WIDTH * 2}&fillHeight=${HEIGHT * 2}&tag=${scene.ImageTag}`}
 								style={{
 									objectFit: "cover",
 									width: "100%",

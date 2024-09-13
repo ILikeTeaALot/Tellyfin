@@ -4,7 +4,6 @@ import useSWR, { useSWRConfig } from "swr";
 
 import { JellyfinScreenProps } from "../../jellyfin";
 import { Id } from "../../../components/Content/types";
-import api, { auth } from "../../../context/Jellyfin";
 import { ContentPanel, PanelState } from "../../../components/Panel";
 import { NavigateAction } from "../../../components/ContentList";
 import { displayRunningTime, languageString, TICKS_PER_SECOND, toHMS, type LangKey } from "../../../util/functions";
@@ -95,8 +94,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 		console.log("action:", action, "id", id);
 		switch (action) {
 			case "mark_watched":
-				jellyfin.getPlaystateApi(api).markPlayedItem({
-					userId: auth.User!.Id!,
+				window.playStateAPI.markPlayed(serverId, {
 					itemId: id,
 				}).then(() => {
 					console.log("Hopefully marked as watched?");
@@ -104,8 +102,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 				});
 				break;
 			case "mark_unwatched":
-				jellyfin.getPlaystateApi(api).markUnplayedItem({
-					userId: auth.User!.Id!,
+				window.playStateAPI.markUnplayed(serverId, {
 					itemId: id,
 				}).then(() => {
 					console.log("Hopefully marked as unwatched?");
@@ -113,26 +110,26 @@ export function TvSeries(props: JellyfinScreenProps) {
 				});
 				break;
 			case "play_from_start":
-				jellyfin.getItemsApi(api).getItems({
+				window.mediaServerAPI.getItems(serverId, {
 					ids: [id],
 					fields: GET_ITEMS_FIELDS,
 					limit: 1,
-				}).then(({ data: { Items } }) => {
-					if (Items?.[0]) playEpisode(Items[0], mutate, false);
+				}).then(({ Items }) => {
+					if (Items?.[0]) playEpisode(serverId, Items[0], mutate, false);
 				}).catch();
 				break;
 			case "just_play":
-				jellyfin.getItemsApi(api).getItems({
+				window.mediaServerAPI.getItems(serverId, {
 					ids: [id],
 					fields: GET_ITEMS_FIELDS,
 					limit: 1,
-				}).then(({ data: { Items } }) => {
-					if (Items?.[0]) playEpisode(Items[0], mutate, true);
+				}).then(({ Items }) => {
+					if (Items?.[0]) playEpisode(serverId, Items[0], mutate, true);
 				}).catch();
 				break;
 		}
 		setMenuOpen(false);
-	}, [updateEpisodes, mutate]);
+	}, [updateEpisodes, mutate, serverId]);
 	const menu_cancel = useCallback(() => setMenuOpen(false), []);
 	useLayoutEffect(() => {
 		setNextUpSelected(false);
@@ -218,17 +215,17 @@ export function TvSeries(props: JellyfinScreenProps) {
 				if (episodes && episodes[selected.episode] && row == Row.Episodes) {
 					const episode = episodes[selected.episode];
 					// playEpisode(data, mutate, true);
-					jellyfin.getItemsApi(api).getItems({
+					window.mediaServerAPI.getItems(serverId, {
 						ids: [episode.Id!],
 						fields: GET_ITEMS_FIELDS,
 						limit: 1,
-					}).then(({ data: { Items } }) => {
-						if (Items?.[0]) playEpisode(Items[0], mutate, true);
+					}).then(({ Items }) => {
+						if (Items?.[0]) playEpisode(serverId, Items[0], mutate, true);
 					}).catch();
 				}
 				break;
 		}
-	}, [row, selected, episodes, mutate]);
+	}, [row, selected, episodes, serverId, mutate]);
 	useInput(active, (button) => {
 		switch (button) {
 			case "Backspace":
@@ -463,7 +460,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 				setBackgroundHoldIndex(selected.episode);
 				return true;
 			}
-		})
+		});
 	}, [selected.episode]);
 	useInputRelease(() => {
 		const timeout = window.setTimeout(() => {
@@ -630,8 +627,8 @@ export function TvSeries(props: JellyfinScreenProps) {
 						{episodes[selected.episode]?.UserData?.Played || episodes[selected.episode]?.UserData?.PlaybackPositionTicks ? <span>{episodes[selected.episode]?.UserData?.Played && "Watched"}{(episodes[selected.episode]?.UserData?.Played && episodes[selected.episode]?.UserData?.PlaybackPositionTicks) ? " – " : null}{
 							episodes[selected.episode]?.UserData ?
 								episodes[selected.episode].UserData!.PlaybackPositionTicks != undefined ?
-								episodes[selected.episode].UserData!.PlaybackPositionTicks != 0 ?
-									`Continue Watching from ${toHMS(episodes[selected.episode]!.UserData!.PlaybackPositionTicks! / TICKS_PER_SECOND)}` : null : null : null}
+									episodes[selected.episode].UserData!.PlaybackPositionTicks != 0 ?
+										`Continue Watching from ${toHMS(episodes[selected.episode]!.UserData!.PlaybackPositionTicks! / TICKS_PER_SECOND)}` : null : null : null}
 							{null && ` – Last Played: ${episodes[selected.episode]?.UserData?.LastPlayedDate ?? "Never?"}`}</span> : null}
 						{/* {episodes[selected.episode]?.UserData && <span>Position: {toHMS((episodes[selected.episode].UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND)}</span>} */}
 						<p style={{ maxWidth: 1200 }}>{episodes[selected.episode]?.Overview ?? "No overview available"}</p>
@@ -680,7 +677,7 @@ type EpisodePanelProps = {
 	prevSelected: number;
 };
 
-function playEpisode(data: BaseItemDto, mutate: ScopedMutator, continue_playback: boolean) {
+function playEpisode(serverId: string | number, data: BaseItemDto, mutate: ScopedMutator, continue_playback: boolean) {
 	if (!data.Id) return;
 	/* return jellyfin.getMediaInfoApi(api).getPostedPlaybackInfo({
 		// TODO: Improve this to better support remote playback.
@@ -697,12 +694,14 @@ function playEpisode(data: BaseItemDto, mutate: ScopedMutator, continue_playback
 		}
 	}) */
 	// TODO: Select best media source; Enable transcoding when remote; etc.
-	playFile(`${api.basePath}/Videos/${data.Id}/stream?static=true&api_key=${auth.AccessToken}`, continue_playback ? (data.UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND : 0, data.Id ? { id: data.Id, type: "Jellyfin", /* session: streamData.PlaySessionId! */ } : undefined).then(() => {
-		window.electronAPI.transportCommand("Play");
-		mutate<VideoContextType>("mpv_state", (current) => {
-			if (current) {
-				return { ...current, jellyfinData: data };
-			}
+	window.mediaServerAPI.getItemVideoStreamUrl(serverId, data.Id!).then(path => {
+		playFile(serverId, path, continue_playback ? (data.UserData?.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND : 0, data.Id ? { id: data.Id, type: "Jellyfin", serverId: data.ServerId!, /* session: streamData.PlaySessionId! */ } : undefined).then(() => {
+			window.electronAPI.transportCommand("Play");
+			mutate<VideoContextType>("mpv_state", (current) => {
+				if (current) {
+					return { ...current, jellyfinData: data };
+				}
+			});
 		});
 	});
 }
@@ -777,7 +776,7 @@ function EpisodePanel(props: EpisodePanelProps) {
 			translate.current = finalStartPosition;
 			wasHighlightSelected.current = highlightSelected;
 		}
-	}, [index, selected, prevSelected])
+	}, [index, selected, prevSelected]);
 	useLayoutEffect(() => {
 		// if (ref.current) ref.current.style.transitionDuration = "0ms";
 		/* Attempt 2? */
@@ -817,7 +816,7 @@ function EpisodePanel(props: EpisodePanelProps) {
 				<ContentPanel scaleDownInactive state={highlightSelected /* && !(enter_pressed && selected == index) */ ? (selected == index ? PanelState.Active : PanelState.Inactive) : PanelState.None} width={WIDTH} height={HEIGHT}>
 					<img
 						decoding="async"
-						src={`${api.basePath}/Items/${episode.Id}/Images/Primary?fillWidth=${WIDTH}&fillHeight=${HEIGHT}`}
+						src={`xb-image://media-server_${episode.ServerId}/Items/${episode.Id}/Images/Primary?fillWidth=${WIDTH}&fillHeight=${HEIGHT}`}
 						style={{
 							objectFit: "cover",
 							width: "100%",
@@ -850,28 +849,27 @@ function initialEpisodeTranslate(selected: number, prevSelected: number, highlig
 	// }
 }
 
-async function getNextUp(seriesId: Id) {
-	let { data } = await jellyfin.getTvShowsApi(api).getNextUp({
+async function getNextUp(serverId: string | number, seriesId: Id) {
+	let { Items } = await window.mediaServerAPI.getNextUp(serverId, {
 		seriesId,
-		userId: auth.User!.Id!,
 		fields: ["MediaSourceCount"],
 	});
-	console.log("Next up:", data);
-	return data.Items!;
+	console.log("Next up:", Items);
+	return Items;
 }
 
 // eslint-disable-next-line
-async function getSeasons(seriesId: Id) {
-	let { data } = await jellyfin.getTvShowsApi(api).getSeasons({
-		seriesId,
-		userId: auth.User!.Id!,
-		enableImages: true,
-		fields: ["ItemCounts", "PrimaryImageAspectRatio", "MediaSourceCount", /* */ "ChildCount", "EnableMediaSourceDisplay"],
-		isMissing: false,
-	});
-	// console.log(data);
-	return data.Items!/* .filter(season => season.ChildCount! > 0) */;
-}
+// async function getSeasons(seriesId: Id) {
+// 	let { data } = await jellyfin.getTvShowsApi(api).getSeasons({
+// 		seriesId,
+// 		userId: auth.User!.Id!,
+// 		enableImages: true,
+// 		fields: ["ItemCounts", "PrimaryImageAspectRatio", "MediaSourceCount", /* */ "ChildCount", "EnableMediaSourceDisplay"],
+// 		isMissing: false,
+// 	});
+// 	// console.log(data);
+// 	return data.Items!/* .filter(season => season.ChildCount! > 0) */;
+// }
 
 const STEP = 25;
 
@@ -927,24 +925,22 @@ function seasonsFromEpisodes(episodes?: BaseItemDto[]) {
 /**
  * TODO: Pagination?
  */
-async function getEpisodes(seriesId: Id) {
-	const getTvShows = jellyfin.getTvShowsApi(api);
-	let res = await getTvShows.getEpisodes({
+async function getEpisodes(serverId: string | number, seriesId: Id) {
+	// const getTvShows = jellyfin.getTvShowsApi(api);
+	let res = await window.mediaServerAPI.getEpisodes(serverId, {
 		seriesId,
-		userId: auth.User!.Id!,
 		isMissing: false,
 		limit: 1,
 		fields: [],
 	});
-	const total = res.data.TotalRecordCount;
+	const total = res.TotalRecordCount;
 	if (!total) return [];
 	let all: BaseItemDto[] = [];
 	for (let startIndex = 0; startIndex < total; startIndex += STEP) {
 		await new Promise<void>((ok) => setTimeout(async () => {
-			let { data } = await getTvShows.getEpisodes({
+			let { Items } = await window.mediaServerAPI.getEpisodes(serverId, {
 				// Auth
 				seriesId,
-				userId: auth.User!.Id!,
 				// Pagination
 				limit: STEP,
 				startIndex: startIndex,
@@ -956,8 +952,8 @@ async function getEpisodes(seriesId: Id) {
 				// TODO: Fetch some of these when the file is played
 				fields: ["ItemCounts", "PrimaryImageAspectRatio", "MediaSourceCount", "Overview", "Path", "SpecialEpisodeNumbers", "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
 			});
-			console.log(data);
-			if (data.Items) all.push(...data.Items);
+			console.log(Items);
+			if (Items) all.push(...Items);
 			ok();
 		}, 0));
 	}
@@ -965,14 +961,14 @@ async function getEpisodes(seriesId: Id) {
 }
 
 // eslint-disable-next-line
-async function getContinueWatching(seriesId: Id) {
-	jellyfin.getItemsApi(api).getResumeItems({
-		userId: auth.User?.Id,
-		parentId: seriesId,
-		limit: 1,
-		includeItemTypes: ["Episode"],
-	})
-}
+// async function getContinueWatching(seriesId: Id) {
+// 	jellyfin.getItemsApi(api).getResumeItems({
+// 		userId: auth.User?.Id,
+// 		parentId: seriesId,
+// 		limit: 1,
+// 		includeItemTypes: ["Episode"],
+// 	})
+// }
 
 // eslint-disable-next-line
 function getDefaultSelected(episodes?: BaseItemDto[]) {
@@ -1005,7 +1001,7 @@ export function BackdropImage(props: { selected: number, index: number, item: Ba
 			// transitionDelay: backgroundTransitionDelay,
 			// transitionDelay: previous ? "10s" : "var(--transition-standard)",
 		}}>
-			<img ref={imgRef} src={`${api.basePath}/Items/${item.Id}/Images/Backdrop?fillWidth=${SCREEN_WIDTH * 1.2}&blur=0`} style={{
+			<img ref={imgRef} src={`xb-image://media-server_${item.ServerId}/Items/${item.Id}/Images/Backdrop?fillWidth=${SCREEN_WIDTH * 1.2}&blur=0`} style={{
 				position: "fixed",
 				top: "-10vh",
 				left: "-10vw",
@@ -1045,5 +1041,5 @@ export function BackdropImage(props: { selected: number, index: number, item: Ba
 				background: "rgba(0, 0, 0, 0.6)",
 			}} />
 		</div>
-	)
+	);
 }

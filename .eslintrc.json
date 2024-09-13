@@ -1,11 +1,24 @@
 {
-	"extends": ["react-app"],
+	"extends": [
+		"react-app"
+	],
 	"root": true,
+	"overrides": [
+		{
+			"files": [
+				"src/renderer/**/*"
+			],
+			"rules": {
+				"react-hooks/rules-of-hooks": "error"
+			}
+		}
+	],
 	"rules": {
 		// Not needed because of typescript.
 		"eqeqeq": "off",
 		// This may change, but the current accessibility plan is to not rely on web stuff due to the type of interface.
 		// This would appear to be the only rule that gets applied due to the design of Tellyfin
-		"jsx-a11y/alt-text": "off"
+		"jsx-a11y/alt-text": "off",
+		"react-hooks/rules-of-hooks": "off"
 	}
 }

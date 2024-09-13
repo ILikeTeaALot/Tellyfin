@@ -28,7 +28,7 @@ export function Home(props: ScreenProps) {
 		// }
 		switch (item.id) {
 			case "system.dvd":
-				playFile("J:\\", 0, { type: "DVD", path: "J:\\", title: 1, chapter: 1, name: "Unknown" }); // Apparently specifying just the drive letter works. At least on Windows.
+				playFile(0, "J:\\", 0, { type: "DVD", path: "J:\\", title: 1, chapter: 1, name: "Unknown" }); // Apparently specifying just the drive letter works. At least on Windows.
 				playFeedback(FeedbackSound.Enter);
 				return;
 			case "com.steampowered":
@@ -49,8 +49,10 @@ export function Home(props: ScreenProps) {
 	}, [go]);
 	const handleRootSelectionChange = useCallback((item: XBItem) => {
 		if (timeout.current != null) clearTimeout(timeout.current);
-		clear();
-		setSelectedRootItem(item);
+		setSelectedRootItem(current => {
+			if (item.id != current?.id) clear();
+			return item;
+		});
 	}, [clear, /* currScreen */]);
 	useEffect(() => {
 		if (timeout.current != null) clearTimeout(timeout.current);

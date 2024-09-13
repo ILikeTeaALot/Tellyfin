@@ -8,14 +8,11 @@ import type { Status } from "~/renderer/vsh/settings/fs/types";
 import type { FeedbackSound } from "~/renderer/vsh/context/AudioFeedback";
 import type { MediaInfo } from "~/shared/types/video";
 import type { VideoContextType } from "~/renderer/vsh/context/VideoContext";
-import type { TellyfinUser } from "~/shared/types/user";
-import type { ContentProvider } from "~/shared/types/media-server";
 
 import "./database";
-// async function invoke<T extends any = void>(command: string, args?: Record<string, any>): Promise<T> {
-// 	// throw new Error("Not implemented yet.");
-// 	return ipcRenderer.invoke(command, args);
-// }
+import "./media-server";
+import "./play-state";
+import "./user";
 
 function listenFor(channel: string, callback: (e: IpcRendererEvent) => void, error?: (e: IpcRendererEvent, error: unknown) => void) {
 	const listener = ipcRenderer.on(channel, callback);
@@ -85,22 +82,6 @@ async function exitTellyfin(): Promise<void> {
 
 async function restartTellyfin(): Promise<void> {
 	return ipcRenderer.invoke("restart-tellyfin");
-}
-
-async function getContentProviders(): Promise<ContentProvider[]> {
-	return ipcRenderer.invoke("get-content-providers");
-}
-
-async function registerServer(contentProvider: number, address: string, name?: string): Promise<number> {
-	return ipcRenderer.invoke("register-server", contentProvider, address, name);
-}
-
-async function authenticateUserOnServer(serverId: number, username: string, password?: string): Promise<void> {
-	return ipcRenderer.invoke("authenticate-server", serverId, username, password);
-}
-
-async function getUsers(): Promise<TellyfinUser[]> {
-	return ipcRenderer.invoke("get-users");
 }
 
 const apiList = {

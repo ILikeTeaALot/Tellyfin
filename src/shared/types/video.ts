@@ -11,5 +11,7 @@ export type MediaInfo = { type: "None"; } | {
 } | {
 	type: "Jellyfin";
 	id: string;
+	/** Type `string | number` for compatibility with BaseItemDto */
+	serverId: string | number;
 	session?: string;
 };

@@ -10,17 +10,12 @@ const name = SettingsFile.User;
 
 const init = async () => {
 	try {
-		const settings = await window.electronAPI.invoke<{
-			content: UserSettings;
-			status: Status,
-		}>("read_settings", {
-			name
-		});
+		const settings = await window.electronAPI.readSettings(name);
 		// const current = JSON.parse(settings.content) as UserSettings;
 		// const current = settings.content;
 		if (!settings.content) throw new Error("No settings returned (TODO: Implement settings!)");
 		if (settings?.status == Status.FileCreated) {
-			window.electronAPI.invoke("save_settings", { content: default_user_settings, name });
+			window.electronAPI.saveSettings(default_user_settings, name);
 			return default_user_settings;
 		} else {
 			return settings.content;
@@ -29,7 +24,7 @@ const init = async () => {
 		console.error(e);
 		return default_user_settings;
 	}
-}
+};
 
 /**
  * **!!! USE AT THE ROOT !!!**
@@ -48,11 +43,16 @@ export function SettingsProvider({ children }: { children: ComponentChildren; })
 			setSettingsLoaded(false);
 		}
 	}, [settings]);
+	useEffect(() => {
+		window.electronAPI.listenFor("settings-changed", (_, newSettings) => {
+			mutate(newSettings);
+		});
+	}, [mutate]);
 	const update = useCallback(async <T extends keyof UserSettings>(table: T, value: Partial<UserSettings[T]>) => {
 		mutate((settings) => {
 			if (settings) {
 				const newSettings = { ...settings, [table]: { ...settings[table], ...value } };
-				window.electronAPI.invoke("save_settings", { content: newSettings, name });
+				window.electronAPI.saveSettings(newSettings, name);
 				return newSettings;
 			}
 		}, { revalidate: false });

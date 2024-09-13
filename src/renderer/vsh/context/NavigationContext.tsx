@@ -45,7 +45,7 @@ interface NavigationContextType {
 	push<P extends {}>(id: string, Component: ComponentType<P>, props: ComponentProps<ComponentType<P>>): void;
 	pop(): void;
 	clear(): void;
-	back(): void;
+	back(pop?: boolean): void;
 	forward(): void;
 	stack: readonly RouteData<any>[];
 	current: number;
@@ -61,7 +61,7 @@ export const NavigationContext = createContext<NavigationContextType>({
 	push<P extends {}>(id: string, Component: ComponentType<P>, props?: ComponentProps<ComponentType<P>>) { },
 	pop() { },
 	clear() { },
-	back() { },
+	back(pop = false) { },
 	forward() { },
 	current: 0,
 	stack: [],
@@ -92,8 +92,9 @@ export function NavigationProvider(props: NavigationProviderProps) {
 		updateStack([]);
 		setCurrent(-1);
 	}, []);
-	const back = useCallback(() => {
+	const back = useCallback((pop = false) => {
 		setCurrent(current => Math.max(current - 1, -1));
+		if (pop) updateStack(stack => [...stack.slice(0, -1)]);
 		playFeedback(FeedbackSound.Back);
 	}, []);
 	const forward = useCallback(() => {
@@ -111,7 +112,7 @@ export function NavigationProvider(props: NavigationProviderProps) {
 				// }
 				return [...stack.slice(0, -1)];
 			});
-			return current;
+			return Math.max(current - 1, -1);
 		});
 	}, []);
 	const push = useCallback(<P extends {} = {}>(id: string, Component: ComponentType<P>, props?: P) => {

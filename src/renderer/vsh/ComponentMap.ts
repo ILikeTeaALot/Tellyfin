@@ -8,9 +8,14 @@ import { JellyfinContent } from "./screens/Home/Jellyfin";
 import { ContentGrid } from "./components/ContentGrid";
 import { OverflowTextScroll } from "./components/OverflowTextScroll";
 import { Wizard } from "./components/Wizard";
+import { AddMediaServer } from "./components/MediaServer/AddMediaServer";
+import { RemoveMediaServer } from "./components/MediaServer/RemoveMediaServer";
+import { TextInput } from "./components/TextInput/TextInput";
+import { Button } from "./components/Button";
 
 const ComponentMap = new Map<string, ComponentType<any>>([
 	["AboutTellyfin", AboutTellyfin],
+	["Button", Button],
 	["ContentGrid", ContentGrid],
 	["ContentList", XBList],
 	["ContentPanel", ContentPanel],
@@ -18,8 +23,10 @@ const ComponentMap = new Map<string, ComponentType<any>>([
 	["Jellyfin", JellyfinContent],
 	["Menu", Menu],
 	["Text", OverflowTextScroll],
-	["TextInput", () => null],
+	["TextInput", TextInput],
 	["Wizard", Wizard],
+	["AddMediaServer", AddMediaServer],
+	["RemoveMediaServer", RemoveMediaServer],
 ]);
 
 export function getComponent(name?: string | null) {

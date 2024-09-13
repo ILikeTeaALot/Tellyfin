@@ -69,85 +69,11 @@ export async function getXBarContent([_, category]: [
 		case "photos":
 			return getXBarPhotoContent();
 		case "settings":
-			return {
-				default_item: 1,
-				content: [
-					{
-						id: "system.update",
-						name: "Check for Updates",
-						Icon: "icon:system.update",
-						desc: "Connect to the internet and check for Tellyfin software updates.",
-					},
-					// {
-					// 	id: "system.settings.home",
-					// 	name: "Customise Home",
-					// 	Icon: "icon:settings.item",
-					// 	desc: "Customise the order and visibility of XBar Categories.",
-					// },
-					{
-						id: "system.settings.music",
-						name: "Music Settings",
-						Icon: "icon:settings.music",
-						desc: "Adjusts settings for music playback from Audio CD, Alto™, and Jellyfin.",
-					},
-					{
-						id: "system.settings.theme",
-						name: "Theme Settings",
-						Icon: "icon:settings.theme",
-						desc: "Adjusts theme settings for Tellyfin, including icons, background, and fonts.",
-					},
-					{
-						id: "system.settings.interface",
-						name: "Interface Settings",
-						Icon: "icon:settings.plugins",
-						desc: "Adjusts settings for the user interface.",
-					},
-					{
-						id: "system.settings.video",
-						name: "Playback Settings",
-						desc: "Adjusts settings for the playback experience.",
-						Icon: "icon:settings.system",
-					},
-					{
-						id: "system.settings.mpv",
-						name: "Video Settings",
-						desc: "Adjusts settings for the MPV video player.",
-						Icon: "icon:settings.video",
-					},
-					{
-						id: "system.settings.media_server",
-						name: "Media Server Connection Settings",
-						desc: "Adjust settings for existing media server connections or connect to additional media servers.",
-						Icon: "icon:settings.media_server",
-					},
-					{
-						id: "system.settings.system",
-						name: "System Settings",
-						Icon: "icon:settings.system",
-						desc: "Adjusts settings for and displays information about the system.",
-					},
-					{
-						id: "system.settings.sound",
-						name: "Sound Settings",
-						Icon: "icon:settings.sound",
-						desc: "Adjusts settings for audio devices and output formats.",
-					},
-					{
-						id: "system.settings.display",
-						name: "Display Settings",
-						Icon: "icon:settings.display",
-						desc: "Adjusts settings for display resolution and frame rate.",
-					},
-					{
-						id: "system.settings.plugins",
-						name: "Plug-in Settings",
-						Icon: "icon:settings.plugins",
-						desc: "Adjusts settings for plug-ins.",
-					},
-				],
-			};
+			return getSettings();
 		case "system":
+			const users = await window.userAPI.getUsers();
 			return {
+				default_item: 1 + users.length,
 				content: [
 					{
 						id: "system.power.shutdown",
@@ -165,6 +91,11 @@ export async function getXBarContent([_, category]: [
 						desc: "Closes and then re-opens Tellyfin.",
 					},
 					// { id: "system.power.sleep", name: "Enter Sleep Mode", Icon: "icon:system.sleep" },
+					...(users).map(user => ({
+						id: `user:${user.Id}`,
+						name: user.Name,
+						Icon: "icon:system.user",
+					})),
 				],
 			};
 		default:
@@ -189,28 +120,110 @@ const libraryCatch = (error: unknown): { data: { Items: BaseItemDto[]; }; } => {
 const librarySort = (a: BaseItemDto, b: BaseItemDto) =>
 	a.CollectionType == "playlists" ? -1 : 0;
 
+function getSettings(): CategoryContent | PromiseLike<CategoryContent> {
+	return {
+		default_item: 1,
+		content: [
+			{
+				id: "system.update",
+				name: "Check for Updates",
+				Icon: "icon:system.update",
+				desc: "Connect to the internet and check for Tellyfin software updates.",
+			},
+			// {
+			// 	id: "system.settings.home",
+			// 	name: "Customise Home",
+			// 	Icon: "icon:settings.item",
+			// 	desc: "Customise the order and visibility of XBar Categories.",
+			// },
+			{
+				id: "system.settings.music",
+				name: "Music Settings",
+				Icon: "icon:settings.music",
+				desc: "Adjusts settings for music playback from Audio CD, Alto™, and Jellyfin.",
+			},
+			{
+				id: "system.settings.theme",
+				name: "Theme Settings",
+				Icon: "icon:settings.theme",
+				desc: "Adjusts theme settings for Tellyfin, including icons, background, and fonts.",
+			},
+			{
+				id: "system.settings.interface",
+				name: "Interface Settings",
+				Icon: "icon:settings.interface",
+				desc: "Adjusts settings for the user interface.",
+			},
+			{
+				id: "system.settings.video",
+				name: "Playback Settings",
+				desc: "Adjusts settings for the playback experience.",
+				Icon: "icon:settings.playback",
+			},
+			{
+				id: "system.settings.mpv",
+				name: "Video Settings",
+				desc: "Adjusts settings for the MPV video player.",
+				Icon: "icon:settings.video",
+			},
+			{
+				id: "system.settings.media_server",
+				name: "Media Server Connection Settings",
+				desc: "Adjust settings for existing media server connections or connect to additional media servers.",
+				Icon: "icon:settings.media_server",
+			},
+			{
+				id: "system.settings.system",
+				name: "System Settings",
+				Icon: "icon:settings.system",
+				desc: "Adjusts settings for and displays information about the system.",
+			},
+			{
+				id: "system.settings.sound",
+				name: "Sound Settings",
+				Icon: "icon:settings.sound",
+				desc: "Adjusts settings for audio devices and output formats.",
+			},
+			// {
+			// 	id: "system.settings.display",
+			// 	name: "Display Settings",
+			// 	Icon: "icon:settings.display",
+			// 	desc: "Adjusts settings for display resolution and frame rate.",
+			// },
+			// {
+			// 	id: "system.settings.plugins",
+			// 	name: "Plug-in Settings",
+			// 	Icon: "icon:settings.plugins",
+			// 	desc: "Adjusts settings for plug-ins.",
+			// },
+		],
+	};
+}
+
 async function getXBarVideoContent(): Promise<CategoryContent> {
 	const videoLibraries =
-		(await jellyfin
-			.getUserViewsApi(api)
-			.getUserViews()
-			.catch(libraryCatch)
-			.then((value) =>
-				value.data.Items?.filter((item) => {
-					switch (item.CollectionType) {
-						case "homevideos":
-						case "boxsets":
-						case "movies":
-						case "playlists":
-						case "tvshows":
-							return true;
-						case undefined:
-							return true;
-						default:
-							return false;
-					}
-				}),
-			)) ?? [];
+		(await /* jellyfin */
+			// .getUserViewsApi(api)
+			// .getUserViews()
+			window.mediaServerAPI.getUserViews()
+				.catch(libraryCatch)
+				.then((value) =>
+					value.data.Items?.filter((item) => {
+						console.log(item);
+						switch (item.CollectionType) {
+							case "homevideos":
+							case "boxsets":
+							case "movies":
+							case "playlists":
+							case "tvshows":
+								return true;
+							case undefined:
+								return true;
+							default:
+								return false;
+						}
+					}),
+				)) ?? [];
 	videoLibraries.sort(librarySort);
 	const default_item = videoLibraries.findIndex(
 		(item) => item.CollectionType != "playlists",
@@ -270,9 +283,7 @@ function folderIconForCollectionType(collection?: CollectionType) {
 
 async function getXBarTVContent(): Promise<CategoryContent> {
 	const tvLibraries =
-		(await jellyfin
-			.getUserViewsApi(api)
-			.getUserViews()
+		(await window.mediaServerAPI.getUserViews()
 			.catch(libraryCatch)
 			.then((value) =>
 				value.data.Items?.filter((item) => {
@@ -311,21 +322,20 @@ async function getXBarTVContent(): Promise<CategoryContent> {
 
 async function getXBarMusicContent(): Promise<CategoryContent> {
 	const musicLibraries =
-		(await jellyfin
-			.getUserViewsApi(api)
-			.getUserViews()
-			.catch(libraryCatch)
-			.then((value) =>
-				value.data.Items?.filter((item) => {
-					switch (item.CollectionType) {
-						case "playlists":
-						case "music":
-							return true;
-						default:
-							return false;
-					}
-				}),
-			)) ?? [];
+		(await
+			window.mediaServerAPI.getUserViews()
+				.catch(libraryCatch)
+				.then((value) =>
+					value.data.Items?.filter((item) => {
+						switch (item.CollectionType) {
+							case "playlists":
+							case "music":
+								return true;
+							default:
+								return false;
+						}
+					}),
+				)) ?? [];
 	musicLibraries.sort(librarySort);
 	const default_item = musicLibraries.findIndex(
 		(item) => item.CollectionType != "playlists",
@@ -362,9 +372,7 @@ async function getXBarMusicContent(): Promise<CategoryContent> {
 
 async function getXBarPhotoContent(): Promise<CategoryContent> {
 	const photoLibraries =
-		(await jellyfin
-			.getUserViewsApi(api)
-			.getUserViews()
+		(await window.mediaServerAPI.getUserViews()
 			.catch(libraryCatch)
 			.then((value) =>
 				value.data.Items?.filter((item) => {
@@ -398,9 +406,7 @@ async function getXBarPhotoContent(): Promise<CategoryContent> {
 
 async function getXBarLiveTVContent(): Promise<CategoryContent> {
 	const liveTVSources =
-		(await jellyfin
-			.getUserViewsApi(api)
-			.getUserViews()
+		(await window.mediaServerAPI.getUserViews()
 			.catch(libraryCatch)
 			.then((value) =>
 				value.data.Items?.filter((item) => {

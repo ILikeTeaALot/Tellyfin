@@ -19,5 +19,5 @@ export function setupVideoControlHandlers() {
 
 	ipcMain.handle("clear_current_id", () => {
 		current_playing_id.value = { type: "None" };
-	})
+	});
 }

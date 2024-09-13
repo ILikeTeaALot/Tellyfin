@@ -2,7 +2,6 @@ import { ComponentChildren, createContext } from "preact";
 import VideoState, { PlaybackStatus, VideoContextType, defaultVideoState } from "../context/VideoContext";
 import useSWR, { type KeyedMutator } from "swr";
 import { useEffect, useState } from "preact/hooks";
-import api, { auth, jellyfin } from "../context/Jellyfin";
 import { jellyfinUpdatePosition } from "../functions/update";
 import { jellyfinStopped } from "../functions/stopped";
 import { reinitAudioSystem } from "../context/AudioFeedback";
@@ -29,29 +28,28 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 		if (data) {
 			if (!data.jellyfinData) {
 				if (data?.mediaType?.type == "Jellyfin") {
-					jellyfin.getItemsApi(api).getItems({
+					window.mediaServerAPI.getItems(data.mediaType.serverId, {
 						ids: [data.mediaType.id],
-						userId: auth.User!.Id!,
 						fields: ["MediaSourceCount", "Overview", "Path", "SpecialEpisodeNumbers", "MediaStreams", "OriginalTitle", "MediaSourceCount", "MediaSources", "Chapters"]
 					}).then(value => {
-						if (value.data.Items) {
-							let jellyfin_data = value.data.Items[0];
+						if (value.Items) {
+							let jellyfin_data = value.Items[0];
 							setVideoState(current => ({ ...current, jellyfinData: jellyfin_data }));
 						}
 					}).catch(console.error);
 					if (data.status.playbackStatus == PlaybackStatus.Stopped) {
 						// reinitAudioSystem();
-						jellyfinStopped(data.mediaType.id, data.mediaType.session, data.position.time.position);
+						jellyfinStopped(data.mediaType.serverId, data.mediaType.id, data.mediaType.session, data.position.time.position);
 						// window.electronAPI.transportCommand("Stop");
 					} else {
-						jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
+						jellyfinUpdatePosition(data.mediaType.serverId, data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 					}
 				}
 			}
 			if (data.jellyfinData && data.mediaType.type == "Jellyfin") {
-				jellyfinUpdatePosition(data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
+				jellyfinUpdatePosition(data.mediaType.serverId, data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 				if (data.status.playbackStatus == PlaybackStatus.Stopped) {
-					jellyfinStopped(data.mediaType.id, data.mediaType.session, data.position.time.position);
+					jellyfinStopped(data.mediaType.serverId, data.mediaType.id, data.mediaType.session, data.position.time.position);
 					// window.electronAPI.transportCommand("Stop");
 				}
 			}
@@ -117,9 +115,10 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 							if (current.mediaType?.type == "Jellyfin" && payload.endFile == mpv_end_file_reason.MPV_END_FILE_REASON_EOF) {
 								const position = current.position.time.position;
 								const id = current.mediaType.id;
+								const serverId = current.mediaType.serverId;
 								const playSessionId = current.mediaType.id;
 								setDebugTime(current.position.time.position);
-								setTimeout(() => jellyfinStopped(id, playSessionId, position), 1000);
+								setTimeout(() => jellyfinStopped(serverId, id, playSessionId, position), 1000);
 								window.electronAPI.transportCommand("Stop");
 								// throw new Error(`Time: ${current.position.time.position}`);
 							}

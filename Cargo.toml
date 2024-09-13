@@ -9,6 +9,7 @@ members = [
 ]
 exclude = [
 	"bootstrap",
+	"packages/image-fetcher",
 	"packages/mpv",
 	"packages/node-bass",
 	"packages/settings",

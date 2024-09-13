@@ -4,7 +4,6 @@ import useSWR, { useSWRConfig } from "swr";
 
 import { JellyfinScreenProps } from "../../jellyfin";
 import { Id } from "../../../components/Content/types";
-import api, { auth } from "../../../context/Jellyfin";
 import { ContentPanel, PanelState } from "../../../components/Panel";
 import { NavigateAction } from "../../../components/ContentList";
 import { displayRunningTime } from "../../../util/functions";
@@ -32,7 +31,7 @@ export function FilmDetail(props: JellyfinScreenProps) {
 	const { mutate } = useSWRConfig();
 	// Props
 	const { active, nav_position, onNavigate } = props;
-	const { data: info } = useSWR(`detail-${props.data.Id}`, () => getFilmInfo(props.data.Id!));
+	const { data: info } = useSWR(`detail-${props.data.Id}`, () => getFilmInfo(props.data.ServerId!, props.data.Id!));
 	// const [selected, setSelected] = useState(0);
 	const [row, /* setRow */] = useState(Row.Episodes);
 	const episode_overview = useRef<HTMLDivElement>(null);
@@ -55,18 +54,18 @@ export function FilmDetail(props: JellyfinScreenProps) {
 				break;
 			case "Enter":
 				if (info && row == Row.Episodes) {
-					if (info.Path) {
-						// window.electronAPI.playFile(info.Path, info.Id).then(() => {
-						// 	window.electronAPI.transportCommand("Play");
-						// 	mutate<VideoContextType>("mpv_state", (current) => {
-						// 		if (current) {
-						// 			return { ...current, jellyfin_data: info ?? null };
-						// 		}
-						// 	});
-						// });
-						// playFile(info.Path, 0, info.Id ? { type: "Jellyfin", id: info.Id } : undefined);
-						playFile(`${api.basePath}/Videos/${info.Id}/stream?static=true&api_key=${auth.AccessToken}`, 0, info.Id ? { type: "Jellyfin", id: info.Id } : undefined);
-					}
+					// window.electronAPI.playFile(info.Path, info.Id).then(() => {
+					// 	window.electronAPI.transportCommand("Play");
+					// 	mutate<VideoContextType>("mpv_state", (current) => {
+					// 		if (current) {
+					// 			return { ...current, jellyfin_data: info ?? null };
+					// 		}
+					// 	});
+					// });
+					// playFile(info.Path, 0, info.Id ? { type: "Jellyfin", id: info.Id } : undefined);
+					window.mediaServerAPI.getItemVideoStreamUrl(info.ServerId!, info.Id!).then(path => {
+						playFile(info.ServerId!, path, 0, info.Id ? { type: "Jellyfin", id: info.Id, serverId: info.ServerId! } : undefined);
+					});
 				}
 				break;
 			case "Backspace":
@@ -104,7 +103,7 @@ export function FilmDetail(props: JellyfinScreenProps) {
 							<ContentPanel state={PanelState.None} aspectRatio={info.PrimaryImageAspectRatio ?? undefined} width={WIDTH} height={WIDTH / (info.PrimaryImageAspectRatio ?? 1.5)}>
 								<img
 									decoding="async"
-									src={`${api.basePath}/Items/${props.data.Id}/Images/Primary`}
+									src={`xb-image://media-server_${props.data.ServerId}/Items/${props.data.Id}/Images/Primary`}
 									style={{
 										objectFit: "cover",
 										width: "100%",
@@ -138,12 +137,11 @@ export function FilmDetail(props: JellyfinScreenProps) {
 	);
 }
 
-async function getFilmInfo(id: Id) {
-	let { data } = await jellyfin.getItemsApi(api).getItems({
+async function getFilmInfo(serverId: string | number, id: Id) {
+	let { Items } = await window.mediaServerAPI.getItems(serverId, {
 		ids: [id],
-		userId: auth.User!.Id!,
 		fields: ["PrimaryImageAspectRatio", "MediaSourceCount", /* */ "EnableMediaSourceDisplay", "MediaStreams", "Path", "Overview", "Chapters"],
 	});
 	// console.log(data);
-	return data.Items![0];
+	return Items![0];
 }

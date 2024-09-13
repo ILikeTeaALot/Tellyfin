@@ -1,7 +1,6 @@
 import { useState, useContext, useMemo, useCallback, useRef, useLayoutEffect } from "preact/hooks";
 import { NavigateAction } from "./ContentList";
 import { ContentItem } from "./Content/types";
-import api, { auth, jellyfin } from "../context/Jellyfin";
 import { AppMode } from "../context/AppState";
 import { AppState } from "../AppStates";
 import { useInput, useInputRelease } from "../hooks";
@@ -59,14 +58,14 @@ export function ContentGrid(props: ContentGridProps) {
 	useDidUpdate(() => {
 		playFeedback(FeedbackSound.SelectionMove);
 	}, [selected]);
-	useInput(active, (button) => {
-		switch (button) {
-			case "Y":
-			case "t":
-				setMenuOpen(v => !v);
-				break;
-		}
-	}, []);
+	// useInput(active, (button) => {
+	// 	switch (button) {
+	// 		case "Y":
+	// 		case "t":
+	// 			setMenuOpen(v => !v);
+	// 			break;
+	// 	}
+	// }, []);
 	useInput(active && !menuOpen, (button) => {
 		switch (button) {
 			case "Enter":
@@ -145,27 +144,27 @@ export function ContentGrid(props: ContentGridProps) {
 		}
 	}, [canGoBackWithArrowKey, columns, data_length, onNavigate]);
 	const menu_submit = useCallback((item: XBMenuItem<string> & { value: string; }) => {
-		const { id: action, value: id } = item;
-		console.log("action:", action, "id", id);
-		switch (action) {
-			case "mark_watched":
-				jellyfin.getPlaystateApi(api).markPlayedItem({
-					userId: auth.User!.Id!,
-					itemId: id,
-				}).then(() => {
-					console.log("Hopefully marked as watched?");
-				});
-				break;
-			case "mark_unwatched":
-				jellyfin.getPlaystateApi(api).markUnplayedItem({
-					userId: auth.User!.Id!,
-					itemId: id,
-				}).then(() => {
-					console.log("Hopefully marked as unwatched?");
-				});
-				break;
-		}
-		setMenuOpen(false);
+		// const { id: action, value: id } = item;
+		// console.log("action:", action, "id", id);
+		// switch (action) {
+		// 	case "mark_watched":
+		// 		jellyfin.getPlaystateApi(api).markPlayedItem({
+		// 			userId: auth.User!.Id!,
+		// 			itemId: id,
+		// 		}).then(() => {
+		// 			console.log("Hopefully marked as watched?");
+		// 		});
+		// 		break;
+		// 	case "mark_unwatched":
+		// 		jellyfin.getPlaystateApi(api).markUnplayedItem({
+		// 			userId: auth.User!.Id!,
+		// 			itemId: id,
+		// 		}).then(() => {
+		// 			console.log("Hopefully marked as unwatched?");
+		// 		});
+		// 		break;
+		// }
+		// setMenuOpen(false);
 	}, []);
 	const menu_cancel = useCallback(() => setMenuOpen(false), []);
 	const menu_content = useMemo(() => {
@@ -281,7 +280,7 @@ export function ContentGrid(props: ContentGridProps) {
 										{item.jellyfin_data ? <img
 											decoding="async"
 											// src={`${api.basePath}/Items/${item.id}/Images/Primary?fillWidth=${WIDTH}&fillHeight=${HEIGHT}`}
-											src={`${api.basePath}/Items/${item.id}/Images/Primary?width=${ITEM_WIDTH * 2}&quality=100`}
+											src={`xb-image://media-server_${item.jellyfin_data.ServerId}/Items/${item.id}/Images/Primary?width=${ITEM_WIDTH * 2}&quality=100`}
 											style={{
 												objectFit: "cover",
 												width: "100%",

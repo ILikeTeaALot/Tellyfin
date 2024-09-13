@@ -313,14 +313,32 @@ async function getFinalData([document, settings]: [XMLDocument | undefined, User
 			const link = setting.querySelector("Link")!;
 			const id = link.querySelector("Id")?.textContent;
 			const Component = getComponent(link.querySelector("Component")?.textContent);
-			const props = Object.fromEntries(Array.from(link.querySelector("Props")?.querySelectorAll("Prop") ?? []).map(element => {
-				switch (element.querySelector("Value")?.getAttribute("type")) {
-					case "string":
-						return [element.getAttribute("key"), element.querySelector("Value")?.textContent] as const;
-					default:
-						return false;
+			const deserialiser = (element: Element): false | readonly [string, string | {} | null] => {
+				const key = element.getAttribute("key");
+				if (key) {
+					const children = Array.from(element.children);
+					const stringNode = children.find(element => element.localName == "string");
+					// if (Array.from(element.childNodes).find(node => node.nodeName == "string"))
+					if (stringNode) {
+						return [key, stringNode.textContent] as const;
+					}
+					const numberNode = children.find(element => element.localName == "number");
+					// if (Array.from(element.childNodes).find(node => node.nodeName == "string"))
+					if (numberNode) {
+						return [key, toIntMaybe(numberNode.textContent ?? "")] as const;
+					}
+					const object = children.find(element => element.localName == "Value" && element.getAttribute("type") == "object");
+					if (object) {
+						const children = Array.from(object.children);
+						return [key, Object.fromEntries(children.map(deserialiser).filter(v => !!v))] as const;
+					}
 				}
-			}).filter(v => !!v));
+				return false;
+			};
+			const properties = link.querySelector("Properties")?.children ?? [];
+			const entries = Array.from(properties).filter(element => element.localName == "Property")
+				.map(deserialiser).filter(v => !!v);
+			const props = Object.fromEntries(entries);
 			const to = id && Component ? { id, Component, props } : undefined;
 			settingsList.push({ id: key, name: title.trim(), desc: desc?.trim(), Icon: "icon:settings.item", class: "Link", to });
 		}
