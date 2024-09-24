@@ -39,7 +39,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					}).catch(console.error);
 					if (data.status.playbackStatus == PlaybackStatus.Stopped) {
 						// reinitAudioSystem();
-						jellyfinStopped(data.mediaType.serverId, data.mediaType.id, data.mediaType.session, data.position.time.position);
+						// jellyfinStopped(data.mediaType.serverId, data.mediaType.id, data.mediaType.session, data.position.time.position);
 						// window.electronAPI.transportCommand("Stop");
 					} else {
 						jellyfinUpdatePosition(data.mediaType.serverId, data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
@@ -49,7 +49,7 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 			if (data.jellyfinData && data.mediaType.type == "Jellyfin") {
 				jellyfinUpdatePosition(data.mediaType.serverId, data.mediaType.id, data.position.time.position, data.status.playbackStatus == PlaybackStatus.Paused);
 				if (data.status.playbackStatus == PlaybackStatus.Stopped) {
-					jellyfinStopped(data.mediaType.serverId, data.mediaType.id, data.mediaType.session, data.position.time.position);
+					// jellyfinStopped(data.mediaType.serverId, data.mediaType.id, data.mediaType.session, data.position.time.position);
 					// window.electronAPI.transportCommand("Stop");
 				}
 			}
