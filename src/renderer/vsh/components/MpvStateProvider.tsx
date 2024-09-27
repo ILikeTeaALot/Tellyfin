@@ -90,12 +90,12 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					break;
 				case "StartFile":
 					mutate(current => current ? {
-						...current, status: { ...current?.status, playbackStatus: PlaybackStatus.Playing }
+						...current, status: { ...current.status, playbackStatus: PlaybackStatus.Playing }
 					} : current);
 					break;
 				case "FileLoaded":
 					mutate(current => current ? {
-						...current, status: { ...current?.status, playbackStatus: PlaybackStatus.Playing }
+						...current, status: { ...current.status, playbackStatus: PlaybackStatus.Playing }
 					} : current);
 					break;
 				case "VideoReconfig":
@@ -112,13 +112,13 @@ export function MpvStateProvider(props: { children?: ComponentChildren; }) {
 					window.setTimeout(() => reinitAudioSystem(), 2000);
 					mutate(current => {
 						if (current) {
-							if (current.mediaType?.type == "Jellyfin" && payload.endFile == mpv_end_file_reason.MPV_END_FILE_REASON_EOF) {
+							if (current.mediaType?.type == "Jellyfin" && payload.endFile != mpv_end_file_reason.MPV_END_FILE_REASON_STOP) {
 								const position = current.position.time.position;
 								const id = current.mediaType.id;
 								const serverId = current.mediaType.serverId;
 								const playSessionId = current.mediaType.id;
 								setDebugTime(current.position.time.position);
-								setTimeout(() => jellyfinStopped(serverId, id, playSessionId, position), 1000);
+								jellyfinStopped(serverId, id, playSessionId, position);
 								window.electronAPI.transportCommand("Stop");
 								// throw new Error(`Time: ${current.position.time.position}`);
 							}
