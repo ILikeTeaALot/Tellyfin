@@ -62,11 +62,25 @@ export function TvSeries(props: JellyfinScreenProps) {
 	const { mutate } = useSWRConfig();
 	// Props
 	const { active: _active, nav_position, onNavigate } = props;
-	const { data: episodes, isLoading: episodesLoading, isValidating: episodesValidating, mutate: updateEpisodes } = useSWR(`episodes-${props.data.Id}`, () => getEpisodes(props.data.Id!), { keepPreviousData: true, revalidateOnMount: true });
+	const serverId = props.data.ServerId!;
+	const {
+		data: episodes,
+		isLoading: episodesLoading,
+		isValidating: episodesValidating,
+		mutate: updateEpisodes,
+	} = useSWR(`episodes-${props.data.Id}-${serverId}`, () => getEpisodes(serverId, props.data.Id!), {
+		keepPreviousData: true,
+		revalidateOnMount: true,
+		refreshInterval: 5 * 60 * 1000,
+	});
 	// const { data: seasons, /* isLoading: seasonsLoading */ } = useSWR(`seasons-${props.data.Id}`, () => getSeasons(props.data.Id!), { keepPreviousData: true });
 	// const { data: seasons, isLoading: seasonsLoading, isValidating: seasonsValidating } = useSWR(() => episodes && !episodesLoading && !episodesValidating ? `seasons-${props.data.Id}` : null, () => seasonsFromEpisodes(episodes), { keepPreviousData: true, revalidateOnMount: true });
 	const [nextUpSelected, setNextUpSelected] = useState(false);
-	const { data: nextUp, isLoading: nextUpIsLoading, isValidating: nextUpIsValidating } = useSWR(`next-up-${props.data.Id}`, () => getNextUp(props.data.Id!), { revalidateOnMount: true });
+	const {
+		data: nextUp,
+		isLoading: nextUpIsLoading,
+		isValidating: nextUpIsValidating,
+	} = useSWR(`next-up-${props.data.Id}`, () => getNextUp(serverId, props.data.Id!), { revalidateOnMount: true });
 	// const nextUpIsLoading = false;
 	// const nextUpIsValidating = false;
 	// const nextUp = useMemo(() => getDefaultSelected(episodes), [episodes]);
@@ -531,7 +545,7 @@ export function TvSeries(props: JellyfinScreenProps) {
 	if (anyLoading) return (
 		<Loading />
 	);
-	if (!episodes || !seasons || !nextUpSelected || nextUpIsLoading) return null;
+	if (!episodes || !seasons || /* !nextUpSelected || */ nextUpIsLoading) return null;
 	if (episodes.length == 0) return (
 		<h1>No episodes</h1>
 	);
