@@ -118,7 +118,7 @@ impl AudioFeedbackManager {
 		let mixer = Mixer::new(48000, 8, Some(1.), BASS_MIXER_NONSTOP | BASS_SAMPLE_FLOAT | BASS_MIXER_RESUME);
 		mixer.play(TRUE).ok();
 		// mixer.set_attribute(ChannelSetAttribute::Buffer, 0.);
-		BASS_ChannelSetAttribute(mixer.handle(), BASS_ATTRIB_MIXER_THREADS, 4.);
+		BASS_ChannelSetAttribute(**mixer, BASS_ATTRIB_MIXER_THREADS, 4.);
 		mixer.set_sync(device_failed, BASS_SYNC_DEV_FAIL, 0, ());
 		mixer.set_sync(format_changed, BASS_SYNC_DEV_FORMAT, 0, ());
 		let background = Stream::new(
