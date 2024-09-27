@@ -2,7 +2,6 @@
 
 import type { ComponentProps, ComponentType, JSX } from "preact";
 import type { ContentItem } from "../Content/types";
-import api, { jellyfin } from "../../context/Jellyfin";
 import type { BaseItemDto, CollectionType } from "@jellyfin/sdk/lib/generated-client/models";
 
 export interface XBItem extends ContentItem {
@@ -156,13 +155,13 @@ function getSettings(): CategoryContent | PromiseLike<CategoryContent> {
 			},
 			{
 				id: "system.settings.video",
-				name: "Playback Settings",
-				desc: "Adjusts settings for the playback experience.",
+				name: "Video Settings",
+				desc: "Adjusts settings for the video playback experience.",
 				Icon: "icon:settings.playback",
 			},
 			{
 				id: "system.settings.mpv",
-				name: "Video Settings",
+				name: "Playback Settings",
 				desc: "Adjusts settings for the MPV video player.",
 				Icon: "icon:settings.video",
 			},
@@ -229,13 +228,13 @@ async function getXBarVideoContent(): Promise<CategoryContent> {
 		(item) => item.CollectionType != "playlists",
 	);
 	return {
-		default_item: default_item > 0 ? default_item + 2 : 1,
+		default_item: default_item > 0 ? default_item + 1 : 0,
 		content: [
-			{
-				name: "Search",
-				id: "system.search",
-				Icon: "icon:general.search",
-			},
+			// {
+			// 	name: "Search",
+			// 	id: "system.search",
+			// 	Icon: "icon:general.search",
+			// },
 			{
 				name: "DVD Video - A really long title to test how the scrolly thingamy works!",
 				id: "system.dvd",
@@ -262,9 +261,9 @@ function folderIconForCollectionType(collection?: CollectionType) {
 		case "playlists":
 			return "icon:general.playlist";
 		case "tvshows":
-		case "boxsets":
 		case "livetv":
 			return "icon:tv.folder";
+		case "boxsets":
 		case "movies":
 		case "trailers":
 		case "homevideos":
@@ -303,11 +302,11 @@ async function getXBarTVContent(): Promise<CategoryContent> {
 	return {
 		default_item: default_item > 0 ? default_item + 1 : 1,
 		content: [
-			{
-				name: "Search",
-				id: "system.search",
-				Icon: "icon:general.search",
-			},
+			// {
+			// 	name: "Search",
+			// 	id: "system.search",
+			// 	Icon: "icon:general.search",
+			// },
 			...tvLibraries.map((item) => ({
 				name: item.Name ?? "Unknown",
 				desc: item.Overview ?? undefined,
