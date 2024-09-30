@@ -1,5 +1,5 @@
 use std::{
-	mem::size_of, os::raw::c_void, sync::{Arc, Mutex}, thread, time::Duration
+	mem::size_of, os::raw::c_void, ptr::null_mut, sync::{Arc, Mutex}, thread, time::Duration
 };
 
 use ::bass::{
@@ -89,11 +89,11 @@ pub struct AudioFeedbackManager {
 	mixer: Arc<Mixer>,
 }
 
-fn device_failed(_: HSYNC, _: DWORD, _: DWORD, _: &()) {
+extern "C" fn device_failed(_: HSYNC, _: DWORD, _: DWORD, _: *mut c_void) {
 	eprintln!("Device Failed/Destroyed!");
 }
 
-fn format_changed(_: HSYNC, _: DWORD, _: DWORD, _: &()) {
+extern "C" fn format_changed(_: HSYNC, _: DWORD, _: DWORD, _: *mut c_void) {
 	eprintln!("Device Format Changed!");
 }
 
@@ -119,8 +119,10 @@ impl AudioFeedbackManager {
 		mixer.play(TRUE).ok();
 		// mixer.set_attribute(ChannelSetAttribute::Buffer, 0.);
 		BASS_ChannelSetAttribute(**mixer, BASS_ATTRIB_MIXER_THREADS, 4.);
-		mixer.set_sync(device_failed, BASS_SYNC_DEV_FAIL, 0, ());
-		mixer.set_sync(format_changed, BASS_SYNC_DEV_FORMAT, 0, ());
+		BASS_ChannelSetSync(**mixer, BASS_SYNC_DEV_FAIL, 0, Some(device_failed), null_mut::<c_void>());
+		BASS_ChannelSetSync(**mixer, BASS_SYNC_DEV_FORMAT, 0, Some(format_changed), null_mut::<c_void>());
+		// mixer.set_sync(device_failed, BASS_SYNC_DEV_FAIL, 0, ());
+		// mixer.set_sync(format_changed, BASS_SYNC_DEV_FORMAT, 0, ());
 		let background = Stream::new(
 			"./themes/PS2/music/ps2 ambience uncompressed.wav",
 			// "./themes/PS2/sound/SCPH-10000_00019.wav",
