@@ -3,6 +3,9 @@
 > [!NOTE]
 > [2025-03-27] Development is still on-going! In the coming weeks I will be pushing the new plugin system to the repository! Things are still a bit janky with it, for example the Add Media Server wizard needs support for more flexible authentication options, but the proof-of-concept Jellyfin plugin has been working just-about flawlessly on my personal system for the last month or so.
 
+> [!NOTE]
+> Additional: I am still running Jellyfin `10.9`, so currently Tellyfin doesn't work with `10.10`. Due to the plugin system, support for multiple versions of Jellyfin should be possible. Therefore, before the plugin system is published to the repository I will be creating a `10.9` and `10.10` version of the Jellyfin plugin.
+
 The goal for this is a PS3-style UI for films, TV shows, music, photos, emulators, and Steam (social features possibly included too... maybe).
 
 ## Cloning
